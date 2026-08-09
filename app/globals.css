@@ -64,8 +64,6 @@ a { color:inherit; text-decoration:none; }
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--foreground);
-  justify-content: flex-end;
-  flex-direction: row-reverse;
 }
 .hero-about-title svg { color: var(--primary); }
 .hero-about-text {
@@ -85,21 +83,17 @@ a { color:inherit; text-decoration:none; }
   position: relative;
   width: 180px;
   height: 180px;
-}
-.hero-avatar-wrap::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
   border-radius: 50%;
-  border: 3px solid var(--primary);
-  opacity: 0.15;
+  box-shadow:
+    0 0 0 3px var(--primary),
+    0 0 32px 4px color-mix(in srgb, var(--primary) 25%, transparent),
+    0 0 64px 16px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 .hero-avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--primary);
   display: block;
 }
 .hero-name {
@@ -140,5 +134,5 @@ a { color:inherit; text-decoration:none; }
   .hero-grid {
     grid-template-columns: 1fr;
   }
-  .hero-profile { order: -1; }
+  .hero-about-box { order: 1; }
 }

@@ -5,7 +5,7 @@ import { ProjectCard } from '@/components/project-card';
 export default function Home() {
   const site = getSite();
   const categories = getCategories();
-  const featured = getProjects().slice(0, 4);
+  const featured = getProjects().slice(0, 6);
 
   const hero = site.hero as Record<string, string> | undefined;
   const socials = site.socials as Record<string, string> | undefined;
@@ -68,20 +68,6 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="hero-grid">
-            {/* Left: About Box */}
-            <div className="hero-about-box">
-              <div className="hero-about-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" aria-hidden>
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-                درباره من
-              </div>
-              <p className="hero-about-text">{about}</p>
-              <Link className="button" href="/resume">
-                درباره من <span aria-hidden>›</span>
-              </Link>
-            </div>
-
             {/* Right: Profile Card */}
             <div className="hero-profile">
               <div className="hero-avatar-wrap">
@@ -110,6 +96,20 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            {/* Left: About Box */}
+            <div className="hero-about-box">
+              <div className="hero-about-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" aria-hidden>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                درباره من
+              </div>
+              <p className="hero-about-text">{about}</p>
+              <Link className="button" style={{alignSelf: 'center', width: 'fit-content'}} href="/resume">
+                درباره من <span aria-hidden>›</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -117,17 +117,18 @@ export default function Home() {
       {/* Featured Projects */}
       <section className="section border-t border-[var(--border)]">
         <div className="container">
-          <div className="mb-9 flex items-end justify-between">
-            <div>
-              <p className="eyebrow">منتخب</p>
-              <h2 className="mt-2 text-3xl font-bold">پروژه‌های اخیر</h2>
-            </div>
-            <Link className="text-sm text-[var(--primary)]" href="/projects">مشاهده همه ←</Link>
+          <div className="mb-9 text-center">
+            <h2 className="mt-2 text-3xl font-bold">پروژه‌های اخیر</h2>
           </div>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-3">
             {featured.map((project) => (
               <ProjectCard key={project.slug} project={project} categories={categories} />
             ))}
+          </div>
+          <div className="mt-10 flex justify-center">
+            <Link className="button" href="/projects">
+              مشاهده همه <span aria-hidden>←</span>
+            </Link>
           </div>
         </div>
       </section>
