@@ -47,6 +47,22 @@ function runCommand(cmd, args, label, res) {
   return proc;
 }
 
+function runGit(args) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('git', args, { cwd: root, shell: true });
+    let output = '';
+    proc.stdout.on('data', (d) => (output += d.toString()));
+    proc.stderr.on('data', (d) => (output += d.toString()));
+    proc.on('error', reject);
+    proc.on('close', (code) => resolve({ code, output: output.trim() }));
+  });
+}
+
+function randomCommitMessage() {
+  const id = Math.random().toString(36).slice(2, 8);
+  return `cms-update-${Date.now().toString(36)}-${id}`;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const method = req.method;
@@ -148,33 +164,41 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Git status
+      if (pathname === '/api/git/status' && method === 'GET') {
+        const status = await runGit(['status', '--porcelain']);
+        const remote = await runGit(['remote', 'get-url', 'origin']);
+        const branch = await runGit(['branch', '--show-current']);
+        return send(res, 200, {
+          ok: true,
+          hasChanges: Boolean(status.output),
+          changes: status.output,
+          remote: remote.code === 0 ? remote.output : '',
+          branch: branch.output || '',
+        });
+      }
+
       // Publish to GitHub
       if (pathname === '/api/publish' && method === 'POST') {
+        const status = await runGit(['status', '--porcelain']);
+        if (!status.output) {
+          return send(res, 200, { ok: true, noChanges: true, message: 'تغییری ایجاد نشده' });
+        }
+
         const steps = [];
-        const gitAdd = spawn('git', ['add', '-A'], { cwd: root, shell: true });
-        let output = '';
-        gitAdd.stdout.on('data', (d) => (output += d.toString()));
-        gitAdd.stderr.on('data', (d) => (output += d.toString()));
-        gitAdd.on('close', (code1) => {
-          steps.push({ step: 'git add', ok: code1 === 0, output });
-          const commit = spawn('git', ['commit', '-m', 'Update site content via CMS'], { cwd: root, shell: true });
-          let out2 = '';
-          commit.stdout.on('data', (d) => (out2 += d.toString()));
-          commit.stderr.on('data', (d) => (out2 += d.toString()));
-          commit.on('close', (code2) => {
-            steps.push({ step: 'git commit', ok: code2 === 0, output: out2 });
-            const push = spawn('git', ['push'], { cwd: root, shell: true });
-            let out3 = '';
-            push.stdout.on('data', (d) => (out3 += d.toString()));
-            push.stderr.on('data', (d) => (out3 += d.toString()));
-            push.on('close', (code3) => {
-              steps.push({ step: 'git push', ok: code3 === 0, output: out3 });
-              const allOk = steps.every((s) => s.ok);
-              return send(res, allOk ? 200 : 500, { ok: allOk, steps });
-            });
-          });
-        });
-        return;
+        const add = await runGit(['add', '-A']);
+        steps.push({ step: 'git add', ok: add.code === 0, output: add.output });
+        if (add.code !== 0) return send(res, 500, { ok: false, steps });
+
+        const message = randomCommitMessage();
+        const commit = await runGit(['commit', '-m', message]);
+        steps.push({ step: 'git commit', ok: commit.code === 0, output: commit.output, message });
+        if (commit.code !== 0) return send(res, 500, { ok: false, steps });
+
+        const push = await runGit(['push']);
+        steps.push({ step: 'git push', ok: push.code === 0, output: push.output });
+        const allOk = steps.every((s) => s.ok);
+        return send(res, allOk ? 200 : 500, { ok: allOk, steps, message });
       }
 
       return send(res, 404, { error: 'not found' });

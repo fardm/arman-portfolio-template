@@ -20,6 +20,7 @@ textarea { min-height: 120px; resize: vertical; }
 .btn:hover { opacity: .9; }
 .btn.sec { background: transparent; color: #f5f7fa; border: 1px solid #263243; }
 .btn.danger { background: #ef4444; color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.github { background: #333; color: #fff; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #263243; border-radius: 8px; margin-bottom: 8px; }
@@ -41,7 +42,7 @@ hr { border: none; border-top: 1px solid #263243; margin: 16px 0; }
 <button class="nav-item" onclick="show('theme')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20 2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5h2.5a5 5 0 0 0 0-10z"/></svg> پوسته و فونت</button>
 <hr>
 <button class="nav-item" onclick="openPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> باز کردن پیش‌نمایش</button>
-<button class="nav-item" onclick="publishToGitHub()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg> انتشار در گیت‌هاب</button>
+<button class="nav-item" onclick="show('publish')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg> انتشار در گیت‌هاب</button>
 </aside>
 <main class="main"><div id="content"></div></main>
 </div>
