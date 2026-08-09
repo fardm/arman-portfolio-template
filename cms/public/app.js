@@ -61,7 +61,7 @@ function renderDashboard() {
       <div class="card"><h3>${projects.length}</h3><p>پروژه‌ها</p></div>
       <div class="card"><h3>${categories.length}</h3><p>دسته‌ها</p></div>
     </div>
-    <div class="card"><p>برای پیش‌نمایش زنده، روی «اجرای پیش‌نمایش» در منو کلیک کنید. سایت در آدرس http://localhost:3000 باز می‌شود.</p></div>`;
+    <div class="card"><p>برای پیش‌نمایش زنده، روی «باز کردن پیش‌نمایش» در منو کلیک کنید. سایت در آدرس http://localhost:3000 باز می‌شود.</p></div>`;
 }
 
 function renderProjects() {
@@ -346,9 +346,35 @@ async function renderMedia() {
 async function uploadMedia() { const file = document.getElementById('media-upload').files[0]; if (!file) return; const buffer = await file.arrayBuffer(); await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer }); renderMedia(); }
 async function deleteMedia(p) { await api('/api/media', { method: 'DELETE', body: JSON.stringify({ path: p }), headers: { 'Content-Type': 'application/json' } }); renderMedia(); }
 
-async function startDev() { const r = await api('/api/dev', { method: 'POST' }); alert(r.message || 'شروع شد'); }
+async function waitForPreview(timeoutMs = 30000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      await fetch('http://localhost:3000', { mode: 'no-cors', cache: 'no-store' });
+      return true;
+    } catch (_) {}
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  return false;
+}
 
-function openPreview() { window.open('http://localhost:3000', '_blank'); }
+async function openPreview() {
+  const win = window.open('about:blank', '_blank');
+  try {
+    await api('/api/dev', { method: 'POST' });
+    const ready = await waitForPreview();
+    if (!ready) {
+      if (win) win.close();
+      alert('پیش‌نمایش آماده نشد. چند ثانیه بعد دوباره امتحان کنید.');
+      return;
+    }
+    if (win) win.location.href = 'http://localhost:3000';
+    else window.open('http://localhost:3000', '_blank');
+  } catch (_) {
+    if (win) win.close();
+    alert('خطا در اجرای پیش‌نمایش');
+  }
+}
 
 async function runBuild() {
   if (!confirm('آیا مطمئن هستید که می‌خواهید سایت استاتیک را تولید کنید؟')) return;
