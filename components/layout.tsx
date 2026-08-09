@@ -10,7 +10,6 @@ export function Header({ site }: { site: Record<string, unknown> }) {
           <Link href="/">خانه</Link>
           <Link href="/projects">پروژه‌ها</Link>
           <Link href="/resume">رزومه</Link>
-          <Link href="/about">درباره من</Link>
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
