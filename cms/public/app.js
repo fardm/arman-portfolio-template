@@ -59,6 +59,7 @@ function render() {
   if (currentView === 'media') return renderMedia();
   if (currentView === 'settings') return renderSettings();
   if (currentView === 'theme') return renderTheme();
+  if (currentView === 'font') return renderFont();
   if (currentView === 'publish') return renderPublish();
   if (currentView === 'project-edit') return renderProjectEdit();
   if (currentView === 'hero') return renderHero();
@@ -215,23 +216,36 @@ async function saveResume() { resume.summary = val('r-summary'); resume.skills =
 function renderSettings() {
   content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
     <div class="card">
-      <div class="grid2"><div><label>نام</label><input id="s-name" value="${site.name || ''}"></div><div><label>عنوان حرفه‌ای</label><input id="s-title" value="${site.title || ''}"></div></div>
-      <label>بیو</label><textarea id="s-bio">${site.bio || ''}</textarea>
-      <div class="grid2"><div><label>ایمیل</label><input id="s-email" value="${site.email || ''}"></div><div><label>تصویر پروفایل</label><input id="s-profile" value="${site.profileImage || ''}"></div></div>
-      <div class="grid2"><div><label>گیت‌هاب</label><input id="s-github" value="${(site.socials && site.socials.github) || ''}"></div><div><label>لینکدین</label><input id="s-linkedin" value="${(site.socials && site.socials.linkedin) || ''}"></div></div>
+      <label>نام</label><input id="s-name" value="${site.name || ''}">
       <label>عنوان سئو</label><input id="s-seoTitle" value="${site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${site.seoDescription || ''}</textarea>
       <div style="margin-top:16px"><button class="btn" onclick="saveSettings()">ذخیره</button></div>
     </div>`;
 }
-async function saveSettings() { site.name = val('s-name'); site.title = val('s-title'); site.bio = val('s-bio'); site.email = val('s-email'); site.profileImage = val('s-profile'); site.socials = { github: val('s-github'), linkedin: val('s-linkedin'), website: site.socials?.website || '' }; site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
+async function saveSettings() { site.name = val('s-name'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 function renderTheme() {
   const t = site.theme || {};
-  const fc = parseFontConfig();
-  content.innerHTML = `<h2>پوسته و فونت</h2><p class="sub">رنگ‌ها و فونت سایت را تنظیم کنید.</p>
+  content.innerHTML = `<h2>پوسته</h2><p class="sub">رنگ‌های سایت را تنظیم کنید.</p>
     <div class="card">
-      <h3 style="margin-bottom:12px">فونت</h3>
+      <div class="grid2">
+        <div><label>حالت</label><select id="t-mode"><option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره</option><option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option><option value="system" ${t.mode === 'system' ? 'selected' : ''}>سیستم</option></select></div>
+        <div style="display:none"><label>placeholder</label></div>
+        <div><label>رنگ اصلی</label><input type="color" id="t-primary" value="${t.primary || '#b8f542'}"></div>
+        <div><label>پس‌زمینه</label><input type="color" id="t-background" value="${t.background || '#0b111b'}"></div>
+        <div><label>متن</label><input type="color" id="t-foreground" value="${t.foreground || '#f5f7fa'}"></div>
+        <div><label>متحرک</label><input type="color" id="t-muted" value="${t.muted || '#9ba6b5'}"></div>
+        <div><label>مرز</label><input type="color" id="t-border" value="${t.border || '#263243'}"></div>
+        <div><label>تأکیدی</label><input type="color" id="t-accent" value="${t.accent || '#8adcf0'}"></div>
+      </div>
+      <div style="margin-top:16px"><button class="btn" onclick="saveTheme()">ذخیره</button></div>
+    </div>`;
+}
+
+function renderFont() {
+  const fc = parseFontConfig();
+  content.innerHTML = `<h2>فونت</h2><p class="sub">فونت سایت را تنظیم کنید.</p>
+    <div class="card">
       <label>منبع فونت</label>
       <select id="t-fontSource" onchange="onFontSourceChange()">
         <option value="builtin" ${fc.source === 'builtin' ? 'selected' : ''}>فونت‌های داخلی</option>
@@ -262,18 +276,7 @@ function renderTheme() {
         <input id="t-customName" value="${fc.source === 'custom' ? fc.name : ''}" placeholder="نام دلخواه">
         <div id="font-axis-info" style="margin-top:8px"></div>
       </div>
-      <h3 style="margin-top:20px">رنگ‌ها</h3>
-      <div class="grid2">
-        <div><label>حالت</label><select id="t-mode"><option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره</option><option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option><option value="system" ${t.mode === 'system' ? 'selected' : ''}>سیستم</option></select></div>
-        <div style="display:none"><label>placeholder</label></div>
-        <div><label>رنگ اصلی</label><input type="color" id="t-primary" value="${t.primary || '#b8f542'}"></div>
-        <div><label>پس‌زمینه</label><input type="color" id="t-background" value="${t.background || '#0b111b'}"></div>
-        <div><label>متن</label><input type="color" id="t-foreground" value="${t.foreground || '#f5f7fa'}"></div>
-        <div><label>متحرک</label><input type="color" id="t-muted" value="${t.muted || '#9ba6b5'}"></div>
-        <div><label>مرز</label><input type="color" id="t-border" value="${t.border || '#263243'}"></div>
-        <div><label>تأکیدی</label><input type="color" id="t-accent" value="${t.accent || '#8adcf0'}"></div>
-      </div>
-      <div style="margin-top:16px"><button class="btn" onclick="saveTheme()">ذخیره</button></div>
+      <div style="margin-top:16px"><button class="btn" onclick="saveFont()">ذخیره</button></div>
     </div>`;
   onFontSourceChange();
   if (fc.source === 'custom') { loadFonts().then(() => populateCustomFonts(fc.customFont?.path)); }
@@ -323,6 +326,12 @@ async function uploadFont() {
 }
 
 async function saveTheme() {
+  site.theme = { mode: val('t-mode'), primary: val('t-primary'), background: val('t-background'), foreground: val('t-foreground'), muted: val('t-muted'), border: val('t-border'), accent: val('t-accent') };
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+  await loadAll(); show('theme');
+}
+
+async function saveFont() {
   const source = val('t-fontSource');
   let fontConfig;
   if (source === 'builtin') {
@@ -340,10 +349,9 @@ async function saveTheme() {
     const name = val('t-customName').trim() || (font ? font.name.replace(/\.[^.]+$/, '') : 'CustomFont');
     fontConfig = { source: 'custom', name, customFont: { path: fontPath, format: font ? font.format : 'woff2', isVariable: isVar, weights: isVar ? [100, 900] : [400] } };
   }
-  site.theme = { mode: val('t-mode'), primary: val('t-primary'), background: val('t-background'), foreground: val('t-foreground'), muted: val('t-muted'), border: val('t-border'), accent: val('t-accent') };
   site.font = JSON.stringify(fontConfig);
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-  await loadAll(); show('theme');
+  await loadAll(); show('font');
 }
 
 async function renderMedia() {
