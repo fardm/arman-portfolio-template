@@ -43,7 +43,7 @@ echo ==============================
 echo   Setup completed successfully
 echo ==============================
 echo.
-echo Now run open-dashboard.bat
+echo Now run admin-panel.bat
 echo.
 
 pause

@@ -62,7 +62,7 @@ function renderDashboard() {
       <div class="card"><h3>${projects.length}</h3><p>پروژه‌ها</p></div>
       <div class="card"><h3>${categories.length}</h3><p>دسته‌ها</p></div>
     </div>
-    <div class="card"><p>برای پیش‌نمایش زنده، روی «باز کردن پیش‌نمایش» در منو کلیک کنید. سایت در آدرس http://localhost:3000 باز می‌شود.</p></div>`;
+    `;
 }
 
 function renderProjects() {
