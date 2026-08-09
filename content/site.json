@@ -31,5 +31,6 @@
     "muted": "#9ba6b5",
     "border": "#263243",
     "accent": "#8adcf0"
-  }
+  },
+  "favicon": "/media/profile.svg"
 }

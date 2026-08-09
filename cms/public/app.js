@@ -48,6 +48,11 @@ function show(view) {
   document.querySelectorAll('.nav-item, .nav-child').forEach((el) => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + view);
   if (navEl) navEl.classList.add('active');
+  // اگر view مربوط به گروه تنظیمات باشد، گروه را باز نگه دار
+  if (['settings', 'theme', 'font'].includes(view)) {
+    const group = document.getElementById('group-settings');
+    if (group && !group.classList.contains('open')) group.classList.add('open');
+  }
   render();
 }
 
@@ -217,12 +222,55 @@ function renderSettings() {
   content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
     <div class="card">
       <label>نام</label><input id="s-name" value="${site.name || ''}">
+      <label>فاوآیکون</label>
+      <div class="row">
+        <input id="s-favicon" value="${site.favicon || ''}" style="flex:1" placeholder="/media/favicon.ico">
+        <button class="btn sec" onclick="openFaviconPicker()">انتخاب از رسانه</button>
+      </div>
+      <div id="favicon-preview" style="margin-top:8px">${site.favicon ? `<img src="${site.favicon}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">` : ''}</div>
+      <div id="favicon-picker" style="display:none;margin-top:12px">
+        <div class="row" style="margin-bottom:8px">
+          <input type="file" id="favicon-upload-file" accept="image/*,.ico" style="flex:1">
+          <button class="btn" onclick="uploadFavicon()">آپلود و انتخاب</button>
+        </div>
+        <div class="grid2" id="favicon-picker-grid"></div>
+      </div>
       <label>عنوان سئو</label><input id="s-seoTitle" value="${site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${site.seoDescription || ''}</textarea>
       <div style="margin-top:16px"><button class="btn" onclick="saveSettings()">ذخیره</button></div>
     </div>`;
 }
-async function saveSettings() { site.name = val('s-name'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
+
+async function openFaviconPicker() {
+  const picker = document.getElementById('favicon-picker');
+  if (picker.style.display === 'none') {
+    await loadMedia();
+    picker.style.display = 'block';
+    const grid = document.getElementById('favicon-picker-grid');
+    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
+    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+  } else {
+    picker.style.display = 'none';
+  }
+}
+
+function selectFavicon(path) {
+  document.getElementById('s-favicon').value = path;
+  document.getElementById('favicon-preview').innerHTML = `<img src="${path}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">`;
+  document.getElementById('favicon-picker').style.display = 'none';
+}
+
+async function uploadFavicon() {
+  const file = document.getElementById('favicon-upload-file').files[0];
+  if (!file) return;
+  const buffer = await file.arrayBuffer();
+  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
+  await loadMedia();
+  const grid = document.getElementById('favicon-picker-grid');
+  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+  selectFavicon(`/media/${file.name}`);
+}
+async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 function renderTheme() {
   const t = site.theme || {};

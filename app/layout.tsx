@@ -10,6 +10,7 @@ export function generateMetadata(): Metadata {
     title: String(site.seoTitle),
     description: String(site.seoDescription),
     metadataBase: new URL('https://example.github.io'),
+    icons: site.favicon ? { icon: String(site.favicon) } : undefined,
     openGraph: { title: String(site.seoTitle), description: String(site.seoDescription), images: [String(site.ogImage)] },
   };
 }
