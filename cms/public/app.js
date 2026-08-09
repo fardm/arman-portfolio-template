@@ -1,5 +1,5 @@
 const api = (path, opts) => fetch(path, opts).then((r) => r.json());
-let currentView = 'dashboard';
+let currentView = 'hero';
 let projects = [];
 let categories = [];
 let site = {};
@@ -38,9 +38,16 @@ async function loadMedia() {
   media = await api('/api/media');
 }
 
+function toggleGroup(id) {
+  const group = document.getElementById('group-' + id);
+  if (group) group.classList.toggle('open');
+}
+
 function show(view) {
   currentView = view;
-  document.querySelectorAll('.nav-item').forEach((el) => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .nav-child').forEach((el) => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + view);
+  if (navEl) navEl.classList.add('active');
   render();
 }
 
