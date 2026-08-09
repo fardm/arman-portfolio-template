@@ -113,7 +113,7 @@ function renderProjectEdit() {
         <div><label>آدرس/کد ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}"></div>
       </div>
       <label>محتوای کامل (Markdown)</label><textarea id="f-content" style="min-height:200px">${p.content || ''}</textarea>
-      <div class="row" style="margin-top:16px"><button class="btn" onclick="saveProject()">ذیره</button><button class="btn sec" onclick="show('projects')">انصراف</button></div>
+      <div class="row" style="margin-top:16px"><button class="btn" onclick="saveProject()">ذخیره</button><button class="btn sec" onclick="show('projects')">انصراف</button></div>
     </div>`;
 }
 

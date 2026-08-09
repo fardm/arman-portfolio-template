@@ -15,7 +15,6 @@ export function Header({ site }: { site: Record<string, unknown> }) {
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link className="button hidden sm:inline-flex" href="/contact">همکاری کنیم <span aria-hidden>←</span></Link>
           <Link className="text-[var(--primary)] sm:hidden" href="/projects" aria-label="مشاهده پروژه‌ها">پروژه‌ها</Link>
         </div>
       </div>
