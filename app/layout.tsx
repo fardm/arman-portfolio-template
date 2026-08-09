@@ -51,7 +51,7 @@ function buildFontStyles(site: Record<string, unknown>): { headTags: React.React
   return { headTags: null, bodyFont: font || 'Tahoma' };
 }
 
-const noFlash = `(function(){try{var t=localStorage.getItem('theme');var m=${JSON.stringify((getSite().theme as Record<string, string>)?.mode || 'dark')};if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme',m==='light'?'light':'dark');}}catch(e){}})();`;
+const noFlash = `(function(){try{var t=localStorage.getItem('theme');var m=(typeof window !== 'undefined') ? ${JSON.stringify((getSite().theme as Record<string, string>)?.mode || 'dark')} : 'dark';if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme',m==='light'?'light':'dark');}}catch(e){}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const site = getSite() as Record<string, unknown>;
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const { headTags, bodyFont } = buildFontStyles(site);
 
   return (
-    <html lang="fa" dir="rtl">
+    <html lang="fa" dir="rtl" data-theme="dark">
       <head>
         <style>{`:root{--primary:${theme.primary};--background:${theme.background};--foreground:${theme.foreground};--muted:${theme.muted};--border:${theme.border};--accent:${theme.accent};}`}</style>
         {headTags}

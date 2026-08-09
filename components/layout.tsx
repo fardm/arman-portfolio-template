@@ -11,7 +11,6 @@ export function Header({ site }: { site: Record<string, unknown> }) {
           <Link href="/projects">پروژه‌ها</Link>
           <Link href="/resume">رزومه</Link>
           <Link href="/about">درباره من</Link>
-          <Link href="/contact">تماس</Link>
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
@@ -27,7 +26,7 @@ export function Footer({ site }: { site: Record<string, unknown> }) {
     <footer className="border-t border-[var(--border)] py-6">
       <div className="container flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
         <span>© {new Date().getFullYear()} {String(site.name)}. همه حقوق محفوظ است.</span>
-        <div className="flex gap-5"><Link href="/projects">پروژه‌ها</Link><Link href="/contact">تماس با من</Link></div>
+        <div className="flex gap-5"></div>
       </div>
     </footer>
   );
