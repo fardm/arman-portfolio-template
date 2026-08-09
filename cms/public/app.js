@@ -376,13 +376,6 @@ async function openPreview() {
   }
 }
 
-async function runBuild() {
-  if (!confirm('آیا مطمئن هستید که می‌خواهید سایت استاتیک را تولید کنید؟')) return;
-  content.innerHTML = '<h2>در حال ساخت...</h2><p class="sub">لطفاً صبر کنید.</p>';
-  const r = await api('/api/build', { method: 'POST' });
-  content.innerHTML = `<h2>ساخت ${r.ok ? 'موفق' : 'ناموفق'}</h2><pre style="background:#111a27;padding:16px;border-radius:8px;overflow:auto;max-height:400px">${r.output || ''}</pre>`;
-}
-
 async function publishToGitHub() {
   if (!confirm('تغییرات به گیت‌هاب منتشر شود؟')) return;
   content.innerHTML = '<h2>در حال انتشار...</h2><p class="sub">لطفاً صبر کنید.</p>';
