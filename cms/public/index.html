@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>پنل مدیریت محتوا</title><style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Tahoma, Arial, sans-serif; background: #0b111b; color: #f5f7fa; line-height: 1.8; }
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.sidebar { background: #111a27; border-left: 1px solid #263243; padding: 24px 16px; }
+.sidebar h1 { font-size: 1.1rem; margin-bottom: 24px; color: #b8f542; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; color: #9ba6b5; cursor: pointer; margin-bottom: 4px; border: none; background: none; width: 100%; text-align: right; font: inherit; }
+.nav-item:hover, .nav-item.active { background: #172231; color: #f5f7fa; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.main { padding: 32px; overflow-x: hidden; }
+.main h2 { font-size: 1.8rem; margin-bottom: 8px; }
+.main p.sub { color: #9ba6b5; margin-bottom: 24px; }
+.card { background: #111a27; border: 1px solid #263243; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+label { display: block; margin: 12px 0 4px; color: #9ba6b5; font-size: .85rem; }
+input, select, textarea { width: 100%; background: #0b111b; border: 1px solid #263243; color: #f5f7fa; border-radius: 8px; padding: 10px 12px; font: inherit; }
+textarea { min-height: 120px; resize: vertical; }
+.btn { background: #b8f542; color: #0b111b; border: none; border-radius: 8px; padding: 10px 18px; cursor: pointer; font-weight: 700; font: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { opacity: .9; }
+.btn.sec { background: transparent; color: #f5f7fa; border: 1px solid #263243; }
+.btn.danger { background: #ef4444; color: #fff; }
+.btn.github { background: #333; color: #fff; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #263243; border-radius: 8px; margin-bottom: 8px; }
+.tag { background: #17303b; color: #8adcf0; border-radius: 999px; padding: 2px 10px; font-size: .78rem; }
+.msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; }
+.msg.ok { background: #15231b; border: 1px solid #b8f542; color: #b8f542; }
+.msg.err { background: #2a1515; border: 1px solid #ef4444; color: #ef4444; }
+img.preview { max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid #263243; }
+hr { border: none; border-top: 1px solid #263243; margin: 16px 0; }
+@media (max-width: 768px) { .app { grid-template-columns: 1fr; } .sidebar { border-left: none; border-bottom: 1px solid #263243; } .grid2 { grid-template-columns: 1fr; } }
+</style></head><body><div class="app">
+<aside class="sidebar"><h1>پنل مدیریت</h1>
+<button class="nav-item active" onclick="show('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> داشبورد</button>
+<button class="nav-item" onclick="show('projects')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> پروژه‌ها</button>
+<button class="nav-item" onclick="show('categories')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg> دسته‌ها</button>
+<button class="nav-item" onclick="show('resume')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> رزومه</button>
+<button class="nav-item" onclick="show('media')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> رسانه</button>
+<button class="nav-item" onclick="show('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> تنظیمات سایت</button>
+<button class="nav-item" onclick="show('theme')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20 2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5h2.5a5 5 0 0 0 0-10z"/></svg> پوسته و فونت</button>
+<hr>
+<button class="nav-item" onclick="startDev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> اجرای پیش‌نمایش</button>
+<button class="nav-item" onclick="openPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> باز کردن پیش‌نمایش</button>
+<button class="nav-item" onclick="runBuild()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> ساخت استاتیک</button>
+<button class="nav-item" onclick="publishToGitHub()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg> انتشار در گیت‌هاب</button>
+</aside>
+<main class="main"><div id="content"></div></main>
+</div>
+<script src="/app.js"></script></body></html>

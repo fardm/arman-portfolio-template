@@ -1,0 +1,35 @@
+import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
+
+export function Header({ site }: { site: Record<string, unknown> }) {
+  return (
+    <header className="border-b border-[var(--border)]">
+      <div className="container flex items-center justify-between py-5">
+        <Link href="/" className="text-lg font-black">{String(site.name)}</Link>
+        <nav aria-label="ناوبری اصلی" className="hidden gap-7 text-sm text-[var(--muted)] sm:flex">
+          <Link href="/">خانه</Link>
+          <Link href="/projects">پروژه‌ها</Link>
+          <Link href="/resume">رزومه</Link>
+          <Link href="/about">درباره من</Link>
+          <Link href="/contact">تماس</Link>
+        </nav>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link className="button hidden sm:inline-flex" href="/contact">همکاری کنیم <span aria-hidden>←</span></Link>
+          <Link className="text-[var(--primary)] sm:hidden" href="/projects" aria-label="مشاهده پروژه‌ها">پروژه‌ها</Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function Footer({ site }: { site: Record<string, unknown> }) {
+  return (
+    <footer className="border-t border-[var(--border)] py-6">
+      <div className="container flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
+        <span>© {new Date().getFullYear()} {String(site.name)}. همه حقوق محفوظ است.</span>
+        <div className="flex gap-5"><Link href="/projects">پروژه‌ها</Link><Link href="/contact">تماس با من</Link></div>
+      </div>
+    </footer>
+  );
+}

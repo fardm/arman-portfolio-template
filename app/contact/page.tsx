@@ -1,0 +1,3 @@
+import { getSite } from '@/lib/content';
+import { ContactForm } from '@/components/contact-form';
+export default function ContactPage() { const site = getSite(); return <section className="section"><div className="container grid max-w-5xl gap-14 md:grid-cols-2"><div><p className="eyebrow">شروع یک همکاری</p><h1 className="mt-2 text-5xl font-black">بیایید چیزی خوب بسازیم.</h1><p className="mt-6 text-lg text-[var(--muted)]">اگر ایده‌ای دارید یا می‌خواهید درباره یک پروژه صحبت کنیم، پیام بدهید.</p><a className="mt-8 inline-block text-[var(--primary)]" href={`mailto:${String(site.email)}`}>{String(site.email)}</a></div><ContactForm email={String(site.email)}/></div></section>; }

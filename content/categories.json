@@ -1,0 +1,6 @@
+[
+  { "name": "طراحی محصول", "slug": "product-design", "description": "طراحی تجربه و رابط کاربری", "parent": null, "sort": 1 },
+  { "name": "توسعه وب", "slug": "web-development", "description": "ساخت وب‌سایت و اپلیکیشن", "parent": null, "sort": 2 },
+  { "name": "رابط کاربری", "slug": "ui", "description": "طراحی رابط‌های دقیق و کاربردی", "parent": "product-design", "sort": 1 },
+  { "name": "فرانت‌اند", "slug": "frontend", "description": "توسعه سمت کاربر", "parent": "web-development", "sort": 1 }
+]

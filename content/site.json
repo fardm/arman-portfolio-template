@@ -1,0 +1,13 @@
+{
+  "name": "آرمان رضایی",
+  "title": "طراح محصول و توسعه‌دهنده وب",
+  "bio": "برای ساخت تجربه‌های دیجیتال ساده، سریع و ماندگار تلاش می‌کنم.",
+  "email": "hello@example.com",
+  "profileImage": "/media/profile.svg",
+  "socials": { "github": "https://github.com", "linkedin": "https://linkedin.com", "website": "" },
+  "seoTitle": "آرمان رضایی | طراح محصول و توسعه‌دهنده وب",
+  "seoDescription": "نمونه‌کارهای آرمان رضایی در طراحی محصول و توسعه وب.",
+  "ogImage": "/media/profile.svg",
+  "font": "Vazirmatn",
+  "theme": { "mode": "dark", "primary": "#b8f542", "background": "#0b111b", "foreground": "#f5f7fa", "muted": "#9ba6b5", "border": "#263243", "accent": "#8adcf0" }
+}
