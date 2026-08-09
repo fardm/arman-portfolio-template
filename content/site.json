@@ -4,10 +4,32 @@
   "bio": "برای ساخت تجربه‌های دیجیتال ساده، سریع و ماندگار تلاش می‌کنم.",
   "email": "hello@example.com",
   "profileImage": "/media/profile.svg",
-  "socials": { "github": "https://github.com", "linkedin": "https://linkedin.com", "website": "" },
+  "socials": {
+    "github": "https://github.com",
+    "linkedin": "https://linkedin.com",
+    "website": ""
+  },
+  "hero": {
+    "name": "آرمان رضایی",
+    "jobTitle": "طراح محصول و توسعه‌دهنده وب",
+    "about": "توسعه‌دهنده‌ای علاقه‌مند به ساخت محصولات دیجیتال ساده، کاربردی و خلاقانه. تمرکز اصلی روی توسعه وب، طراحی رابط کاربری و یادگیری مداوم تکنولوژی‌های جدید است. در کنار پروژه‌های شخصی، به توسعه ابزارهای متن‌باز و پیدا کردن راه‌حل‌های بهتر برای مسائل روزمره علاقه‌مندم.\n",
+    "profileImage": "/media/profile.jpg",
+    "github": "https://github.com",
+    "linkedin": "https://linkedin.com",
+    "instagram": "",
+    "telegram": ""
+  },
   "seoTitle": "آرمان رضایی | طراح محصول و توسعه‌دهنده وب",
   "seoDescription": "نمونه‌کارهای آرمان رضایی در طراحی محصول و توسعه وب.",
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
-  "theme": { "mode": "dark", "primary": "#b8f542", "background": "#0b111b", "foreground": "#f5f7fa", "muted": "#9ba6b5", "border": "#263243", "accent": "#8adcf0" }
+  "theme": {
+    "mode": "dark",
+    "primary": "#b8f542",
+    "background": "#0b111b",
+    "foreground": "#f5f7fa",
+    "muted": "#9ba6b5",
+    "border": "#263243",
+    "accent": "#8adcf0"
+  }
 }

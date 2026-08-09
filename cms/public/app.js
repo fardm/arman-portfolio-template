@@ -54,6 +54,7 @@ function render() {
   if (currentView === 'theme') return renderTheme();
   if (currentView === 'publish') return renderPublish();
   if (currentView === 'project-edit') return renderProjectEdit();
+  if (currentView === 'hero') return renderHero();
 }
 
 function renderDashboard() {
@@ -430,3 +431,84 @@ async function startPublish() {
 
 function val(id) { return document.getElementById(id).value; }
 loadAll();
+
+// ─── Hero Section ───
+function renderHero() {
+  const h = site.hero || {};
+  content.innerHTML = `<h2>صفحه اصلی (Hero)</h2><p class="sub">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
+    <div class="card">
+      <div class="grid2">
+        <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
+        <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
+      </div>
+      <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
+      <label>تصویر پروفایل</label>
+      <div class="row">
+        <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
+        <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+      </div>
+      <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
+      <div id="h-image-picker" style="display:none;margin-top:12px">
+        <div class="row" style="margin-bottom:8px">
+          <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
+          <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
+        </div>
+        <div class="grid2" id="h-picker-grid"></div>
+      </div>
+      <hr>
+      <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
+      <div class="grid2">
+        <div><label>GitHub</label><input id="h-github" value="${h.github || ''}" placeholder="https://github.com/username"></div>
+        <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin || ''}" placeholder="https://linkedin.com/in/username"></div>
+        <div><label>Instagram</label><input id="h-instagram" value="${h.instagram || ''}" placeholder="https://instagram.com/username"></div>
+        <div><label>Telegram</label><input id="h-telegram" value="${h.telegram || ''}" placeholder="https://t.me/username"></div>
+      </div>
+      <div class="row" style="margin-top:20px"><button class="btn" onclick="saveHero()">ذخیره</button></div>
+    </div>`;
+}
+
+async function openHeroImagePicker() {
+  const picker = document.getElementById('h-image-picker');
+  if (picker.style.display === 'none') {
+    await loadMedia();
+    picker.style.display = 'block';
+    const grid = document.getElementById('h-picker-grid');
+    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
+    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+  } else {
+    picker.style.display = 'none';
+  }
+}
+
+function selectHeroImage(path) {
+  document.getElementById('h-profileImage').value = path;
+  document.getElementById('h-image-preview').innerHTML = `<img src="${path}" class="preview">`;
+  document.getElementById('h-image-picker').style.display = 'none';
+}
+
+async function uploadHeroImage() {
+  const file = document.getElementById('h-upload-file').files[0];
+  if (!file) return;
+  const buffer = await file.arrayBuffer();
+  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
+  await loadMedia();
+  const grid = document.getElementById('h-picker-grid');
+  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+  selectHeroImage(`/media/${file.name}`);
+}
+
+async function saveHero() {
+  site.hero = {
+    name: val('h-name'),
+    jobTitle: val('h-jobTitle'),
+    about: val('h-about'),
+    profileImage: val('h-profileImage'),
+    github: val('h-github'),
+    linkedin: val('h-linkedin'),
+    instagram: val('h-instagram'),
+    telegram: val('h-telegram'),
+  };
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+  show('hero');
+}

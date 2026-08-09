@@ -38,3 +38,107 @@ a { color:inherit; text-decoration:none; }
 :root[data-theme="light"] .theme-toggle .icon-sun { display:block; }
 :root[data-theme="light"] .theme-toggle .icon-moon { display:none; }
 @media (max-width:640px) { .container { width:min(100% - 28px, 1120px); } .section { padding-block:60px; } }
+
+/* ─── Hero Section ─── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.hero-about-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  justify-content: center;
+}
+.hero-about-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--foreground);
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+.hero-about-title svg { color: var(--primary); }
+.hero-about-text {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 2;
+  text-align: right;
+}
+.hero-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.hero-avatar-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+.hero-avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  opacity: 0.15;
+}
+.hero-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  display: block;
+}
+.hero-name {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.hero-job-title {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 0;
+}
+.hero-socials {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+.hero-social-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-profile { order: -1; }
+}
