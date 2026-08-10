@@ -12,18 +12,54 @@ function renderMarkdown(markdown: string) {
   });
 }
 
-function youtubeEmbedId(url: string): string {
+function parseVideoUrl(url: string, title: string) {
+  if (!url) return null;
+
+  // Direct MP4
+  if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
+    return (
+      <video
+        src={url}
+        title={`ویدیوی ${title}`}
+        controls
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+      />
+    );
+  }
+
+  // YouTube
+  let youtubeId = '';
   try {
     const parsed = new URL(url);
-    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1);
-    if (parsed.hostname.includes('youtube.com')) {
-      if (parsed.pathname.startsWith('/embed/')) return parsed.pathname.slice(8);
-      if (parsed.pathname.startsWith('/shorts/')) return parsed.pathname.slice(8);
-      if (parsed.searchParams.get('v')) return parsed.searchParams.get('v') || '';
+    if (parsed.hostname === 'youtu.be') youtubeId = parsed.pathname.slice(1);
+    else if (parsed.hostname.includes('youtube.com')) {
+      if (parsed.pathname.startsWith('/embed/')) youtubeId = parsed.pathname.slice(8);
+      else if (parsed.pathname.startsWith('/shorts/')) youtubeId = parsed.pathname.slice(8);
+      else if (parsed.searchParams.get('v')) youtubeId = parsed.searchParams.get('v') || '';
     }
   } catch {}
-  const direct = url.match(/^[a-zA-Z0-9_-]{11}$/);
-  return direct ? url : '';
+  if (!youtubeId && url.match(/^[a-zA-Z0-9_-]{11}$/)) youtubeId = url;
+
+  if (youtubeId) {
+    return (
+      <iframe
+        title={`ویدیوی ${title}`}
+        src={`https://www.youtube.com/embed/${youtubeId}`}
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+        allowFullScreen
+      />
+    );
+  }
+
+  // Other standard links (Aparat, Vimeo, custom embed)
+  return (
+    <iframe
+      title={`ویدیوی ${title}`}
+      src={url}
+      className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+      allowFullScreen
+    />
+  );
 }
 
 export function generateStaticParams() {
@@ -37,21 +73,14 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   const projects = getProjects();
   const index = projects.findIndex((item) => item.slug === project.slug);
   const related = projects.filter((item) => item.slug !== project.slug && item.categories?.some((cat) => project.categories?.includes(cat))).slice(0, 2);
-  const youtubeId = project.videoMode === 'youtube' ? youtubeEmbedId(project.videoUrl || '') : '';
   return (
     <article className="section">
       <div className="container">
-        <Link href="/projects" className="text-sm text-[var(--primary)]">← بازگشت به پروژه‌ها</Link>
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
           <div>
-            <div className="mb-7 flex flex-wrap gap-2">
-              {(project.categories || []).map((slug) => <span className="tag" key={slug}>{categories.find((cat) => cat.slug === slug)?.name || slug}</span>)}
-            </div>
             <h1 className="text-5xl font-black leading-tight">{project.title}</h1>
-            <p className="mt-5 text-xl text-[var(--muted)]">{project.description}</p>
-            {project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="mt-10 w-full rounded-2xl border border-[var(--border)]" />}
-            {youtubeId && <iframe title={`ویدیوی ${project.title}`} src={`https://www.youtube.com/embed/${youtubeId}`} className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]" allowFullScreen />}
-            {project.videoMode === 'embed' && project.videoUrl && <iframe title={`ویدیوی ${project.title}`} src={project.videoUrl} className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]" allowFullScreen />}
+            {project.template !== 'video' && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="mt-10 w-full rounded-2xl border border-[var(--border)]" />}
+            {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.title)}
             <div className="prose mt-10">{renderMarkdown(project.content)}</div>
           </div>
           <aside className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">

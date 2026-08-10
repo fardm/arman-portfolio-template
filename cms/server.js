@@ -30,7 +30,7 @@ function projectToMarkdown(data) {
     role: data.role || '',
     technologies: data.technologies || [],
     categories: data.categories || [],
-    videoMode: data.videoMode || 'none',
+    template: data.template || 'image',
     videoUrl: data.videoUrl || '',
   };
   return matter.stringify(data.content || '', fm);

@@ -85,14 +85,26 @@ function renderProjects() {
     <div style="margin-top:16px">${projects.map((p) => `<div class="list-item"><div><strong>${p.title || ''}</strong></div><div class="row"><button class="btn sec" onclick="editProject('${p.slug}')">ویرایش</button><button class="btn sec" onclick="duplicateProject('${p.slug}')">کپی</button><button class="btn danger" onclick="deleteProject('${p.slug}')">حذف</button></div></div>`).join('')}</div>`;
 }
 
-function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', role: '', technologies: [], categories: [], videoMode: 'none', videoUrl: '' }; currentView = 'project-edit'; render(); }
+function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', role: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; currentView = 'project-edit'; render(); }
 function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); currentView = 'project-edit'; render(); }
 async function duplicateProject(slug) { const p = projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 
 function renderProjectEdit() {
   const p = editingProject;
-  const catCheckboxes = categories.map((c) => `<label style="display:inline-flex;align-items:center;gap:6px;margin-inline-end:12px"><input type="checkbox" ${p.categories.includes(c.slug) ? 'checked' : ''} onchange="toggleCat('${c.slug}', this.checked)"> ${c.name}</label>`).join('');
+
+  const selectedCats = categories.filter(c => p.categories.includes(c.slug));
+  const unselectedCats = categories.filter(c => !p.categories.includes(c.slug));
+
+  const catsHtml = `
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+      ${selectedCats.map(c => `<span class="tag">${c.name} <span style="cursor:pointer;color:#ef4444;margin-inline-start:4px" onclick="toggleCat('${c.slug}', false)">×</span></span>`).join('')}
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      ${unselectedCats.map(c => `<button class="btn sec" style="padding:4px 8px;font-size:0.8rem" onclick="toggleCat('${c.slug}', true)">+ ${c.name}</button>`).join('')}
+    </div>
+  `;
+
   content.innerHTML = `<h2>${p.slug ? 'ویرایش پروژه' : 'پروژه جدید'}</h2>
     <div class="card">
       <div class="grid2">
@@ -100,20 +112,13 @@ function renderProjectEdit() {
         <div><label>شناسه (slug)</label><input id="f-slug" value="${p.slug || ''}"></div>
       </div>
       <label>توضیح کوتاه</label><input id="f-description" value="${p.description || ''}">
-      <label>تصویر کاور</label>
+      <label>تصویر بند انگشتی (Thumbnail)</label>
       <div class="row">
         <input id="f-cover" value="${p.cover || ''}" style="flex:1">
-        <button class="btn sec" onclick="openCoverPicker()">انتخاب از رسانه</button>
+        <button class="btn sec" onclick="openCoverPickerModal()">انتخاب از رسانه</button>
       </div>
       <div id="cover-preview" style="margin-top:8px">${p.cover ? `<img src="${p.cover}" class="preview">` : ''}</div>
-      <div id="cover-picker" style="display:none;margin-top:12px">
-        <div class="row" style="margin-bottom:8px">
-          <input type="file" id="cover-upload-file" accept="image/*" style="flex:1">
-          <button class="btn" onclick="uploadCoverFromPicker()">آپلود و انتخاب</button>
-        </div>
-        <div class="grid2" id="cover-picker-grid"></div>
-      </div>
-      <div class="grid2">
+      <div class="grid2" style="margin-top:12px">
         <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
         <div><label>مشتری</label><input id="f-client" value="${p.client || ''}"></div>
       </div>
@@ -121,41 +126,56 @@ function renderProjectEdit() {
         <div><label>نقش</label><input id="f-role" value="${p.role || ''}"></div>
         <div><label>فناوری‌ها (با کاما)</label><input id="f-tech" value="${(p.technologies || []).join(', ')}"></div>
       </div>
-      <label>دسته‌ها</label><div>${catCheckboxes}</div>
-      <div class="grid2">
-        <div><label>حالت ویدیو</label><select id="f-videoMode"><option value="none" ${p.videoMode === 'none' ? 'selected' : ''}>بدون ویدیو</option><option value="youtube" ${p.videoMode === 'youtube' ? 'selected' : ''}>یوتیوب</option><option value="embed" ${p.videoMode === 'embed' ? 'selected' : ''}>کد امبد</option></select></div>
-        <div><label>آدرس/کد ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}"></div>
+      <label>دسته‌ها</label><div>${catsHtml}</div>
+      <div class="grid2" style="margin-top:12px">
+        <div><label>قالب پروژه</label><select id="f-template" onchange="onTemplateChange(this.value)"><option value="image" ${p.template !== 'video' ? 'selected' : ''}>تصویری</option><option value="video" ${p.template === 'video' ? 'selected' : ''}>ویدئویی</option></select></div>
+        ${p.template === 'video' ? `<div><label>لینک ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}" onchange="editingProject.videoUrl=this.value"></div>` : '<div></div>'}
       </div>
       <label>محتوای کامل (Markdown)</label><textarea id="f-content" style="min-height:200px">${p.content || ''}</textarea>
       <div class="row" style="margin-top:16px"><button class="btn" onclick="saveProject()">ذخیره</button><button class="btn sec" onclick="show('projects')">انصراف</button></div>
     </div>`;
 }
 
-async function openCoverPicker() {
-  const picker = document.getElementById('cover-picker');
-  if (picker.style.display === 'none') {
-    await loadMedia();
-    picker.style.display = 'block';
-    renderCoverPickerGrid();
-  } else {
-    picker.style.display = 'none';
-  }
-}
+async function openCoverPickerModal() {
+  await loadMedia();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'cover-modal';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
 
-function renderCoverPickerGrid() {
-  const grid = document.getElementById('cover-picker-grid');
-  if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
-  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+  const gridHtml = media.length ? media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+
+  overlay.innerHTML = `
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('cover-modal').remove()">بستن ×</button>
+      <h3 style="margin-bottom:16px">انتخاب تصویر بند انگشتی</h3>
+      <div class="row" style="margin-bottom:16px">
+        <input type="file" id="modal-upload-file" accept="image/*" style="flex:1">
+        <button class="btn" onclick="uploadCoverFromModal()">آپلود و انتخاب</button>
+      </div>
+      <div class="grid2" id="modal-media-grid">
+        ${gridHtml}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
 }
 
 function selectCover(path) {
-  document.getElementById('f-cover').value = path;
-  document.getElementById('cover-preview').innerHTML = `<img src="${path}" class="preview">`;
-  document.getElementById('cover-picker').style.display = 'none';
+  const fCover = document.getElementById('f-cover');
+  if(fCover) {
+    fCover.value = path;
+    editingProject.cover = path;
+  }
+  const preview = document.getElementById('cover-preview');
+  if(preview) preview.innerHTML = `<img src="${path}" class="preview">`;
+
+  const modal = document.getElementById('cover-modal');
+  if (modal) modal.remove();
 }
 
-async function uploadCoverFromPicker() {
-  const file = document.getElementById('cover-upload-file').files[0];
+async function uploadCoverFromModal() {
+  const file = document.getElementById('modal-upload-file').files[0];
   if (!file) return;
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
@@ -164,15 +184,42 @@ async function uploadCoverFromPicker() {
   selectCover(`/media/${file.name}`);
 }
 
-function toggleCat(slug, checked) { if (checked) editingProject.categories.push(slug); else editingProject.categories = editingProject.categories.filter((c) => c !== slug); }
+function syncEditingProject() {
+  editingProject.title = val('f-title');
+  editingProject.slug = val('f-slug');
+  editingProject.description = val('f-description');
+  editingProject.cover = val('f-cover');
+  editingProject.year = val('f-year');
+  editingProject.client = val('f-client');
+  editingProject.role = val('f-role');
+  editingProject.technologies = val('f-tech').split(',').map((t) => t.trim()).filter(Boolean);
+  editingProject.content = val('f-content');
+  const videoUrlEl = document.getElementById('f-videoUrl');
+  if (videoUrlEl) editingProject.videoUrl = videoUrlEl.value;
+}
+
+function toggleCat(slug, checked) {
+  syncEditingProject();
+  if (checked) editingProject.categories.push(slug);
+  else editingProject.categories = editingProject.categories.filter((c) => c !== slug);
+  renderProjectEdit();
+}
+
+function onTemplateChange(value) {
+  syncEditingProject();
+  editingProject.template = value;
+  renderProjectEdit();
+}
 
 async function saveProject() {
+  const videoUrlEl = document.getElementById('f-videoUrl');
   const data = {
     ...editingProject,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
     year: val('f-year'), client: val('f-client'), role: val('f-role'),
     technologies: val('f-tech').split(',').map((t) => t.trim()).filter(Boolean),
-    videoMode: val('f-videoMode'), videoUrl: val('f-videoUrl'),
+    template: val('f-template'),
+    videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
     content: val('f-content'),
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });

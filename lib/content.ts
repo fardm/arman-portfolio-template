@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 
-export type Project = { title: string; slug: string; description: string; cover?: string; year?: string; client?: string; role?: string; technologies?: string[]; categories?: string[]; videoMode?: 'youtube' | 'embed' | 'none'; videoUrl?: string; content: string };
+export type Project = { title: string; slug: string; description: string; cover?: string; year?: string; client?: string; role?: string; technologies?: string[]; categories?: string[]; template?: 'image' | 'video'; videoUrl?: string; content: string };
 export type Category = { name: string; slug: string; description?: string; parent: string | null; sort: number };
 const root = process.cwd();
 const readJson = <T,>(file: string): T => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8')) as T;
