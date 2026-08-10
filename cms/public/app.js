@@ -729,6 +729,18 @@ async function uploadFavicon() {
 }
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
+async function saveTheme() {
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+  applyTheme();
+
+  const btn = document.querySelector('button[onclick="saveTheme()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
+}
 
 function renderTheme() {
   const t = site.theme || { primary: '#b8f542', isCustom: false };
@@ -743,27 +755,28 @@ function renderTheme() {
         <h2 style="margin-bottom:4px">پوسته و رنگ‌بندی</h2>
         <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند.</p>
       </div>
-      <button class="btn" onclick="saveTheme()">ذخیره تغییرات</button>
     </div>
 
-    <div class="card" style="padding:24px; max-width:1000px">
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">رنگ اصلی (Primary)</label>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-          <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
-        </div>
-      </div>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">رنگ اصلی (Primary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+              <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
 
-      <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
-        <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
-        <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
-      </div>
+          <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
+            <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
+            <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
+          </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity: ${isCustom ? '1' : '0.6'}; pointer-events: ${isCustom ? 'auto' : 'none'}">
-        <!-- Dark Mode -->
-        <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
-          <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity: ${isCustom ? '1' : '0.6'}; pointer-events: ${isCustom ? 'auto' : 'none'}">
+            <!-- Dark Mode -->
+            <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
+              <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
 
           <div style="margin-bottom:12px">
             <label style="margin:0 0 4px 0; color:#9ba6b5">پس‌زمینه (Background)</label>
@@ -851,6 +864,15 @@ function renderTheme() {
           </div>
         </div>
       </div>
+      </div>
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveTheme()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="resetTheme()" style="flex:1; justify-content:center">بازنشانی پیش‌فرض</button>
+          </div>
+        </div>
+      </aside>
     </div>`;
 }
 
@@ -894,11 +916,11 @@ function syncCustomColors() {
     };
 }
 
-function resetTheme() {
+async function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
   const def = generateThemeColors('#b8f542');
   site.theme = { primary: '#b8f542', isCustom: false, ...def };
-  saveTheme();
+  await saveTheme();
 }
 
 function renderFont() {
@@ -1053,27 +1075,38 @@ function renderTypography() {
         <h2 style="margin-bottom:4px">تایپوگرافی</h2>
         <p class="sub" style="margin-bottom:0">نحوه استفاده از فونت‌های سایت را تعیین کنید.</p>
       </div>
-      <button class="btn" onclick="saveTypography()">ذخیره تغییرات</button>
     </div>
 
-    <div class="card" style="padding:24px; max-width:600px">
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">فونت متن سایت</label>
-        <select id="typo-body">
-          <option value="">(پیش‌فرض سیستم)</option>
-          ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-          <option value="_add">+ افزودن فونت</option>
-        </select>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">فونت متن سایت</label>
+            <select id="typo-body">
+              <option value="">(پیش‌فرض سیستم)</option>
+              ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+              <option value="_add">+ افزودن فونت</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">فونت تیترها</label>
+            <select id="typo-heading">
+              <option value="">(همان فونت متن)</option>
+              ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+              <option value="_add">+ افزودن فونت</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">فونت تیترها</label>
-        <select id="typo-heading">
-          <option value="">(همان فونت متن)</option>
-          ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-          <option value="_add">+ افزودن فونت</option>
-        </select>
-      </div>
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveTypography()" style="flex:1; justify-content:center">ذخیره</button>
+          </div>
+        </div>
+      </aside>
     </div>
   `;
 
@@ -1094,7 +1127,14 @@ async function saveTypography() {
         headingFont: headingFont === '_add' ? '' : headingFont
     };
 
+    if (site.typography.bodyFont) {
+        site.font = site.typography.bodyFont;
+    } else {
+        site.font = 'Tahoma';
+    }
+
     await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+    applyTheme();
 
     const btn = document.querySelector('button[onclick="saveTypography()"]');
     if (btn) {
@@ -1134,6 +1174,90 @@ async function renderMedia() {
       `).join('')}
     </div>
   `;
+}
+
+function renderHero() {
+  const h = site.hero || {};
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">صفحه اصلی (Hero)</h2>
+        <p class="sub" style="margin-bottom:0">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div class="grid2">
+            <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
+            <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
+          </div>
+          <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
+          <label>تصویر پروفایل</label>
+          <div class="row">
+            <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
+            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+          </div>
+          <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
+          <div id="h-image-picker" style="display:none;margin-top:12px">
+            <div class="row" style="margin-bottom:8px">
+              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
+              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
+            </div>
+            <div class="grid2" id="h-picker-grid"></div>
+          </div>
+          <hr>
+          <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
+          <div class="grid2">
+            <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
+            <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
+            <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
+            <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
+            <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
+            <div><label>Twitter (X)</label><input id="h-twitter" value="${h.twitter ?? ''}" placeholder="https://twitter.com/username"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveHero()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="cancelHero()" style="flex:1; justify-content:center">انصراف</button>
+          </div>
+        </div>
+      </aside>
+    </div>`;
+}
+
+async function cancelHero() {
+  await loadAll();
+  renderHero();
+}
+
+async function saveHero() {
+  site.hero = {
+    name: val('h-name'),
+    jobTitle: val('h-jobTitle'),
+    about: val('h-about'),
+    profileImage: val('h-profileImage'),
+    github: val('h-github'),
+    linkedin: val('h-linkedin'),
+    instagram: val('h-instagram'),
+    telegram: val('h-telegram'),
+    youtube: val('h-youtube'),
+    twitter: val('h-twitter')
+  };
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+
+  const btn = document.querySelector('button[onclick="saveHero()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
 }
 async function uploadMedia() { const file = document.getElementById('media-upload').files[0]; if (!file) return; const buffer = await file.arrayBuffer(); await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer }); renderMedia(); }
 async function deleteMedia(p) { if(confirm('این فایل حذف شود؟')) { await api('/api/media', { method: 'DELETE', body: JSON.stringify({ path: p }), headers: { 'Content-Type': 'application/json' } }); renderMedia(); } }
@@ -1237,41 +1361,6 @@ function val(id) { return document.getElementById(id).value; }
 loadAll();
 
 // ─── Hero Section ───
-function renderHero() {
-  const h = site.hero || {};
-  content.innerHTML = `<h2>صفحه اصلی (Hero)</h2><p class="sub">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
-    <div class="card">
-      <div class="grid2">
-        <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
-        <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
-      </div>
-      <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
-      <label>تصویر پروفایل</label>
-      <div class="row">
-        <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
-        <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
-      </div>
-      <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
-      <div id="h-image-picker" style="display:none;margin-top:12px">
-        <div class="row" style="margin-bottom:8px">
-          <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
-          <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
-        </div>
-        <div class="grid2" id="h-picker-grid"></div>
-      </div>
-      <hr>
-      <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
-      <div class="grid2">
-        <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
-        <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
-        <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
-        <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
-        <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
-      </div>
-      <div class="row" style="margin-top:20px"><button class="btn" onclick="saveHero()">ذخیره</button></div>
-    </div>`;
-}
-
 async function openHeroImagePicker() {
   const picker = document.getElementById('h-image-picker');
   if (picker.style.display === 'none') {

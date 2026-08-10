@@ -105,12 +105,17 @@ export default function ResumePage() {
             {links.length > 0 && (
               <>
                 <h2 className="mb-6 text-2xl font-bold">لینک‌ها</h2>
-                <div className="flex flex-wrap gap-4 mb-12">
+                <div className="flex flex-col gap-3 mb-12">
                   {links.map((link) => (
                     <a key={link.label} href={link.link} target="_blank" rel="noopener noreferrer"
-                       className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] shadow-sm hover:text-[var(--primary)] hover:border-[var(--primary)] transition-colors"
-                       title={link.label}>
-                      {link.icon}
+                       className="flex items-center gap-4 border border-[var(--border)] rounded-xl p-4 bg-[var(--card)] shadow-sm hover:border-[var(--primary)] transition-colors group">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
+                        {link.icon}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-[var(--muted)] mb-1 font-medium">{link.label}</span>
+                        <strong className="text-[var(--foreground)] text-sm font-bold group-hover:text-[var(--primary)] transition-colors" style={{direction: 'ltr', textAlign: 'right'}}>{link.value}</strong>
+                      </div>
                     </a>
                   ))}
                 </div>
