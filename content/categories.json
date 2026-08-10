@@ -1,6 +1,56 @@
 [
-  { "name": "طراحی محصول", "slug": "product-design", "description": "طراحی تجربه و رابط کاربری", "parent": null, "sort": 1 },
-  { "name": "توسعه وب", "slug": "web-development", "description": "ساخت وب‌سایت و اپلیکیشن", "parent": null, "sort": 2 },
-  { "name": "رابط کاربری", "slug": "ui", "description": "طراحی رابط‌های دقیق و کاربردی", "parent": "product-design", "sort": 1 },
-  { "name": "فرانت‌اند", "slug": "frontend", "description": "توسعه سمت کاربر", "parent": "web-development", "sort": 1 }
+  {
+    "name": "ویدئو",
+    "slug": "video",
+    "parent": null,
+    "sort": 1
+  },
+  {
+    "name": "موشن",
+    "slug": "motion",
+    "parent": null,
+    "sort": 2
+  },
+  {
+    "name": "تصویربرداری",
+    "slug": "Photography",
+    "parent": null,
+    "sort": 3
+  },
+  {
+    "name": "لوگو موشن",
+    "slug": "Logo-Animation",
+    "parent": "motion",
+    "sort": 4
+  },
+  {
+    "name": "تایپوگرافی",
+    "slug": "Typography",
+    "parent": "motion",
+    "sort": 5
+  },
+  {
+    "name": "پرتره",
+    "slug": "Portrait",
+    "parent": "Photography",
+    "sort": 6
+  },
+  {
+    "name": "محصول",
+    "slug": "Product",
+    "parent": "Photography",
+    "sort": 7
+  },
+  {
+    "name": "سوشال مدیا",
+    "slug": "Social-Media",
+    "parent": "video",
+    "sort": 8
+  },
+  {
+    "name": "یوتیوب",
+    "slug": "youtube",
+    "parent": "video",
+    "sort": 9
+  }
 ]

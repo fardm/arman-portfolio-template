@@ -19,8 +19,8 @@
     "instagram": "https://instagram.com/user",
     "telegram": "https://t.meuser"
   },
-  "seoTitle": "آرمان رضایی | طراح محصول و توسعه‌دهنده وب",
-  "seoDescription": "نمونه‌کارهای آرمان رضایی در طراحی محصول و توسعه وب.",
+  "seoTitle": "آرمان رضایی | ادیتور و فیلم بردار",
+  "seoDescription": "نمونه‌کارهای آرمان رضایی در ادیت و فیلم برداری",
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
   "theme": {
@@ -32,5 +32,16 @@
     "border": "#263243",
     "accent": "#8adcf0"
   },
-  "favicon": "/media/profile.jpg"
+  "favicon": "/media/profile.jpg",
+  "fonts": [
+    {
+      "source": "google",
+      "name": "Vazirmatn",
+      "googleFamily": "Vazirmatn"
+    }
+  ],
+  "typography": {
+    "bodyFont": "Vazirmatn",
+    "headingFont": "Vazirmatn"
+  }
 }
