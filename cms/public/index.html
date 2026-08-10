@@ -54,12 +54,15 @@ function applyTheme() {
     .then(site => {
       const t = site.theme || {};
       const root = document.documentElement;
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const c = isLight ? (t.light || {}) : (t.dark || {});
+
       if (t.primary) root.style.setProperty('--primary', t.primary);
-      if (t.background) { root.style.setProperty('--background', t.background); document.body.style.background = t.background; }
-      if (t.foreground) { root.style.setProperty('--foreground', t.foreground); document.body.style.color = t.foreground; }
-      if (t.muted) root.style.setProperty('--muted', t.muted);
-      if (t.border) root.style.setProperty('--border', t.border);
-      if (t.accent) root.style.setProperty('--accent', t.accent);
+      if (c.background) { root.style.setProperty('--background', c.background); document.body.style.background = c.background; }
+      if (c.foreground) { root.style.setProperty('--foreground', c.foreground); document.body.style.color = c.foreground; }
+      if (c.muted) root.style.setProperty('--muted', c.muted);
+      if (c.border) root.style.setProperty('--border', c.border);
+      if (c.accent) root.style.setProperty('--accent', c.accent);
 
       const fc = typeof site.font === 'string' && site.font.startsWith('{') ? JSON.parse(site.font) : { name: site.font || 'Tahoma' };
       if (fc.name) document.body.style.fontFamily = fc.name + ', Tahoma, Arial, sans-serif';
@@ -69,17 +72,8 @@ document.addEventListener("DOMContentLoaded", applyTheme);
 </script>
 </head><body><div class="app">
 <aside class="sidebar"><h1>پنل مدیریت</h1>
-<div class="nav-group open" id="group-pages">
-  <button class="nav-group-toggle" onclick="toggleGroup('pages')">
-    <span class="nav-group-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> برگه‌ها</span>
-    <svg class="nav-group-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-  </button>
-  <div class="nav-group-children">
-    <button class="nav-child active" id="nav-hero" onclick="show('hero')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> صفحه اصلی</button>
-    <button class="nav-child" id="nav-resume" onclick="show('resume')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> رزومه</button>
-  </div>
-</div>
-<button class="nav-item" onclick="show('projects')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> پروژه‌ها</button>
+<button class="nav-item active" id="nav-pages" onclick="show('pages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> برگه‌ها</button>
+<button class="nav-item" id="nav-menu" onclick="show('menu')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> منوی سایت</button>
 <button class="nav-item" onclick="show('categories')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg> دسته‌ها</button>
 <button class="nav-item" onclick="show('media')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> رسانه</button>
 <div class="nav-group" id="group-settings">

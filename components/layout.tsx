@@ -1,15 +1,23 @@
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
+import { getMenu } from '@/lib/content';
 
 export function Header({ site }: { site: Record<string, unknown> }) {
+  const menu = getMenu();
+  const menuItems = menu.length > 0 ? menu : [
+    { label: 'خانه', href: '/' },
+    { label: 'پروژه‌ها', href: '/projects' },
+    { label: 'رزومه', href: '/resume' },
+  ];
+
   return (
     <header className="border-b border-[var(--border)]">
       <div className="container flex items-center justify-between py-5">
         <Link href="/" className="text-lg font-black">{String(site.name)}</Link>
         <nav aria-label="ناوبری اصلی" className="hidden gap-7 text-sm text-[var(--muted)] sm:flex">
-          <Link href="/">خانه</Link>
-          <Link href="/projects">پروژه‌ها</Link>
-          <Link href="/resume">رزومه</Link>
+          {menuItems.map((item, i) => (
+            <Link key={i} href={item.href}>{item.label}</Link>
+          ))}
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />

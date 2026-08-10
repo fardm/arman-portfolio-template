@@ -67,7 +67,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="fa" dir="rtl" data-theme="dark" suppressHydrationWarning>
       <head>
-        <style dangerouslySetInnerHTML={{ __html: `:root{--primary:${theme.primary};--background:${theme.background};--foreground:${theme.foreground};--muted:${theme.muted};--border:${theme.border};--accent:${theme.accent};--font-heading:${headingFont};}` }} />
+        <style dangerouslySetInnerHTML={{ __html: `
+        :root{--primary:${theme.primary || '#b8f542'};--background:${(theme.dark as any)?.background || '#0b111b'};--foreground:${(theme.dark as any)?.foreground || '#f5f7fa'};--muted:${(theme.dark as any)?.muted || '#9ba6b5'};--border:${(theme.dark as any)?.border || '#263243'};--accent:${(theme.dark as any)?.accent || '#8adcf0'};--font-heading:${headingFont};}
+        :root[data-theme="light"]{--primary:${theme.primary || '#1e4431'};--background:${(theme.light as any)?.background || '#f4f6f5'};--foreground:${(theme.light as any)?.foreground || '#1a2530'};--muted:${(theme.light as any)?.muted || '#5b6b78'};--border:${(theme.light as any)?.border || '#d4dde0'};--accent:${(theme.light as any)?.accent || '#2a7a9b'};}
+        ` }} />
         {headTags}
         <script dangerouslySetInnerHTML={{ __html: noFlash }} />
       </head>

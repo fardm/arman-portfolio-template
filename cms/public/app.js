@@ -47,33 +47,34 @@ function hslToHex(h, s, l) {
     return '#' + toHex(r) + toHex(g) + toHex(b);
 }
 
-function generateThemeColors(primaryHex, mode) {
+function generateThemeColors(primaryHex) {
     const [h, s, l] = hexToHsl(primaryHex);
     const bgS = Math.min(s, 20);
-    if (mode === 'light') {
-        return {
-            primary: primaryHex,
+    return {
+        primary: primaryHex,
+        light: {
             background: hslToHex(h, bgS, 98),
             foreground: hslToHex(h, bgS, 15),
             muted: hslToHex(h, bgS, 40),
             border: hslToHex(h, bgS, 85),
             accent: hslToHex(h, s, Math.max(0, l - 20))
-        };
-    } else {
-        return {
-            primary: primaryHex,
+        },
+        dark: {
             background: hslToHex(h, bgS, 6),
             foreground: hslToHex(h, bgS, 95),
             muted: hslToHex(h, bgS, 60),
             border: hslToHex(h, bgS, 15),
             accent: hslToHex(h, s, Math.min(100, l + 20))
-        };
-    }
+        }
+    };
 }
 
 const api = (path, opts) => fetch(path, opts).then((r) => r.json());
-let currentView = 'hero';
+let currentView = 'pages';
 let projects = [];
+let pagesList = [];
+let siteMenu = [];
+let editingPage = null;
 let categories = [];
 let site = {};
 let resume = {};
@@ -97,8 +98,8 @@ function parseFontConfig() {
 }
 
 async function loadAll() {
-  [site, categories, resume, projects] = await Promise.all([
-    api('/api/site'), api('/api/categories'), api('/api/resume'), api('/api/projects'),
+  [site, categories, resume, projects, pagesList, siteMenu] = await Promise.all([
+    api('/api/site'), api('/api/categories'), api('/api/resume'), api('/api/projects'), api('/api/pages').catch(()=>[]), api('/api/menu').catch(()=>[])
   ]);
   render();
 }
@@ -131,6 +132,9 @@ function show(view) {
 
 function render() {
   if (currentView === 'dashboard') return renderDashboard();
+  if (currentView === 'pages') return renderPages();
+  if (currentView === 'menu') return renderMenu();
+  if (currentView === 'page-edit') return renderPageEdit();
   if (currentView === 'projects') return renderProjects();
   if (currentView === 'categories') return renderCategories();
   if (currentView === 'resume') return renderResume();
@@ -1212,5 +1216,177 @@ async function saveHero() {
     btn.innerHTML = 'ذخیره شد ✓';
     btn.classList.add('ok');
     setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
+}
+
+
+
+function renderPages() {
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">برگه‌ها</h2>
+        <p class="sub" style="margin-bottom:0">مدیریت صفحات سایت.</p>
+      </div>
+      <button class="btn" onclick="newPage()">+ ایجاد برگه جدید</button>
+    </div>
+
+    <div class="grid2">
+      <!-- System Pages -->
+      <div class="card" style="display:flex; flex-direction:column; padding:16px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <strong style="font-size:1.1rem">صفحه اصلی</strong>
+          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
+        </div>
+        <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت محتوای هیرو و شبکه‌های اجتماعی صفحه اول.</p>
+        <button class="btn sec" style="margin-top:auto" onclick="show('hero')">ویرایش صفحه اصلی</button>
+      </div>
+
+      <div class="card" style="display:flex; flex-direction:column; padding:16px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <strong style="font-size:1.1rem">رزومه</strong>
+          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
+        </div>
+        <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت سوابق شغلی، تحصیلی و اطلاعات تماس.</p>
+        <button class="btn sec" style="margin-top:auto" onclick="show('resume')">ویرایش رزومه</button>
+      </div>
+
+      <div class="card" style="display:flex; flex-direction:column; padding:16px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <strong style="font-size:1.1rem">پروژه‌ها</strong>
+          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
+        </div>
+        <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت پروژه‌ها و نمونه‌کارها.</p>
+        <button class="btn sec" style="margin-top:auto" onclick="show('projects')">ویرایش پروژه‌ها</button>
+      </div>
+
+      <!-- Normal Pages -->
+      ${pagesList.map((p) => `
+        <div class="card" style="display:flex; flex-direction:column; padding:16px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+            <strong style="font-size:1.1rem">${p.title || '(بدون عنوان)'}</strong>
+            <span class="tag" style="background:#17303b; color:#8adcf0">عادی</span>
+          </div>
+          <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">آدرس: /${p.slug}</p>
+          <div class="row" style="margin-top:auto">
+            <button class="btn sec" style="flex:1; justify-content:center" onclick="editPage('${p.slug}')">ویرایش</button>
+            <button class="btn danger" style="padding:10px" onclick="deletePage('${p.slug}')" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function newPage() { editingPage = { title: '', slug: '', content: '' }; currentView = 'page-edit'; render(); }
+function editPage(slug) { editingPage = pagesList.find((p) => p.slug === slug); currentView = 'page-edit'; render(); }
+async function deletePage(slug) { if (!confirm('حذف شود؟')) return; await api('/api/pages', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('pages'); }
+
+function renderPageEdit() {
+  const p = editingPage;
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">${p.slug ? 'ویرایش برگه' : 'ایجاد برگه جدید'}</h2>
+      </div>
+      <div class="row">
+        <button class="btn sec" onclick="show('pages')">انصراف</button>
+        <button class="btn" onclick="savePage()">ذخیره برگه</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:24px">
+      <div class="grid2" style="margin-bottom:16px">
+        <div><label style="margin-top:0">عنوان برگه</label><input id="p-title" value="${p.title || ''}"></div>
+        <div><label style="margin-top:0">شناسه (slug)</label><input id="p-slug" value="${p.slug || ''}" dir="ltr"></div>
+      </div>
+      <label>محتوای برگه (Markdown)</label>
+      <textarea id="p-content" style="min-height:400px">${p.content || ''}</textarea>
+    </div>
+  `;
+}
+
+async function savePage() {
+  const data = {
+    title: document.getElementById('p-title').value,
+    slug: document.getElementById('p-slug').value,
+    content: document.getElementById('p-content').value,
+  };
+  await api('/api/pages', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+  show('pages');
+}
+
+
+
+function renderMenu() {
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">منوی سایت</h2>
+        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
+      </div>
+      <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
+    </div>
+
+    <div id="menu-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px"></div>
+    <div style="margin-top:24px"><button class="btn" onclick="saveMenu()">ذخیره منو</button></div>
+  `;
+  renderMenuList();
+}
+
+function renderMenuList() {
+  const container = document.getElementById('menu-list');
+  if (!siteMenu.length) {
+    container.innerHTML = '<p style="color:#9ba6b5">منوی سایت خالی است.</p>';
+    return;
+  }
+  container.innerHTML = siteMenu.map((m, i) => `
+    <div class="card" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center">
+      <div style="flex:1">
+        <label style="margin-top:0">عنوان لینک</label>
+        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value" placeholder="مثال: درباره من">
+      </div>
+      <div style="flex:2">
+        <label style="margin-top:0">آدرس (URL)</label>
+        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about">
+      </div>
+      <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
+        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="بالا">↑</button>
+        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, 1)" ${i === siteMenu.length - 1 ? 'disabled' : ''} title="پایین">↓</button>
+        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addMenuItem() {
+  siteMenu.push({ label: 'لینک جدید', href: '/' });
+  renderMenuList();
+}
+
+function moveMenuItem(i, dir) {
+  if (i + dir < 0 || i + dir >= siteMenu.length) return;
+  const temp = siteMenu[i];
+  siteMenu[i] = siteMenu[i + dir];
+  siteMenu[i + dir] = temp;
+  renderMenuList();
+}
+
+function deleteMenuItem(i) {
+  if (!confirm('حذف شود؟')) return;
+  siteMenu.splice(i, 1);
+  renderMenuList();
+}
+
+async function saveMenu() {
+  await api('/api/menu', { method: 'POST', body: JSON.stringify(siteMenu), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+  const btn = document.querySelector('button[onclick="saveMenu()"]');
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('ok'); }, 2000);
   }
 }
