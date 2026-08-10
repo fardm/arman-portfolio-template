@@ -165,7 +165,20 @@ function renderProjectEdit() {
               <option value="image" ${p.template !== 'video' ? 'selected' : ''}>تصویری</option>
               <option value="video" ${p.template === 'video' ? 'selected' : ''}>ویدئویی</option>
             </select>
-            ${p.template === 'video' ? `<label>لینک ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}" onchange="editingProject.videoUrl=this.value">` : ''}
+            ${p.template === 'video' ? `
+              <label style="margin-top:12px">منبع ویدئو</label>
+              <select id="f-videoSource" onchange="onVideoSourceChange(this.value)">
+                <option value="host" ${p.videoSource === 'host' || !p.videoSource ? 'selected' : ''}>هاست شخصی (MP4)</option>
+                <option value="youtube" ${p.videoSource === 'youtube' ? 'selected' : ''}>یوتیوب</option>
+                <option value="aparat" ${p.videoSource === 'aparat' ? 'selected' : ''}>آپارات / iframe</option>
+                <option value="embed" ${p.videoSource === 'embed' ? 'selected' : ''}>کد امبد (Embed)</option>
+              </select>
+              ${p.videoSource === 'embed' ?
+                `<label style="margin-top:12px">کد امبد</label><textarea id="f-videoUrl" style="min-height:100px;font-family:monospace;direction:ltr;text-align:left" onchange="editingProject.videoUrl=this.value">${p.videoUrl || ''}</textarea>`
+                :
+                `<label style="margin-top:12px">لینک ویدئو</label><input id="f-videoUrl" style="direction:ltr;text-align:left" value="${p.videoUrl || ''}" onchange="editingProject.videoUrl=this.value">`
+              }
+            ` : ''}
           </div>
 
           <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
@@ -242,6 +255,8 @@ function syncEditingProject() {
   editingProject.year = val('f-year');
   editingProject.client = val('f-client');
   editingProject.content = val('f-content');
+  const videoSourceEl = document.getElementById('f-videoSource');
+  if (videoSourceEl) editingProject.videoSource = videoSourceEl.value;
   const videoUrlEl = document.getElementById('f-videoUrl');
   if (videoUrlEl) editingProject.videoUrl = videoUrlEl.value;
 }
@@ -259,13 +274,21 @@ function onTemplateChange(value) {
   renderProjectEdit();
 }
 
+function onVideoSourceChange(value) {
+  syncEditingProject();
+  editingProject.videoSource = value;
+  renderProjectEdit();
+}
+
 async function saveProject() {
+  const videoSourceEl = document.getElementById('f-videoSource');
   const videoUrlEl = document.getElementById('f-videoUrl');
   const data = {
     ...editingProject,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
     year: val('f-year'), client: val('f-client'),
     template: val('f-template'),
+    videoSource: videoSourceEl ? videoSourceEl.value : (editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
     content: val('f-content'),
   };
@@ -288,54 +311,180 @@ function renderCategories() {
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
         <p class="sub" style="margin-bottom:0">مدیریت دسته‌بندی‌های پروژه‌ها.</p>
       </div>
-      <button class="btn" onclick="addCat()">+ ایجاد دسته جدید</button>
+      <button class="btn" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     </div>
     <div class="grid2" id="cat-list"></div>`;
   renderCatList();
 }
+
 function renderCatList() {
   document.getElementById('cat-list').innerHTML = categories.map((c, i) => `
-  <div class="card" style="padding:16px">
-    <div style="margin-bottom:12px">
-      <label style="margin-top:0">نام نمایشی</label>
-      <input value="${c.name}" onchange="categories[${i}].name=this.value; saveCategories()" placeholder="مثال: طراحی وب">
+    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center">
+      <div>
+        <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'}</strong>
+        <span style="color:#9ba6b5; font-size:0.85rem">slug: ${c.slug}</span>
+      </div>
+      <div style="display:flex; gap:8px">
+        <button class="btn sec" style="padding:8px" onclick="openCatModal(${i})" title="ویرایش">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </button>
+        <button class="btn danger" style="padding:8px" onclick="deleteCat(${i})" title="حذف">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
     </div>
-    <div style="margin-bottom:12px">
-      <label style="margin-top:0">شناسه (slug)</label>
-      <input value="${c.slug}" onchange="categories[${i}].slug=this.value; saveCategories()" placeholder="مثال: web-design">
-    </div>
-    <div style="margin-bottom:16px">
-      <label style="margin-top:0">دسته والد</label>
-      <select onchange="categories[${i}].parent=this.value||null; saveCategories()">
-        <option value="">بدون والد (دسته اصلی)</option>
-        ${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}
-      </select>
-    </div>
-    <button class="btn danger" style="width:100%; justify-content:center" onclick="deleteCat(${i})">حذف دسته</button>
-  </div>`).join('');
+  `).join('');
 }
-function addCat() { categories.push({ name: '', slug: 'new-' + Date.now(), description: '', parent: null, sort: categories.length + 1 }); renderCatList(); saveCategories(); }
+
+function openCatModal(index = -1) {
+  const isEdit = index >= 0;
+  const c = isEdit ? categories[index] : { name: '', slug: '', parent: null };
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'cat-modal';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:500px">
+      <button class="modal-close" onclick="document.getElementById('cat-modal').remove()">بستن ×</button>
+      <h3 style="margin-bottom:16px">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
+
+      <div style="margin-bottom:12px">
+        <label style="margin-top:0">نام نمایشی</label>
+        <input id="cat-name-input" value="${c.name}" placeholder="مثال: طراحی وب">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="margin-top:0">شناسه (slug)</label>
+        <input id="cat-slug-input" value="${c.slug}" placeholder="مثال: web-design">
+      </div>
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">دسته والد</label>
+        <select id="cat-parent-input">
+          <option value="">بدون والد (دسته اصلی)</option>
+          ${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="row">
+        <button class="btn" style="flex:1; justify-content:center" onclick="saveCatModal(${index})">ذخیره</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function saveCatModal(index) {
+  const name = document.getElementById('cat-name-input').value;
+  const slug = document.getElementById('cat-slug-input').value;
+  const parent = document.getElementById('cat-parent-input').value || null;
+
+  if (!slug) return alert('شناسه (slug) الزامی است.');
+
+  if (index >= 0) {
+    categories[index] = { ...categories[index], name, slug, parent };
+  } else {
+    categories.push({ name, slug, parent, sort: categories.length + 1 });
+  }
+
+  document.getElementById('cat-modal').remove();
+  renderCatList();
+  saveCategories();
+}
+
 function deleteCat(i) { if(confirm('حذف شود؟')) { categories.splice(i,1); renderCatList(); saveCategories(); } }
 async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } }); }
 
 function renderResume() {
-  content.innerHTML = `<h2>رزومه</h2><p class="sub">اطلاعات رزومه ویرایش و ذخیره می‌شود.</p>
-    <div class="card">
-      <label>خلاصه</label><textarea id="r-summary">${resume.summary || ''}</textarea>
-      <h3 style="margin-top:16px">تجربه‌ها</h3><div id="r-exp"></div><button class="btn sec" onclick="addExp()">+ تجربه</button>
-      <h3 style="margin-top:16px">تحصیلات</h3><div id="r-edu"></div><button class="btn sec" onclick="addEdu()">+ تحصیل</button>
-      <label style="margin-top:16px">مهارت‌ها (کاما)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}">
-      <label>ابزارها (کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}">
-      <label>زبان‌ها (کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}">
-      <div style="margin-top:16px"><button class="btn" onclick="saveResume()">ذخیره</button></div>
-    </div>`;
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">رزومه</h2>
+        <p class="sub" style="margin-bottom:0">اطلاعات رزومه خود را ویرایش و ذخیره کنید.</p>
+      </div>
+      <button class="btn" onclick="saveResume()">ذخیره تغییرات</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr; gap:24px; max-width:1000px">
+      <div class="card" style="padding:24px">
+        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات کلی و مهارت‌ها</h3>
+        <label style="margin-top:0">خلاصه (درباره من در رزومه)</label>
+        <textarea id="r-summary" style="min-height:100px; margin-bottom:16px">${resume.summary || ''}</textarea>
+
+        <div class="grid2">
+          <div><label style="margin-top:0">مهارت‌های اصلی (با کاما جدا کنید)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}"></div>
+          <div><label style="margin-top:0">ابزارها و فناوری‌ها (با کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}"></div>
+          <div><label style="margin-top:0">زبان‌ها (با کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}"></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+          <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
+          <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
+        </div>
+        <div id="r-exp" style="display:flex; flex-direction:column; gap:16px"></div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+          <h3 style="color:var(--primary); margin:0">سوابق تحصیلی</h3>
+          <button class="btn sec" onclick="addEdu()">+ افزودن تحصیلات جدید</button>
+        </div>
+        <div id="r-edu" style="display:flex; flex-direction:column; gap:16px"></div>
+      </div>
+    </div>
+  `;
   renderExp(); renderEdu();
 }
-function renderExp() { document.getElementById('r-exp').innerHTML = (resume.experience || []).map((e, i) => `<div class="list-item"><div class="grid2" style="flex:1"><input value="${e.title}" onchange="resume.experience[${i}].title=this.value" placeholder="عنوان"><input value="${e.company}" onchange="resume.experience[${i}].company=this.value" placeholder="شرکت"><input value="${e.period}" onchange="resume.experience[${i}].period=this.value" placeholder="دوره"><input value="${e.description}" onchange="resume.experience[${i}].description=this.value" placeholder="توضیح"></div><button class="btn danger" onclick="resume.experience.splice(${i},1);renderExp()">حذف</button></div>`).join(''); }
+
+function renderExp() {
+  document.getElementById('r-exp').innerHTML = (resume.experience || []).length ? (resume.experience || []).map((e, i) => `
+    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.experience.splice(${i},1);renderExp()">حذف</button>
+      <div class="grid2" style="margin-bottom:12px">
+        <div><label style="margin-top:0; font-size:0.8rem">عنوان شغلی</label><input value="${e.title}" onchange="resume.experience[${i}].title=this.value" placeholder="مثال: توسعه دهنده ارشد"></div>
+        <div><label style="margin-top:0; font-size:0.8rem">نام شرکت/سازمان</label><input value="${e.company}" onchange="resume.experience[${i}].company=this.value" placeholder="مثال: گوگل"></div>
+        <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="resume.experience[${i}].period=this.value" placeholder="مثال: ۱۴۰۰ - تاکنون"></div>
+      </div>
+      <div><label style="margin-top:0; font-size:0.8rem">توضیحات تکمیلی</label><textarea onchange="resume.experience[${i}].description=this.value" placeholder="شرح وظایف و دستاوردها..." style="min-height:60px">${e.description}</textarea></div>
+    </div>
+  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه شغلی ثبت نشده است.</p>';
+}
+
 function addExp() { (resume.experience ||= []).push({ id: 'e' + Date.now(), title: '', company: '', period: '', description: '' }); renderExp(); }
-function renderEdu() { document.getElementById('r-edu').innerHTML = (resume.education || []).map((e, i) => `<div class="list-item"><div class="grid2" style="flex:1"><input value="${e.title}" onchange="resume.education[${i}].title=this.value" placeholder="عنوان"><input value="${e.school}" onchange="resume.education[${i}].school=this.value" placeholder="دانشگاه"><input value="${e.period}" onchange="resume.education[${i}].period=this.value" placeholder="دوره"></div><button class="btn danger" onclick="resume.education.splice(${i},1);renderEdu()">حذف</button></div>`).join(''); }
+
+function renderEdu() {
+  document.getElementById('r-edu').innerHTML = (resume.education || []).length ? (resume.education || []).map((e, i) => `
+    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.education.splice(${i},1);renderEdu()">حذف</button>
+      <div class="grid2">
+        <div><label style="margin-top:0; font-size:0.8rem">مقطع و رشته</label><input value="${e.title}" onchange="resume.education[${i}].title=this.value" placeholder="مثال: کارشناسی مهندسی کامپیوتر"></div>
+        <div><label style="margin-top:0; font-size:0.8rem">دانشگاه/موسسه</label><input value="${e.school}" onchange="resume.education[${i}].school=this.value" placeholder="مثال: دانشگاه تهران"></div>
+        <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="resume.education[${i}].period=this.value" placeholder="مثال: ۱۳۹۶ - ۱۴۰۰"></div>
+      </div>
+    </div>
+  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه تحصیلی ثبت نشده است.</p>';
+}
+
 function addEdu() { (resume.education ||= []).push({ id: 'd' + Date.now(), title: '', school: '', period: '' }); renderEdu(); }
-async function saveResume() { resume.summary = val('r-summary'); resume.skills = val('r-skills').split(',').map((s) => s.trim()).filter(Boolean); resume.tools = val('r-tools').split(',').map((s) => s.trim()).filter(Boolean); resume.languages = val('r-langs').split(',').map((s) => s.trim()).filter(Boolean); await api('/api/resume', { method: 'POST', body: JSON.stringify(resume), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('resume'); }
+
+async function saveResume() {
+  resume.summary = val('r-summary');
+  resume.skills = val('r-skills').split(',').map((s) => s.trim()).filter(Boolean);
+  resume.tools = val('r-tools').split(',').map((s) => s.trim()).filter(Boolean);
+  resume.languages = val('r-langs').split(',').map((s) => s.trim()).filter(Boolean);
+  await api('/api/resume', { method: 'POST', body: JSON.stringify(resume), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+
+  const btn = document.querySelector('button[onclick="saveResume()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
+}
 
 function renderSettings() {
   content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
@@ -391,22 +540,110 @@ async function uploadFavicon() {
 }
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
+const PALETTES = {
+  green: { primary: '#b8f542', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', accent: '#8adcf0' },
+  orange: { primary: '#f97316', background: '#1c1917', foreground: '#fafaf9', muted: '#a8a29e', border: '#292524', accent: '#fb923c' },
+  blue: { primary: '#3b82f6', background: '#0f172a', foreground: '#f8fafc', muted: '#94a3b8', border: '#1e293b', accent: '#60a5fa' }
+};
+
 function renderTheme() {
   const t = site.theme || {};
-  content.innerHTML = `<h2>پوسته</h2><p class="sub">رنگ‌های سایت را تنظیم کنید.</p>
-    <div class="card">
-      <div class="grid2">
-        <div><label>حالت</label><select id="t-mode"><option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره</option><option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option><option value="system" ${t.mode === 'system' ? 'selected' : ''}>سیستم</option></select></div>
-        <div style="display:none"><label>placeholder</label></div>
-        <div><label>رنگ اصلی</label><input type="color" id="t-primary" value="${t.primary || '#b8f542'}"></div>
-        <div><label>پس‌زمینه</label><input type="color" id="t-background" value="${t.background || '#0b111b'}"></div>
-        <div><label>متن</label><input type="color" id="t-foreground" value="${t.foreground || '#f5f7fa'}"></div>
-        <div><label>متحرک</label><input type="color" id="t-muted" value="${t.muted || '#9ba6b5'}"></div>
-        <div><label>مرز</label><input type="color" id="t-border" value="${t.border || '#263243'}"></div>
-        <div><label>تأکیدی</label><input type="color" id="t-accent" value="${t.accent || '#8adcf0'}"></div>
+  const isCustom = t.palette === 'custom' || !t.palette;
+
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">پوسته و رنگ‌بندی</h2>
+        <p class="sub" style="margin-bottom:0">پالت رنگی سایت را تنظیم کنید.</p>
       </div>
-      <div style="margin-top:16px"><button class="btn" onclick="saveTheme()">ذخیره</button></div>
+    </div>
+
+    <div class="card" style="padding:24px; max-width:800px">
+      <div class="grid2" style="margin-bottom:24px">
+        <div>
+          <label style="margin-top:0">حالت نمایش (تم)</label>
+          <select id="t-mode">
+            <option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره (پیش‌فرض)</option>
+            <option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option>
+            <option value="system" ${t.mode === 'system' ? 'selected' : ''}>تابع سیستم</option>
+          </select>
+        </div>
+        <div>
+          <label style="margin-top:0">پالت رنگی</label>
+          <select id="t-palette" onchange="onPaletteChange(this.value)">
+            <option value="green" ${t.palette === 'green' ? 'selected' : ''}>سبز نئون (پیش‌فرض)</option>
+            <option value="orange" ${t.palette === 'orange' ? 'selected' : ''}>نارنجی گرم</option>
+            <option value="blue" ${t.palette === 'blue' ? 'selected' : ''}>آبی اقیانوسی</option>
+            <option value="custom" ${isCustom ? 'selected' : ''}>سفارشی...</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="custom-colors" style="display: ${isCustom ? 'grid' : 'none'}; gap:16px; border-top:1px solid #263243; padding-top:24px" class="grid2">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">رنگ اصلی (Primary)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-primary-text" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-primary" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">پس‌زمینه (Background)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-bg-text" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-background').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-background" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-bg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">متن (Foreground)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-fg-text" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-foreground').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-foreground" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-fg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">متن کمرنگ (Muted)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-muted-text" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-muted" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">خطوط (Border)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-border-text" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-border" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <label style="margin:0">تأکیدی (Accent)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-accent-text" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-accent" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:24px; padding-top:24px; border-top:1px solid #263243">
+        <button class="btn" onclick="saveTheme()">ذخیره تنظیمات پوسته</button>
+        <button class="btn sec" onclick="resetTheme()">بازنشانی به پیش‌فرض</button>
+      </div>
     </div>`;
+}
+
+function onPaletteChange(palette) {
+  site.theme = site.theme || {};
+  site.theme.palette = palette;
+  if (palette !== 'custom' && PALETTES[palette]) {
+    Object.assign(site.theme, PALETTES[palette]);
+  }
+  renderTheme();
+}
+
+function resetTheme() {
+  if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
+  site.theme = { mode: 'dark', palette: 'green', ...PALETTES.green };
+  saveTheme();
 }
 
 function renderFont() {
@@ -503,9 +740,24 @@ async function uploadFont() {
 }
 
 async function saveTheme() {
-  site.theme = { mode: val('t-mode'), primary: val('t-primary'), background: val('t-background'), foreground: val('t-foreground'), muted: val('t-muted'), border: val('t-border'), accent: val('t-accent') };
+  const palette = val('t-palette');
+  const t = { mode: val('t-mode'), palette };
+
+  if (palette === 'custom') {
+    t.primary = val('t-primary');
+    t.background = val('t-background');
+    t.foreground = val('t-foreground');
+    t.muted = val('t-muted');
+    t.border = val('t-border');
+    t.accent = val('t-accent');
+  } else {
+    Object.assign(t, PALETTES[palette]);
+  }
+
+  site.theme = t;
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-  await loadAll(); show('theme');
+  await loadAll();
+  show('theme');
 }
 
 async function saveFont() {

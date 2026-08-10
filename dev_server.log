@@ -66,3 +66,5 @@ digest: "3682694133"
  GET /_next/static/chunks/app-pages-internals.js 404 in 69ms
  GET /_next/static/chunks/app/projects/%5Bslug%5D/page.js 404 in 66ms
  GET /_next/static/chunks/app/layout.js 404 in 65ms
+ ✓ Compiled in 1894ms (49 modules)
+ ✓ Compiled in 525ms (449 modules)

@@ -13,11 +13,19 @@ function renderMarkdown(markdown: string) {
   });
 }
 
-function parseVideoUrl(url: string, title: string) {
+function parseVideoUrl(url: string, source: string, title: string) {
   if (!url) return null;
 
-  // Direct MP4
-  if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
+  if (source === 'embed') {
+    return (
+      <div
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden"
+        dangerouslySetInnerHTML={{ __html: url }}
+      />
+    );
+  }
+
+  if (source === 'host') {
     return (
       <video
         src={url}
@@ -28,31 +36,32 @@ function parseVideoUrl(url: string, title: string) {
     );
   }
 
-  // YouTube
-  let youtubeId = '';
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === 'youtu.be') youtubeId = parsed.pathname.slice(1);
-    else if (parsed.hostname.includes('youtube.com')) {
-      if (parsed.pathname.startsWith('/embed/')) youtubeId = parsed.pathname.slice(8);
-      else if (parsed.pathname.startsWith('/shorts/')) youtubeId = parsed.pathname.slice(8);
-      else if (parsed.searchParams.get('v')) youtubeId = parsed.searchParams.get('v') || '';
-    }
-  } catch {}
-  if (!youtubeId && url.match(/^[a-zA-Z0-9_-]{11}$/)) youtubeId = url;
+  if (source === 'youtube') {
+    let youtubeId = '';
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === 'youtu.be') youtubeId = parsed.pathname.slice(1);
+      else if (parsed.hostname.includes('youtube.com')) {
+        if (parsed.pathname.startsWith('/embed/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.pathname.startsWith('/shorts/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.searchParams.get('v')) youtubeId = parsed.searchParams.get('v') || '';
+      }
+    } catch {}
+    if (!youtubeId && url.match(/^[a-zA-Z0-9_-]{11}$/)) youtubeId = url;
 
-  if (youtubeId) {
+    const finalUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : url;
+
     return (
       <iframe
         title={`ویدیوی ${title}`}
-        src={`https://www.youtube.com/embed/${youtubeId}`}
+        src={finalUrl}
         className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
         allowFullScreen
       />
     );
   }
 
-  // Other standard links (Aparat, Vimeo, custom embed)
+  // Default / aparat
   return (
     <iframe
       title={`ویدیوی ${title}`}
@@ -82,7 +91,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>
             {project.template !== 'video' && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
-            {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.title)}
+            {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.videoSource || 'host', project.title)}
             <div className="prose mt-10 max-w-none">{renderMarkdown(project.content)}</div>
           </div>
 
