@@ -46,7 +46,28 @@ hr { border: none; border-top: 1px solid #263243; margin: 16px 0; }
 .modal-close { display: block; margin-bottom: 12px; background: none; border: none; color: #fff; cursor: pointer; font-size: 1.2rem; }
 .lightbox-img { max-width: 90%; max-height: 90vh; border-radius: 8px; border: 1px solid #263243; object-fit: contain; }
 @media (max-width: 768px) { .app { grid-template-columns: 1fr; } .sidebar { border-left: none; border-bottom: 1px solid #263243; } .grid2 { grid-template-columns: 1fr; } }
-</style></head><body><div class="app">
+</style>
+<script>
+function applyTheme() {
+  fetch('/api/site')
+    .then(r => r.json())
+    .then(site => {
+      const t = site.theme || {};
+      const root = document.documentElement;
+      if (t.primary) root.style.setProperty('--primary', t.primary);
+      if (t.background) { root.style.setProperty('--background', t.background); document.body.style.background = t.background; }
+      if (t.foreground) { root.style.setProperty('--foreground', t.foreground); document.body.style.color = t.foreground; }
+      if (t.muted) root.style.setProperty('--muted', t.muted);
+      if (t.border) root.style.setProperty('--border', t.border);
+      if (t.accent) root.style.setProperty('--accent', t.accent);
+
+      const fc = typeof site.font === 'string' && site.font.startsWith('{') ? JSON.parse(site.font) : { name: site.font || 'Tahoma' };
+      if (fc.name) document.body.style.fontFamily = fc.name + ', Tahoma, Arial, sans-serif';
+    }).catch(e => console.error(e));
+}
+document.addEventListener("DOMContentLoaded", applyTheme);
+</script>
+</head><body><div class="app">
 <aside class="sidebar"><h1>پنل مدیریت</h1>
 <div class="nav-group open" id="group-pages">
   <button class="nav-group-toggle" onclick="toggleGroup('pages')">

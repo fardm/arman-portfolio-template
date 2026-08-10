@@ -419,6 +419,27 @@ function renderResume() {
       </div>
 
       <div class="card" style="padding:24px">
+        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات شخصی و تماس</h3>
+        <div class="grid2">
+          <div><label style="margin-top:0">لوکیشن</label><input id="r-location" value="${resume.location || ''}"></div>
+          <div><label style="margin-top:0">وضعیت تاهل</label><input id="r-marital" value="${resume.maritalStatus || ''}"></div>
+          <div><label style="margin-top:0">وضعیت سربازی</label><input id="r-military" value="${resume.militaryService || ''}"></div>
+          <div><label style="margin-top:0">تاریخ تولد</label><input id="r-birth" value="${resume.birthDate || ''}"></div>
+          <div><label style="margin-top:0">شماره تماس</label><input id="r-phone" value="${resume.phone || ''}" dir="ltr"></div>
+          <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${resume.email || ''}" dir="ltr"></div>
+        </div>
+        <hr>
+        <h4 style="margin-bottom:12px; color:var(--muted)">شبکه‌های اجتماعی</h4>
+        <div class="grid2">
+          <div><label style="margin-top:0">تلگرام</label><input id="r-telegram" value="${resume.telegram || ''}" dir="ltr"></div>
+          <div><label style="margin-top:0">لینکدین</label><input id="r-linkedin" value="${resume.linkedin || ''}" dir="ltr"></div>
+          <div><label style="margin-top:0">گیت‌هاب</label><input id="r-github" value="${resume.github || ''}" dir="ltr"></div>
+          <div><label style="margin-top:0">یوتیوب</label><input id="r-youtube" value="${resume.youtube || ''}" dir="ltr"></div>
+          <div><label style="margin-top:0">توییتر (X)</label><input id="r-twitter" value="${resume.twitter || ''}" dir="ltr"></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
           <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
           <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
@@ -474,6 +495,17 @@ async function saveResume() {
   resume.skills = val('r-skills').split(',').map((s) => s.trim()).filter(Boolean);
   resume.tools = val('r-tools').split(',').map((s) => s.trim()).filter(Boolean);
   resume.languages = val('r-langs').split(',').map((s) => s.trim()).filter(Boolean);
+  resume.location = val('r-location');
+  resume.maritalStatus = val('r-marital');
+  resume.militaryService = val('r-military');
+  resume.birthDate = val('r-birth');
+  resume.phone = val('r-phone');
+  resume.email = val('r-email');
+  resume.telegram = val('r-telegram');
+  resume.linkedin = val('r-linkedin');
+  resume.github = val('r-github');
+  resume.youtube = val('r-youtube');
+  resume.twitter = val('r-twitter');
   await api('/api/resume', { method: 'POST', body: JSON.stringify(resume), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
 
@@ -579,47 +611,47 @@ function renderTheme() {
         </div>
       </div>
 
-      <div id="custom-colors" style="display: ${isCustom ? 'grid' : 'none'}; gap:16px; border-top:1px solid #263243; padding-top:24px" class="grid2">
+      <div id="custom-colors" style="display: grid; gap:16px; border-top:1px solid #263243; padding-top:24px; opacity: ${isCustom ? '1' : '0.5'}; pointer-events: ${isCustom ? 'auto' : 'none'}" class="grid2">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">رنگ اصلی (Primary)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-primary-text" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-primary" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-primary" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">پس‌زمینه (Background)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-bg-text" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-background').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-background" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-bg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-background" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-bg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">متن (Foreground)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-fg-text" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-foreground').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-foreground" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-fg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-foreground" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-fg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">متن کمرنگ (Muted)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-muted-text" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-muted" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-muted" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">خطوط (Border)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-border-text" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-border" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-border" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">تأکیدی (Accent)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" id="t-accent-text" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-accent" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="color" id="t-accent" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
       </div>
@@ -634,9 +666,11 @@ function renderTheme() {
 function onPaletteChange(palette) {
   site.theme = site.theme || {};
   site.theme.palette = palette;
+
   if (palette !== 'custom' && PALETTES[palette]) {
     Object.assign(site.theme, PALETTES[palette]);
   }
+
   renderTheme();
 }
 
@@ -757,7 +791,15 @@ async function saveTheme() {
   site.theme = t;
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
-  show('theme');
+  if (typeof applyTheme === 'function') applyTheme();
+
+  const btn = document.querySelector('button[onclick="saveTheme()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
 }
 
 async function saveFont() {
@@ -779,7 +821,9 @@ async function saveFont() {
   }
   site.font = JSON.stringify(fontConfig);
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-  await loadAll(); show('font');
+  await loadAll();
+  if (typeof applyTheme === 'function') applyTheme();
+  show('font');
 }
 
 async function renderMedia() {
