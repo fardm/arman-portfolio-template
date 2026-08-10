@@ -105,34 +105,60 @@ function renderProjectEdit() {
     </div>
   `;
 
-  content.innerHTML = `<h2>${p.slug ? 'ویرایش پروژه' : 'پروژه جدید'}</h2>
-    <div class="card">
-      <div class="grid2">
-        <div><label>عنوان</label><input id="f-title" value="${p.title || ''}"></div>
-        <div><label>شناسه (slug)</label><input id="f-slug" value="${p.slug || ''}"></div>
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+      <h2>${p.slug ? 'ویرایش پروژه' : 'پروژه جدید'}</h2>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap: 24px;">
+      <div>
+        <div class="card">
+          <div class="grid2">
+            <div><label>عنوان</label><input id="f-title" value="${p.title || ''}"></div>
+            <div><label>شناسه (slug)</label><input id="f-slug" value="${p.slug || ''}"></div>
+          </div>
+          <label>توضیح کوتاه</label><input id="f-description" value="${p.description || ''}">
+          <div class="grid2" style="margin-top:12px">
+            <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
+            <div><label>مشتری</label><input id="f-client" value="${p.client || ''}"></div>
+          </div>
+          <div><label>فناوری‌ها (با کاما)</label><input id="f-tech" value="${(p.technologies || []).join(', ')}"></div>
+
+          <label style="margin-top:12px">محتوای کامل (Markdown)</label>
+          <textarea id="f-content" style="min-height:300px">${p.content || ''}</textarea>
+        </div>
       </div>
-      <label>توضیح کوتاه</label><input id="f-description" value="${p.description || ''}">
-      <label>تصویر بند انگشتی (Thumbnail)</label>
-      <div class="row">
-        <input id="f-cover" value="${p.cover || ''}" style="flex:1">
-        <button class="btn sec" onclick="openCoverPickerModal()">انتخاب از رسانه</button>
-      </div>
-      <div id="cover-preview" style="margin-top:8px">${p.cover ? `<img src="${p.cover}" class="preview">` : ''}</div>
-      <div class="grid2" style="margin-top:12px">
-        <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
-        <div><label>مشتری</label><input id="f-client" value="${p.client || ''}"></div>
-      </div>
-      <div class="grid2">
-        <div><label>نقش</label><input id="f-role" value="${p.role || ''}"></div>
-        <div><label>فناوری‌ها (با کاما)</label><input id="f-tech" value="${(p.technologies || []).join(', ')}"></div>
-      </div>
-      <label>دسته‌ها</label><div>${catsHtml}</div>
-      <div class="grid2" style="margin-top:12px">
-        <div><label>قالب پروژه</label><select id="f-template" onchange="onTemplateChange(this.value)"><option value="image" ${p.template !== 'video' ? 'selected' : ''}>تصویری</option><option value="video" ${p.template === 'video' ? 'selected' : ''}>ویدئویی</option></select></div>
-        ${p.template === 'video' ? `<div><label>لینک ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}" onchange="editingProject.videoUrl=this.value"></div>` : '<div></div>'}
-      </div>
-      <label>محتوای کامل (Markdown)</label><textarea id="f-content" style="min-height:200px">${p.content || ''}</textarea>
-      <div class="row" style="margin-top:16px"><button class="btn" onclick="saveProject()">ذخیره</button><button class="btn sec" onclick="show('projects')">انصراف</button></div>
+
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveProject()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="show('projects')" style="flex:1; justify-content:center">انصراف</button>
+          </div>
+
+          <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
+            <label style="margin-top:0">قالب پروژه</label>
+            <select id="f-template" onchange="onTemplateChange(this.value)">
+              <option value="image" ${p.template !== 'video' ? 'selected' : ''}>تصویری</option>
+              <option value="video" ${p.template === 'video' ? 'selected' : ''}>ویدئویی</option>
+            </select>
+            ${p.template === 'video' ? `<label>لینک ویدیو</label><input id="f-videoUrl" value="${p.videoUrl || ''}" onchange="editingProject.videoUrl=this.value">` : ''}
+          </div>
+
+          <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
+            <label style="margin-top:0">دسته‌ها</label>
+            <div>${catsHtml}</div>
+          </div>
+
+          <div>
+            <label style="margin-top:0">تصویر بند انگشتی</label>
+            <div id="cover-preview" style="margin-bottom:8px">${p.cover ? `<img src="${p.cover}" class="preview" style="width:100%; max-width:100%; height:auto">` : ''}</div>
+            <div class="row">
+              <input id="f-cover" value="${p.cover || ''}" style="display:none">
+              <button class="btn sec" style="width:100%; justify-content:center" onclick="openCoverPickerModal()">انتخاب تصویر</button>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>`;
 }
 
@@ -191,7 +217,6 @@ function syncEditingProject() {
   editingProject.cover = val('f-cover');
   editingProject.year = val('f-year');
   editingProject.client = val('f-client');
-  editingProject.role = val('f-role');
   editingProject.technologies = val('f-tech').split(',').map((t) => t.trim()).filter(Boolean);
   editingProject.content = val('f-content');
   const videoUrlEl = document.getElementById('f-videoUrl');
@@ -216,7 +241,7 @@ async function saveProject() {
   const data = {
     ...editingProject,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
-    year: val('f-year'), client: val('f-client'), role: val('f-role'),
+    year: val('f-year'), client: val('f-client'),
     technologies: val('f-tech').split(',').map((t) => t.trim()).filter(Boolean),
     template: val('f-template'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),

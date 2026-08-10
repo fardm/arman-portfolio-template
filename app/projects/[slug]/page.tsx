@@ -8,6 +8,7 @@ function renderMarkdown(markdown: string) {
     if (line.startsWith('### ')) return <h3 key={index}>{line.slice(4)}</h3>;
     if (line.startsWith('- ')) return <li key={index}>{line.slice(2)}</li>;
     if (!line.trim()) return <div key={index} className="h-2" />;
+    if (line.startsWith('<')) return <div key={index} dangerouslySetInnerHTML={{ __html: line }} />;
     return <p key={index}>{line}</p>;
   });
 }
@@ -87,7 +88,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             <dl className="space-y-5 text-sm">
               <div><dt className="text-[var(--muted)]">سال</dt><dd>{project.year || '—'}</dd></div>
               <div><dt className="text-[var(--muted)]">مشتری</dt><dd>{project.client || '—'}</dd></div>
-              <div><dt className="text-[var(--muted)]">نقش</dt><dd>{project.role || '—'}</dd></div>
               <div><dt className="text-[var(--muted)]">فناوری‌ها</dt><dd>{project.technologies?.join('، ') || '—'}</dd></div>
             </dl>
           </aside>

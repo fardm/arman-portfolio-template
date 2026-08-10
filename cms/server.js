@@ -27,7 +27,6 @@ function projectToMarkdown(data) {
     cover: data.cover || '',
     year: data.year || '',
     client: data.client || '',
-    role: data.role || '',
     technologies: data.technologies || [],
     categories: data.categories || [],
     template: data.template || 'image',
