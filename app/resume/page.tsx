@@ -47,7 +47,7 @@ export default function ResumePage() {
         <p className="eyebrow">مسیر حرفه‌ای</p>
         <h1 className="mt-2 text-5xl font-black">رزومه</h1>
 
-        <div className="mt-14 grid gap-12 md:grid-cols-2">
+        <div className="mt-14 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
           <div>
             <h2 className="mb-6 text-2xl font-bold">درباره من</h2>
             <p className="mb-12 text-lg text-[var(--muted)]">{resume.summary}</p>
@@ -88,7 +88,7 @@ export default function ResumePage() {
                 <h2 className="mb-6 text-2xl font-bold">اطلاعات</h2>
                 <ul className="space-y-4 text-[var(--muted)] mb-12">
                   {infos.map((info) => (
-                    <li key={info.label} className="flex items-center gap-4 border border-[var(--border)] rounded-xl p-4 bg-[var(--card)] shadow-sm">
+                    <li key={info.label} className="flex items-center gap-4 py-2">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)] border border-[var(--border)]">
                         {info.icon}
                       </div>
@@ -108,7 +108,7 @@ export default function ResumePage() {
                 <div className="flex flex-col gap-3 mb-12">
                   {links.map((link) => (
                     <a key={link.label} href={link.link} target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-4 border border-[var(--border)] rounded-xl p-4 bg-[var(--card)] shadow-sm hover:border-[var(--primary)] transition-colors group">
+                       className="flex items-center gap-4 py-2 group">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
                         {link.icon}
                       </div>

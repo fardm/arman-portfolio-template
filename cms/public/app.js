@@ -53,6 +53,7 @@ function generateThemeColors(primaryHex) {
     return {
         primary: primaryHex,
         light: {
+            primary: hslToHex(h, s, Math.max(0, l - 15)),
             background: hslToHex(h, bgS, 98),
             foreground: hslToHex(h, bgS, 15),
             muted: hslToHex(h, bgS, 40),
@@ -60,6 +61,7 @@ function generateThemeColors(primaryHex) {
             accent: hslToHex(h, s, Math.max(0, l - 20))
         },
         dark: {
+            primary: hslToHex(h, s, Math.min(100, l + 15)),
             background: hslToHex(h, bgS, 6),
             foreground: hslToHex(h, bgS, 95),
             muted: hslToHex(h, bgS, 60),
@@ -101,7 +103,6 @@ async function loadAll() {
   [site, categories, resume, projects, pagesList, siteMenu] = await Promise.all([
     api('/api/site'), api('/api/categories'), api('/api/resume'), api('/api/projects'), api('/api/pages').catch(()=>[]), api('/api/menu').catch(()=>[])
   ]);
-
   const hash = window.location.hash.slice(1);
   if (hash) {
     show(hash, false);
@@ -337,11 +338,9 @@ async function uploadCoverFromModal() {
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
   await loadMedia();
-
   const gridHtml = media.length ? media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
   const grid = document.getElementById('modal-media-grid');
   if (grid) grid.innerHTML = gridHtml;
-
   selectCover(`/media/${file.name}`);
 }
 
@@ -388,12 +387,12 @@ async function saveProject() {
     template: val('f-template'),
     videoSource: videoSourceEl ? videoSourceEl.value : (editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
-    content: val('f-content'),
-    originalSlug: editingProject.originalSlug,
+    content: val('f-content'), originalSlug: editingProject.originalSlug,
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
 
+  editingProject = projects.find(p => p.slug === data.slug) || data;
   editingProject.originalSlug = data.slug;
   renderProjectEdit();
 
@@ -422,10 +421,9 @@ function renderCategories() {
 function renderCatNode(c, i, depth = 0) {
   const children = categories.filter(child => child.parent === c.slug);
   let html = `
-    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center; margin-right: ${depth * 32}px; border-right: ${depth > 0 ? '4px solid #263243' : '1px solid #263243'}; margin-bottom: ${children.length ? '8px' : '16px'}">
+    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center; margin-right: ${depth * 32}px; border-right: ${depth > 0 ? '4px solid var(--border)' : '1px solid var(--border)'}; margin-bottom: ${children.length ? '8px' : '16px'}; max-width: 600px;">
       <div>
-        <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'}</strong>
-        <span style="color:#9ba6b5; font-size:0.85rem">slug: ${c.slug}</span>
+        <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'} <span style="color:var(--muted); font-size:0.85rem">(${c.slug})</span></strong>
       </div>
       <div style="display:flex; gap:8px">
         <button class="btn sec" style="padding:8px" onclick="openCatModal(${i})" title="ویرایش">
@@ -520,15 +518,12 @@ async function deleteCat(i) {
   if(confirm('حذف شود؟')) {
     const deletedSlug = categories[i].slug;
     categories.splice(i,1);
-
-    // Remove category from all projects
     for (const project of projects) {
       if (project.categories && project.categories.includes(deletedSlug)) {
         project.categories = project.categories.filter(c => c !== deletedSlug);
         await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
       }
     }
-
     renderCatList();
     saveCategories();
   }
@@ -598,10 +593,10 @@ function renderResume() {
       </div>
 
       <aside>
-        <div class="card" style="position:sticky; top:24px;">
-          <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveResume()" style="flex:1; justify-content:center">ذخیره</button>
-            <button class="btn sec" onclick="cancelResume()" style="flex:1; justify-content:center">انصراف</button>
+        <div style="position:sticky; top:24px; padding:16px; border-radius:12px; background:var(--card); border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <button class="btn" onclick="saveResume()" style="width:100%; justify-content:center; padding:12px">ذخیره اطلاعات</button>
+            <button class="btn sec" onclick="cancelResume()" style="width:100%; justify-content:center; padding:12px">انصراف</button>
           </div>
         </div>
       </aside>
@@ -612,8 +607,8 @@ function renderResume() {
 
 function renderExp() {
   document.getElementById('r-exp').innerHTML = (resume.experience || []).length ? (resume.experience || []).map((e, i) => `
-    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.experience.splice(${i},1);renderExp()">حذف</button>
+    <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="resume.experience.splice(${i},1);renderExp()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2" style="margin-bottom:12px">
         <div><label style="margin-top:0; font-size:0.8rem">عنوان شغلی</label><input value="${e.title}" onchange="resume.experience[${i}].title=this.value" placeholder="مثال: توسعه دهنده ارشد"></div>
         <div><label style="margin-top:0; font-size:0.8rem">نام شرکت/سازمان</label><input value="${e.company}" onchange="resume.experience[${i}].company=this.value" placeholder="مثال: گوگل"></div>
@@ -621,22 +616,22 @@ function renderExp() {
       </div>
       <div><label style="margin-top:0; font-size:0.8rem">توضیحات تکمیلی</label><textarea onchange="resume.experience[${i}].description=this.value" placeholder="شرح وظایف و دستاوردها..." style="min-height:60px">${e.description}</textarea></div>
     </div>
-  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه شغلی ثبت نشده است.</p>';
+  `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ سابقه شغلی ثبت نشده است.</p>';
 }
 
 function addExp() { (resume.experience ||= []).push({ id: 'e' + Date.now(), title: '', company: '', period: '', description: '' }); renderExp(); }
 
 function renderEdu() {
   document.getElementById('r-edu').innerHTML = (resume.education || []).length ? (resume.education || []).map((e, i) => `
-    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.education.splice(${i},1);renderEdu()">حذف</button>
+    <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="resume.education.splice(${i},1);renderEdu()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2">
         <div><label style="margin-top:0; font-size:0.8rem">مقطع و رشته</label><input value="${e.title}" onchange="resume.education[${i}].title=this.value" placeholder="مثال: کارشناسی مهندسی کامپیوتر"></div>
         <div><label style="margin-top:0; font-size:0.8rem">دانشگاه/موسسه</label><input value="${e.school}" onchange="resume.education[${i}].school=this.value" placeholder="مثال: دانشگاه تهران"></div>
         <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="resume.education[${i}].period=this.value" placeholder="مثال: ۱۳۹۶ - ۱۴۰۰"></div>
       </div>
     </div>
-  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه تحصیلی ثبت نشده است.</p>';
+  `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ سابقه تحصیلی ثبت نشده است.</p>';
 }
 
 function addEdu() { (resume.education ||= []).push({ id: 'd' + Date.now(), title: '', school: '', period: '' }); renderEdu(); }
@@ -728,6 +723,7 @@ async function uploadFavicon() {
   selectFavicon(`/media/${file.name}`);
 }
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
+
 
 async function saveTheme() {
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
@@ -919,7 +915,20 @@ function syncCustomColors() {
 async function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
   const def = generateThemeColors('#b8f542');
-  site.theme = { primary: '#b8f542', isCustom: false, ...def };
+
+  site.theme = {
+    primary: '#b8f542',
+    isCustom: false,
+    light: def.light,
+    dark: {
+      background: "#0b111b",
+      foreground: "#f5f7fa",
+      muted: "#9ba6b5",
+      border: "#263243",
+      accent: "#8adcf0"
+    }
+  };
+
   await saveTheme();
 }
 
@@ -974,11 +983,11 @@ function openFontModal() {
       <button class="modal-close" onclick="document.getElementById('font-modal').remove()">بستن ×</button>
       <h3 style="margin-bottom:16px">افزودن فونت</h3>
 
-      <div style="margin-bottom:16px">
-        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer">
+      <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:12px">
+        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
           <input type="radio" name="font-source" value="google" checked onchange="toggleFontSourceModal(this.value)"> Google Fonts
         </label>
-        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-right:16px">
+        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
           <input type="radio" name="font-source" value="custom" onchange="toggleFontSourceModal(this.value)"> آپلود فونت
         </label>
       </div>
@@ -1175,90 +1184,6 @@ async function renderMedia() {
     </div>
   `;
 }
-
-function renderHero() {
-  const h = site.hero || {};
-  content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
-        <h2 style="margin-bottom:4px">صفحه اصلی (Hero)</h2>
-        <p class="sub" style="margin-bottom:0">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
-      </div>
-    </div>
-
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
-      <div>
-        <div class="card" style="padding:24px">
-          <div class="grid2">
-            <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
-            <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
-          </div>
-          <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
-          <label>تصویر پروفایل</label>
-          <div class="row">
-            <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
-            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
-          </div>
-          <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
-          <div id="h-image-picker" style="display:none;margin-top:12px">
-            <div class="row" style="margin-bottom:8px">
-              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
-              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
-            </div>
-            <div class="grid2" id="h-picker-grid"></div>
-          </div>
-          <hr>
-          <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
-          <div class="grid2">
-            <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
-            <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
-            <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
-            <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
-            <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
-            <div><label>Twitter (X)</label><input id="h-twitter" value="${h.twitter ?? ''}" placeholder="https://twitter.com/username"></div>
-          </div>
-        </div>
-      </div>
-
-      <aside>
-        <div class="card" style="position:sticky; top:24px;">
-          <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveHero()" style="flex:1; justify-content:center">ذخیره</button>
-            <button class="btn sec" onclick="cancelHero()" style="flex:1; justify-content:center">انصراف</button>
-          </div>
-        </div>
-      </aside>
-    </div>`;
-}
-
-async function cancelHero() {
-  await loadAll();
-  renderHero();
-}
-
-async function saveHero() {
-  site.hero = {
-    name: val('h-name'),
-    jobTitle: val('h-jobTitle'),
-    about: val('h-about'),
-    profileImage: val('h-profileImage'),
-    github: val('h-github'),
-    linkedin: val('h-linkedin'),
-    instagram: val('h-instagram'),
-    telegram: val('h-telegram'),
-    youtube: val('h-youtube'),
-    twitter: val('h-twitter')
-  };
-  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-
-  const btn = document.querySelector('button[onclick="saveHero()"]');
-  if (btn) {
-    const origText = btn.innerHTML;
-    btn.innerHTML = 'ذخیره شد ✓';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
-  }
-}
 async function uploadMedia() { const file = document.getElementById('media-upload').files[0]; if (!file) return; const buffer = await file.arrayBuffer(); await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer }); renderMedia(); }
 async function deleteMedia(p) { if(confirm('این فایل حذف شود؟')) { await api('/api/media', { method: 'DELETE', body: JSON.stringify({ path: p }), headers: { 'Content-Type': 'application/json' } }); renderMedia(); } }
 
@@ -1361,6 +1286,66 @@ function val(id) { return document.getElementById(id).value; }
 loadAll();
 
 // ─── Hero Section ───
+function renderHero() {
+  const h = site.hero || {};
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">صفحه اصلی (Hero)</h2>
+        <p class="sub" style="margin-bottom:0">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div class="grid2">
+            <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
+            <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
+          </div>
+          <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
+          <label>تصویر پروفایل</label>
+          <div class="row">
+            <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
+            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+          </div>
+          <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
+          <div id="h-image-picker" style="display:none;margin-top:12px">
+            <div class="row" style="margin-bottom:8px">
+              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
+              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
+            </div>
+            <div class="grid2" id="h-picker-grid"></div>
+          </div>
+          <hr>
+          <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
+          <div class="grid2">
+            <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
+            <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
+            <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
+            <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
+            <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
+            <div><label>Twitter (X)</label><input id="h-twitter" value="${h.twitter ?? ''}" placeholder="https://twitter.com/username"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveHero()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="cancelHero()" style="flex:1; justify-content:center">انصراف</button>
+          </div>
+        </div>
+      </aside>
+    </div>`;
+}
+
+async function cancelHero() {
+  await loadAll();
+  renderHero();
+}
+
 async function openHeroImagePicker() {
   const picker = document.getElementById('h-image-picker');
   if (picker.style.display === 'none') {
@@ -1402,6 +1387,7 @@ async function saveHero() {
     instagram: val('h-instagram'),
     telegram: val('h-telegram'),
     youtube: val('h-youtube'),
+    twitter: val('h-twitter')
   };
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
@@ -1515,14 +1501,27 @@ function renderMenu() {
         <h2 style="margin-bottom:4px">منوی سایت</h2>
         <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
       </div>
-      <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
     </div>
 
-    <div id="menu-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px"></div>
-    <div style="margin-top:24px"><button class="btn" onclick="saveMenu()">ذخیره منو</button></div>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div id="menu-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px"></div>
+      </div>
+
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveMenu()" style="flex:1; justify-content:center">ذخیره منو</button>
+            <button class="btn sec" onclick="addMenuItem()" style="flex:1; justify-content:center">+ افزودن لینک جدید</button>
+          </div>
+        </div>
+      </aside>
+    </div>
   `;
   renderMenuList();
 }
+
+let draggedMenuIndex = null;
 
 function renderMenuList() {
   const container = document.getElementById('menu-list');
@@ -1539,25 +1538,55 @@ function renderMenuList() {
     container.innerHTML = '<p style="color:#9ba6b5">منوی سایت خالی است.</p>';
     return;
   }
+
+  // Make items draggable
   container.innerHTML = siteMenu.map((m, i) => {
     const isSystemPage = m.href === '/' || m.href === '/projects' || m.href === '/resume';
     return `
-    <div class="card" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center">
+    <div class="card menu-item-card" draggable="true" data-index="${i}" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center; cursor:grab;" ondragstart="handleDragStartMenu(event, ${i})" ondragover="handleDragOverMenu(event)" ondrop="handleDropMenu(event, ${i})" ondragend="handleDragEndMenu(event)">
       <div style="flex:1">
         <label style="margin-top:0">عنوان لینک</label>
-        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value" placeholder="مثال: درباره من">
+        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value" placeholder="مثال: درباره من" style="cursor:text;">
       </div>
       <div style="flex:2">
         <label style="margin-top:0">آدرس (URL)</label>
-        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''}>
+        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''} style="cursor:text;">
       </div>
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
-        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="بالا">↑</button>
-        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, 1)" ${i === siteMenu.length - 1 ? 'disabled' : ''} title="پایین">↓</button>
         <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف" ${isSystemPage ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+        </div>
       </div>
     </div>
   `}).join('');
+}
+
+function handleDragStartMenu(e, index) {
+  draggedMenuIndex = index;
+  e.target.style.opacity = '0.5';
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOverMenu(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDropMenu(e, dropIndex) {
+  e.preventDefault();
+  if (draggedMenuIndex === null || draggedMenuIndex === dropIndex) return;
+
+  const temp = siteMenu[draggedMenuIndex];
+  siteMenu.splice(draggedMenuIndex, 1);
+  siteMenu.splice(dropIndex, 0, temp);
+
+  renderMenuList();
+}
+
+function handleDragEndMenu(e) {
+  e.target.style.opacity = '1';
+  draggedMenuIndex = null;
 }
 
 function addMenuItem() {
