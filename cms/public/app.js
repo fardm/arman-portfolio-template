@@ -652,90 +652,125 @@ async function saveSettings() { site.name = val('s-name'); site.favicon = val('s
 
 
 function renderTheme() {
-  const t = site.theme || { mode: 'dark', primary: '#b8f542', isCustom: false };
+  const t = site.theme || { primary: '#b8f542', isCustom: false };
   const isCustom = !!t.isCustom;
-  const currentMode = t.mode === 'system' ? 'dark' : (t.mode || 'dark');
-
-  // If not custom, auto generate based on primary and mode
-  let colors = t;
-  if (!isCustom) {
-      const generated = generateThemeColors(t.primary || '#b8f542', currentMode);
-      colors = { ...t, ...generated };
-  }
+  const c = isCustom ? t : generateThemeColors(t.primary || '#b8f542');
+  const d = c.dark || {};
+  const l = c.light || {};
 
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">پوسته و رنگ‌بندی</h2>
-        <p class="sub" style="margin-bottom:0">پالت رنگی سایت را تنظیم کنید.</p>
+        <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند.</p>
       </div>
+      <button class="btn" onclick="saveTheme()">ذخیره تغییرات</button>
     </div>
 
-    <div class="card" style="padding:24px; max-width:800px">
-      <div class="grid2" style="margin-bottom:24px">
-        <div>
-          <label style="margin-top:0">حالت نمایش (تم)</label>
-          <select id="t-mode" onchange="onThemeModeChange(this.value)">
-            <option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره (پیش‌فرض)</option>
-            <option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option>
-            <option value="system" ${t.mode === 'system' ? 'selected' : ''}>تابع سیستم</option>
-          </select>
-        </div>
-        <div>
-          <label style="margin-top:0">رنگ اصلی (Primary)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-primary-text" value="${colors.primary}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-primary" value="${colors.primary}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
-          </div>
+    <div class="card" style="padding:24px; max-width:1000px">
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">رنگ اصلی (Primary)</label>
+        <div style="display:flex; gap:8px; align-items:center">
+          <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+          <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
         </div>
       </div>
 
-      <div style="margin-bottom:16px; display:flex; align-items:center; gap:8px">
-        <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)">
-        <label for="t-custom-checkbox" style="margin:0; cursor:pointer">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
+      <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
+        <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
+        <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
       </div>
 
-      <div id="custom-colors" style="display: grid; gap:16px; border-top:1px solid #263243; padding-top:24px; opacity: ${isCustom ? '1' : '0.5'}; pointer-events: ${isCustom ? 'auto' : 'none'}" class="grid2">
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">پس‌زمینه (Background)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-bg-text" value="${colors.background}" onchange="document.getElementById('t-background').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
-            <input type="color" id="t-background" value="${colors.background}" onchange="document.getElementById('t-bg-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">متن (Foreground)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-fg-text" value="${colors.foreground}" onchange="document.getElementById('t-foreground').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
-            <input type="color" id="t-foreground" value="${colors.foreground}" onchange="document.getElementById('t-fg-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">متن کمرنگ (Muted)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-muted-text" value="${colors.muted}" onchange="document.getElementById('t-muted').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
-            <input type="color" id="t-muted" value="${colors.muted}" onchange="document.getElementById('t-muted-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">خطوط (Border)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-border-text" value="${colors.border}" onchange="document.getElementById('t-border').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
-            <input type="color" id="t-border" value="${colors.border}" onchange="document.getElementById('t-border-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">تأکیدی (Accent)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-accent-text" value="${colors.accent}" onchange="document.getElementById('t-accent').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
-            <input type="color" id="t-accent" value="${colors.accent}" onchange="document.getElementById('t-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity: ${isCustom ? '1' : '0.6'}; pointer-events: ${isCustom ? 'auto' : 'none'}">
+        <!-- Dark Mode -->
+        <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
+          <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
 
-      <div class="row" style="margin-top:24px; padding-top:24px; border-top:1px solid #263243">
-        <button class="btn" onclick="saveTheme()">ذخیره تنظیمات پوسته</button>
-        <button class="btn sec" onclick="resetTheme()">بازنشانی به پیش‌فرض</button>
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">پس‌زمینه (Background)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-bg-text" value="${d.background || ''}" onchange="document.getElementById('t-dark-bg').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-bg" value="${d.background || '#000000'}" onchange="document.getElementById('t-dark-bg-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">متن (Foreground)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-fg-text" value="${d.foreground || ''}" onchange="document.getElementById('t-dark-fg').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-fg" value="${d.foreground || '#ffffff'}" onchange="document.getElementById('t-dark-fg-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">متن کمرنگ (Muted)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-muted-text" value="${d.muted || ''}" onchange="document.getElementById('t-dark-muted').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-muted" value="${d.muted || '#000000'}" onchange="document.getElementById('t-dark-muted-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">خطوط (Border)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-border-text" value="${d.border || ''}" onchange="document.getElementById('t-dark-border').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-border" value="${d.border || '#000000'}" onchange="document.getElementById('t-dark-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">تأکیدی (Accent)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-accent-text" value="${d.accent || ''}" onchange="document.getElementById('t-dark-accent').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-accent" value="${d.accent || '#000000'}" onchange="document.getElementById('t-dark-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+        </div>
+
+        <!-- Light Mode -->
+        <div style="background:#f4f6f5; padding:16px; border-radius:12px; border:1px solid #d4dde0">
+          <h3 style="margin-bottom:16px; color:#1a2530">رنگ‌های حالت روشن (Light)</h3>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">پس‌زمینه (Background)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-bg-text" value="${l.background || ''}" onchange="document.getElementById('t-light-bg').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-bg" value="${l.background || '#ffffff'}" onchange="document.getElementById('t-light-bg-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">متن (Foreground)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-fg-text" value="${l.foreground || ''}" onchange="document.getElementById('t-light-fg').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-fg" value="${l.foreground || '#000000'}" onchange="document.getElementById('t-light-fg-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">متن کمرنگ (Muted)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-muted-text" value="${l.muted || ''}" onchange="document.getElementById('t-light-muted').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-muted" value="${l.muted || '#000000'}" onchange="document.getElementById('t-light-muted-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">خطوط (Border)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-border-text" value="${l.border || ''}" onchange="document.getElementById('t-light-border').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-border" value="${l.border || '#000000'}" onchange="document.getElementById('t-light-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">تأکیدی (Accent)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-accent-text" value="${l.accent || ''}" onchange="document.getElementById('t-light-accent').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-accent" value="${l.accent || '#000000'}" onchange="document.getElementById('t-light-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+        </div>
       </div>
     </div>`;
 }
@@ -743,22 +778,8 @@ function renderTheme() {
 function onPrimaryChange(val) {
     site.theme = site.theme || {};
     site.theme.primary = val;
-    // Apply generated immediately if not custom
     if (!site.theme.isCustom) {
-        const mode = site.theme.mode === 'system' ? 'dark' : (site.theme.mode || 'dark');
-        const generated = generateThemeColors(val, mode);
-        Object.assign(site.theme, generated);
-    }
-    renderTheme();
-}
-
-function onThemeModeChange(val) {
-    site.theme = site.theme || {};
-    site.theme.mode = val;
-    if (!site.theme.isCustom) {
-        const mode = val === 'system' ? 'dark' : val;
-        const generated = generateThemeColors(site.theme.primary || '#b8f542', mode);
-        Object.assign(site.theme, generated);
+        Object.assign(site.theme, generateThemeColors(val));
     }
     renderTheme();
 }
@@ -767,32 +788,39 @@ function onCustomToggle(checked) {
     site.theme = site.theme || {};
     site.theme.isCustom = checked;
     if (checked) {
-        syncCustomColors(); // Save current visible as custom
+        syncCustomColors();
     } else {
-        // Regenerate from primary
-        const mode = site.theme.mode === 'system' ? 'dark' : (site.theme.mode || 'dark');
-        const generated = generateThemeColors(site.theme.primary || '#b8f542', mode);
-        Object.assign(site.theme, generated);
+        Object.assign(site.theme, generateThemeColors(site.theme.primary || '#b8f542'));
     }
     renderTheme();
 }
 
 function syncCustomColors() {
     site.theme = site.theme || {};
-    site.theme.background = document.getElementById('t-background').value;
-    site.theme.foreground = document.getElementById('t-foreground').value;
-    site.theme.muted = document.getElementById('t-muted').value;
-    site.theme.border = document.getElementById('t-border').value;
-    site.theme.accent = document.getElementById('t-accent').value;
+    site.theme.isCustom = true;
+    site.theme.primary = document.getElementById('t-primary').value;
+    site.theme.dark = {
+        background: document.getElementById('t-dark-bg').value,
+        foreground: document.getElementById('t-dark-fg').value,
+        muted: document.getElementById('t-dark-muted').value,
+        border: document.getElementById('t-dark-border').value,
+        accent: document.getElementById('t-dark-accent').value,
+    };
+    site.theme.light = {
+        background: document.getElementById('t-light-bg').value,
+        foreground: document.getElementById('t-light-fg').value,
+        muted: document.getElementById('t-light-muted').value,
+        border: document.getElementById('t-light-border').value,
+        accent: document.getElementById('t-light-accent').value,
+    };
 }
 
 function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
-  const def = generateThemeColors('#b8f542', 'dark');
-  site.theme = { mode: 'dark', primary: '#b8f542', isCustom: false, ...def };
+  const def = generateThemeColors('#b8f542');
+  site.theme = { primary: '#b8f542', isCustom: false, ...def };
   saveTheme();
 }
-
 
 function renderFont() {
   content.innerHTML = `
@@ -1251,14 +1279,7 @@ function renderPages() {
         <button class="btn sec" style="margin-top:auto" onclick="show('resume')">ویرایش رزومه</button>
       </div>
 
-      <div class="card" style="display:flex; flex-direction:column; padding:16px">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-          <strong style="font-size:1.1rem">پروژه‌ها</strong>
-          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
-        </div>
-        <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت پروژه‌ها و نمونه‌کارها.</p>
-        <button class="btn sec" style="margin-top:auto" onclick="show('projects')">ویرایش پروژه‌ها</button>
-      </div>
+
 
       <!-- Normal Pages -->
       ${pagesList.map((p) => `
@@ -1337,6 +1358,15 @@ function renderMenu() {
 
 function renderMenuList() {
   const container = document.getElementById('menu-list');
+  if (!siteMenu || !siteMenu.length) {
+    siteMenu = [
+      { label: 'خانه', href: '/' },
+      { label: 'پروژه‌ها', href: '/projects' },
+      { label: 'رزومه', href: '/resume' }
+    ];
+    saveMenu(); // Auto save default menu
+    return;
+  }
   if (!siteMenu.length) {
     container.innerHTML = '<p style="color:#9ba6b5">منوی سایت خالی است.</p>';
     return;
