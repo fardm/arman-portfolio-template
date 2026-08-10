@@ -27,10 +27,10 @@ function projectToMarkdown(data) {
     cover: data.cover || '',
     year: data.year || '',
     client: data.client || '',
-    role: data.role || '',
     technologies: data.technologies || [],
     categories: data.categories || [],
-    videoMode: data.videoMode || 'none',
+    template: data.template || 'image',
+    videoSource: data.videoSource || 'host',
     videoUrl: data.videoUrl || '',
   };
   return matter.stringify(data.content || '', fm);
@@ -95,6 +95,38 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/projects' && method === 'DELETE') {
         const d = await readBody(req);
         const file = path.join(root, 'content/projects', `${d.slug}.md`);
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+        return send(res, 200, { ok: true });
+      }
+
+
+      if (pathname === '/api/menu' && method === 'GET') {
+          return send(res, 200, fs.existsSync(path.join(root, 'content/menu.json')) ? readJson('content/menu.json') : []);
+      }
+      if (pathname === '/api/menu' && method === 'POST') {
+          const d = await readBody(req);
+          writeJson('content/menu.json', d);
+          return send(res, 200, { ok: true });
+      }
+
+      if (pathname === '/api/pages' && method === 'GET') {
+        const dir = path.join(root, 'content/pages');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+        const pages = files.map((f) => { const parsed = matter(fs.readFileSync(path.join(dir, f), 'utf8')); return { ...parsed.data, content: parsed.content }; });
+        return send(res, 200, pages);
+      }
+      if (pathname === '/api/pages' && method === 'POST') {
+        const d = await readBody(req);
+        if (!d.slug) return send(res, 400, { error: 'slug is required' });
+        const file = path.join(root, 'content/pages', `${d.slug}.md`);
+        const fm = { title: d.title || '', slug: d.slug || '' };
+        fs.writeFileSync(file, matter.stringify(d.content || '', fm));
+        return send(res, 200, { ok: true });
+      }
+      if (pathname === '/api/pages' && method === 'DELETE') {
+        const d = await readBody(req);
+        const file = path.join(root, 'content/pages', `${d.slug}.md`);
         if (fs.existsSync(file)) fs.unlinkSync(file);
         return send(res, 200, { ok: true });
       }

@@ -8,22 +8,68 @@ function renderMarkdown(markdown: string) {
     if (line.startsWith('### ')) return <h3 key={index}>{line.slice(4)}</h3>;
     if (line.startsWith('- ')) return <li key={index}>{line.slice(2)}</li>;
     if (!line.trim()) return <div key={index} className="h-2" />;
+    if (line.startsWith('<')) return <div key={index} dangerouslySetInnerHTML={{ __html: line }} />;
     return <p key={index}>{line}</p>;
   });
 }
 
-function youtubeEmbedId(url: string): string {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1);
-    if (parsed.hostname.includes('youtube.com')) {
-      if (parsed.pathname.startsWith('/embed/')) return parsed.pathname.slice(8);
-      if (parsed.pathname.startsWith('/shorts/')) return parsed.pathname.slice(8);
-      if (parsed.searchParams.get('v')) return parsed.searchParams.get('v') || '';
-    }
-  } catch {}
-  const direct = url.match(/^[a-zA-Z0-9_-]{11}$/);
-  return direct ? url : '';
+function parseVideoUrl(url: string, source: string, title: string) {
+  if (!url) return null;
+
+  if (source === 'embed') {
+    return (
+      <div
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden"
+        dangerouslySetInnerHTML={{ __html: url }}
+      />
+    );
+  }
+
+  if (source === 'host') {
+    return (
+      <video
+        src={url}
+        title={`ویدیوی ${title}`}
+        controls
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+      />
+    );
+  }
+
+  if (source === 'youtube') {
+    let youtubeId = '';
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === 'youtu.be') youtubeId = parsed.pathname.slice(1);
+      else if (parsed.hostname.includes('youtube.com')) {
+        if (parsed.pathname.startsWith('/embed/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.pathname.startsWith('/shorts/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.searchParams.get('v')) youtubeId = parsed.searchParams.get('v') || '';
+      }
+    } catch {}
+    if (!youtubeId && url.match(/^[a-zA-Z0-9_-]{11}$/)) youtubeId = url;
+
+    const finalUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : url;
+
+    return (
+      <iframe
+        title={`ویدیوی ${title}`}
+        src={finalUrl}
+        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+        allowFullScreen
+      />
+    );
+  }
+
+  // Default / aparat
+  return (
+    <iframe
+      title={`ویدیوی ${title}`}
+      src={url}
+      className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+      allowFullScreen
+    />
+  );
 }
 
 export function generateStaticParams() {
@@ -37,29 +83,55 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   const projects = getProjects();
   const index = projects.findIndex((item) => item.slug === project.slug);
   const related = projects.filter((item) => item.slug !== project.slug && item.categories?.some((cat) => project.categories?.includes(cat))).slice(0, 2);
-  const youtubeId = project.videoMode === 'youtube' ? youtubeEmbedId(project.videoUrl || '') : '';
   return (
-    <article className="section">
+    <article className="section pt-10 md:pt-20">
       <div className="container">
-        <Link href="/projects" className="text-sm text-[var(--primary)]">← بازگشت به پروژه‌ها</Link>
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
+        <h1 className="mb-10 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-center">{project.title}</h1>
+
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>
-            <div className="mb-7 flex flex-wrap gap-2">
-              {(project.categories || []).map((slug) => <span className="tag" key={slug}>{categories.find((cat) => cat.slug === slug)?.name || slug}</span>)}
-            </div>
-            <h1 className="text-5xl font-black leading-tight">{project.title}</h1>
-            <p className="mt-5 text-xl text-[var(--muted)]">{project.description}</p>
-            {project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="mt-10 w-full rounded-2xl border border-[var(--border)]" />}
-            {youtubeId && <iframe title={`ویدیوی ${project.title}`} src={`https://www.youtube.com/embed/${youtubeId}`} className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]" allowFullScreen />}
-            {project.videoMode === 'embed' && project.videoUrl && <iframe title={`ویدیوی ${project.title}`} src={project.videoUrl} className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]" allowFullScreen />}
-            <div className="prose mt-10">{renderMarkdown(project.content)}</div>
+            {project.template !== 'video' && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
+            {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.videoSource || 'host', project.title)}
+            <div className="prose mt-10 max-w-none">{renderMarkdown(project.content)}</div>
           </div>
-          <aside className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-            <dl className="space-y-5 text-sm">
-              <div><dt className="text-[var(--muted)]">سال</dt><dd>{project.year || '—'}</dd></div>
-              <div><dt className="text-[var(--muted)]">مشتری</dt><dd>{project.client || '—'}</dd></div>
-              <div><dt className="text-[var(--muted)]">نقش</dt><dd>{project.role || '—'}</dd></div>
-              <div><dt className="text-[var(--muted)]">فناوری‌ها</dt><dd>{project.technologies?.join('، ') || '—'}</dd></div>
+
+          <aside className="sticky top-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+            <dl className="space-y-6 text-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)]">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div>
+                  <dt className="text-[var(--muted)] text-xs mb-0.5">سال</dt>
+                  <dd className="font-medium text-base">{project.year || '—'}</dd>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)]">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                  <dt className="text-[var(--muted)] text-xs mb-0.5">مشتری</dt>
+                  <dd className="font-medium text-base">{project.client || '—'}</dd>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)]">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                <div>
+                  <dt className="text-[var(--muted)] text-xs mb-1">دسته‌ها</dt>
+                  <dd className="flex flex-wrap gap-1.5 mt-1">
+                    {project.categories && project.categories.length > 0 ? project.categories.map((slug) => (
+                      <span className="tag text-xs" key={slug}>
+                        {categories.find((cat) => cat.slug === slug)?.name || slug}
+                      </span>
+                    )) : '—'}
+                  </dd>
+                </div>
+              </div>
             </dl>
           </aside>
         </div>
