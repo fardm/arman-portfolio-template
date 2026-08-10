@@ -146,7 +146,6 @@ function renderProjectEdit() {
             <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
             <div><label>مشتری</label><input id="f-client" value="${p.client || ''}"></div>
           </div>
-          <div><label>فناوری‌ها (با کاما)</label><input id="f-tech" value="${(p.technologies || []).join(', ')}"></div>
 
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>
           <textarea id="f-content" style="min-height:300px">${p.content || ''}</textarea>
@@ -242,7 +241,6 @@ function syncEditingProject() {
   editingProject.cover = val('f-cover');
   editingProject.year = val('f-year');
   editingProject.client = val('f-client');
-  editingProject.technologies = val('f-tech').split(',').map((t) => t.trim()).filter(Boolean);
   editingProject.content = val('f-content');
   const videoUrlEl = document.getElementById('f-videoUrl');
   if (videoUrlEl) editingProject.videoUrl = videoUrlEl.value;
@@ -267,7 +265,6 @@ async function saveProject() {
     ...editingProject,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
     year: val('f-year'), client: val('f-client'),
-    technologies: val('f-tech').split(',').map((t) => t.trim()).filter(Boolean),
     template: val('f-template'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
     content: val('f-content'),

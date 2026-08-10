@@ -17,3 +17,52 @@
  GET /projects/atlas/ 200 in 1154ms
  ✓ Compiled in 295ms (262 modules)
  ✓ Compiled in 203ms (262 modules)
+ ✓ Compiled in 2.6s (262 modules)
+ ○ Compiling /projects/[slug] ...
+ ✓ Compiled /projects/[slug] in 741ms (300 modules)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "3682694133"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581) {
+  page: '/projects/atlas'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.3s (775 modules)
+ GET /projects/atlas/ 500 in 5009ms
+ GET /projects/atlas/ 200 in 204ms
+ ✓ Compiled /_not-found in 297ms (778 modules)
+ GET /_next/static/css/app/layout.css?v=1786349341416 404 in 477ms
+ GET /_next/static/chunks/main-app.js?v=1786349341416 404 in 441ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 69ms
+ GET /_next/static/chunks/app/projects/%5Bslug%5D/page.js 404 in 66ms
+ GET /_next/static/chunks/app/layout.js 404 in 65ms
