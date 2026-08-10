@@ -101,7 +101,13 @@ async function loadAll() {
   [site, categories, resume, projects, pagesList, siteMenu] = await Promise.all([
     api('/api/site'), api('/api/categories'), api('/api/resume'), api('/api/projects'), api('/api/pages').catch(()=>[]), api('/api/menu').catch(()=>[])
   ]);
-  render();
+
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    show(hash, false);
+  } else {
+    render();
+  }
 }
 
 async function loadFonts() {
@@ -117,8 +123,18 @@ function toggleGroup(id) {
   if (group) group.classList.toggle('open');
 }
 
-function show(view) {
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.slice(1);
+  if (hash && hash !== currentView) {
+    show(hash, false);
+  }
+});
+
+function show(view, updateHash = true) {
   currentView = view;
+  if (updateHash) {
+    window.location.hash = view;
+  }
   document.querySelectorAll('.nav-item, .nav-child').forEach((el) => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + view);
   if (navEl) navEl.classList.add('active');
@@ -189,7 +205,7 @@ function renderProjects() {
 }
 
 function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; currentView = 'project-edit'; render(); }
-function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); currentView = 'project-edit'; render(); }
+function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); editingProject.originalSlug = slug; currentView = 'project-edit'; render(); }
 async function duplicateProject(slug) { const p = projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 
@@ -321,7 +337,11 @@ async function uploadCoverFromModal() {
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
   await loadMedia();
-  renderCoverPickerGrid();
+
+  const gridHtml = media.length ? media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const grid = document.getElementById('modal-media-grid');
+  if (grid) grid.innerHTML = gridHtml;
+
   selectCover(`/media/${file.name}`);
 }
 
@@ -369,9 +389,13 @@ async function saveProject() {
     videoSource: videoSourceEl ? videoSourceEl.value : (editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
     content: val('f-content'),
+    originalSlug: editingProject.originalSlug,
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
+
+  editingProject.originalSlug = data.slug;
+  renderProjectEdit();
 
   const btn = document.querySelector('button[onclick="saveProject()"]');
   if (btn) {
@@ -391,13 +415,14 @@ function renderCategories() {
       </div>
       <button class="btn" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     </div>
-    <div class="grid2" id="cat-list"></div>`;
+    <div id="cat-list"></div>`;
   renderCatList();
 }
 
-function renderCatList() {
-  document.getElementById('cat-list').innerHTML = categories.map((c, i) => `
-    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center">
+function renderCatNode(c, i, depth = 0) {
+  const children = categories.filter(child => child.parent === c.slug);
+  let html = `
+    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center; margin-right: ${depth * 32}px; border-right: ${depth > 0 ? '4px solid #263243' : '1px solid #263243'}; margin-bottom: ${children.length ? '8px' : '16px'}">
       <div>
         <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'}</strong>
         <span style="color:#9ba6b5; font-size:0.85rem">slug: ${c.slug}</span>
@@ -411,7 +436,28 @@ function renderCatList() {
         </button>
       </div>
     </div>
-  `).join('');
+  `;
+
+  if (children.length > 0) {
+    html += `<div style="margin-bottom: 16px;">`;
+    children.forEach(child => {
+      const childIndex = categories.findIndex(cat => cat.slug === child.slug);
+      html += renderCatNode(child, childIndex, depth + 1);
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+function renderCatList() {
+  const rootCats = categories.filter(c => !c.parent);
+  let html = '';
+  rootCats.forEach(c => {
+    const index = categories.findIndex(cat => cat.slug === c.slug);
+    html += renderCatNode(c, index);
+  });
+  document.getElementById('cat-list').innerHTML = html;
 }
 
 function openCatModal(index = -1) {
@@ -470,7 +516,23 @@ function saveCatModal(index) {
   saveCategories();
 }
 
-function deleteCat(i) { if(confirm('حذف شود؟')) { categories.splice(i,1); renderCatList(); saveCategories(); } }
+async function deleteCat(i) {
+  if(confirm('حذف شود؟')) {
+    const deletedSlug = categories[i].slug;
+    categories.splice(i,1);
+
+    // Remove category from all projects
+    for (const project of projects) {
+      if (project.categories && project.categories.includes(deletedSlug)) {
+        project.categories = project.categories.filter(c => c !== deletedSlug);
+        await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    renderCatList();
+    saveCategories();
+  }
+}
 async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } }); }
 
 function renderResume() {
@@ -480,58 +542,69 @@ function renderResume() {
         <h2 style="margin-bottom:4px">رزومه</h2>
         <p class="sub" style="margin-bottom:0">اطلاعات رزومه خود را ویرایش و ذخیره کنید.</p>
       </div>
-      <button class="btn" onclick="saveResume()">ذخیره تغییرات</button>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr; gap:24px; max-width:1000px">
-      <div class="card" style="padding:24px">
-        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات کلی و مهارت‌ها</h3>
-        <label style="margin-top:0">خلاصه (درباره من در رزومه)</label>
-        <textarea id="r-summary" style="min-height:100px; margin-bottom:16px">${resume.summary || ''}</textarea>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات کلی و مهارت‌ها</h3>
+          <label style="margin-top:0">خلاصه (درباره من در رزومه)</label>
+          <textarea id="r-summary" style="min-height:100px; margin-bottom:16px">${resume.summary || ''}</textarea>
 
-        <div class="grid2">
-          <div><label style="margin-top:0">مهارت‌های اصلی (با کاما جدا کنید)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}"></div>
-          <div><label style="margin-top:0">ابزارها و فناوری‌ها (با کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}"></div>
-          <div><label style="margin-top:0">زبان‌ها (با کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}"></div>
+          <div class="grid2">
+            <div><label style="margin-top:0">مهارت‌های اصلی (با کاما جدا کنید)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}"></div>
+            <div><label style="margin-top:0">ابزارها و فناوری‌ها (با کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}"></div>
+            <div><label style="margin-top:0">زبان‌ها (با کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات شخصی و تماس</h3>
+          <div class="grid2">
+            <div><label style="margin-top:0">لوکیشن</label><input id="r-location" value="${resume.location || ''}"></div>
+            <div><label style="margin-top:0">وضعیت تاهل</label><input id="r-marital" value="${resume.maritalStatus || ''}"></div>
+            <div><label style="margin-top:0">وضعیت سربازی</label><input id="r-military" value="${resume.militaryService || ''}"></div>
+            <div><label style="margin-top:0">تاریخ تولد</label><input id="r-birth" value="${resume.birthDate || ''}"></div>
+            <div><label style="margin-top:0">شماره تماس</label><input id="r-phone" value="${resume.phone || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${resume.email || ''}" dir="ltr"></div>
+          </div>
+          <hr>
+          <h4 style="margin-bottom:12px; color:var(--muted)">لینک‌ها</h4>
+          <div class="grid2">
+            <div><label style="margin-top:0">تلگرام (آیدی)</label><input id="r-telegram" value="${resume.telegram || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">لینکدین (آیدی)</label><input id="r-linkedin" value="${resume.linkedin || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">گیت‌هاب (آیدی)</label><input id="r-github" value="${resume.github || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">یوتیوب (آیدی)</label><input id="r-youtube" value="${resume.youtube || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">توییتر (X) (آیدی)</label><input id="r-twitter" value="${resume.twitter || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">لینک دلخواه (URL کامل)</label><input id="r-customLink" value="${resume.customLink || ''}" dir="ltr"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
+            <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
+          </div>
+          <div id="r-exp" style="display:flex; flex-direction:column; gap:16px"></div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h3 style="color:var(--primary); margin:0">سوابق تحصیلی</h3>
+            <button class="btn sec" onclick="addEdu()">+ افزودن تحصیلات جدید</button>
+          </div>
+          <div id="r-edu" style="display:flex; flex-direction:column; gap:16px"></div>
         </div>
       </div>
 
-      <div class="card" style="padding:24px">
-        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات شخصی و تماس</h3>
-        <div class="grid2">
-          <div><label style="margin-top:0">لوکیشن</label><input id="r-location" value="${resume.location || ''}"></div>
-          <div><label style="margin-top:0">وضعیت تاهل</label><input id="r-marital" value="${resume.maritalStatus || ''}"></div>
-          <div><label style="margin-top:0">وضعیت سربازی</label><input id="r-military" value="${resume.militaryService || ''}"></div>
-          <div><label style="margin-top:0">تاریخ تولد</label><input id="r-birth" value="${resume.birthDate || ''}"></div>
-          <div><label style="margin-top:0">شماره تماس</label><input id="r-phone" value="${resume.phone || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${resume.email || ''}" dir="ltr"></div>
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveResume()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="cancelResume()" style="flex:1; justify-content:center">انصراف</button>
+          </div>
         </div>
-        <hr>
-        <h4 style="margin-bottom:12px; color:var(--muted)">شبکه‌های اجتماعی</h4>
-        <div class="grid2">
-          <div><label style="margin-top:0">تلگرام</label><input id="r-telegram" value="${resume.telegram || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">لینکدین</label><input id="r-linkedin" value="${resume.linkedin || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">گیت‌هاب</label><input id="r-github" value="${resume.github || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">یوتیوب</label><input id="r-youtube" value="${resume.youtube || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">توییتر (X)</label><input id="r-twitter" value="${resume.twitter || ''}" dir="ltr"></div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:24px">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
-          <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
-          <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
-        </div>
-        <div id="r-exp" style="display:flex; flex-direction:column; gap:16px"></div>
-      </div>
-
-      <div class="card" style="padding:24px">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
-          <h3 style="color:var(--primary); margin:0">سوابق تحصیلی</h3>
-          <button class="btn sec" onclick="addEdu()">+ افزودن تحصیلات جدید</button>
-        </div>
-        <div id="r-edu" style="display:flex; flex-direction:column; gap:16px"></div>
-      </div>
+      </aside>
     </div>
   `;
   renderExp(); renderEdu();
@@ -568,6 +641,11 @@ function renderEdu() {
 
 function addEdu() { (resume.education ||= []).push({ id: 'd' + Date.now(), title: '', school: '', period: '' }); renderEdu(); }
 
+async function cancelResume() {
+  resume = await api('/api/resume');
+  renderResume();
+}
+
 async function saveResume() {
   resume.summary = val('r-summary');
   resume.skills = val('r-skills').split(',').map((s) => s.trim()).filter(Boolean);
@@ -584,6 +662,7 @@ async function saveResume() {
   resume.github = val('r-github');
   resume.youtube = val('r-youtube');
   resume.twitter = val('r-twitter');
+  resume.customLink = val('r-customLink');
   await api('/api/resume', { method: 'POST', body: JSON.stringify(resume), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
 
@@ -1371,7 +1450,9 @@ function renderMenuList() {
     container.innerHTML = '<p style="color:#9ba6b5">منوی سایت خالی است.</p>';
     return;
   }
-  container.innerHTML = siteMenu.map((m, i) => `
+  container.innerHTML = siteMenu.map((m, i) => {
+    const isSystemPage = m.href === '/' || m.href === '/projects' || m.href === '/resume';
+    return `
     <div class="card" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center">
       <div style="flex:1">
         <label style="margin-top:0">عنوان لینک</label>
@@ -1379,15 +1460,15 @@ function renderMenuList() {
       </div>
       <div style="flex:2">
         <label style="margin-top:0">آدرس (URL)</label>
-        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about">
+        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''}>
       </div>
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
         <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="بالا">↑</button>
         <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, 1)" ${i === siteMenu.length - 1 ? 'disabled' : ''} title="پایین">↓</button>
-        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف" ${isSystemPage ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function addMenuItem() {

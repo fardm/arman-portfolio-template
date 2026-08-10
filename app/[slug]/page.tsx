@@ -13,7 +13,9 @@ function renderMarkdown(markdown: string) {
 }
 
 export function generateStaticParams() {
-  return getPages().map((page) => ({ slug: page.slug }));
+  const pages = getPages();
+  if (pages.length === 0) return [{ slug: 'fallback' }];
+  return pages.map((page) => ({ slug: page.slug }));
 }
 
 export default function NormalPage({ params }: { params: { slug: string } }) {

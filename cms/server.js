@@ -88,6 +88,14 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/projects' && method === 'POST') {
         const d = await readBody(req);
         if (!d.slug) return send(res, 400, { error: 'slug is required' });
+
+        if (d.originalSlug && d.originalSlug !== d.slug) {
+          const oldFile = path.join(root, 'content/projects', `${d.originalSlug}.md`);
+          if (fs.existsSync(oldFile)) {
+            fs.unlinkSync(oldFile);
+          }
+        }
+
         const file = path.join(root, 'content/projects', `${d.slug}.md`);
         fs.writeFileSync(file, projectToMarkdown(d));
         return send(res, 200, { ok: true });
