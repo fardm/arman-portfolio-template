@@ -29,11 +29,11 @@ export default function ResumePage() {
     { label: 'وضعیت سربازی', value: resume.militaryService },
     { label: 'تماس', value: resume.phone },
     { label: 'ایمیل', value: resume.email },
-    { label: 'تلگرام', value: resume.telegram },
-    { label: 'لینکدین', value: resume.linkedin },
-    { label: 'گیت‌هاب', value: resume.github },
-    { label: 'یوتیوب', value: resume.youtube },
-    { label: 'توییتر (X)', value: resume.twitter },
+    { label: 'تلگرام', value: resume.telegram, link: `https://t.me/${resume.telegram}` },
+    { label: 'لینکدین', value: resume.linkedin, link: `https://linkedin.com/in/${resume.linkedin}` },
+    { label: 'گیت‌هاب', value: resume.github, link: `https://github.com/${resume.github}` },
+    { label: 'یوتیوب', value: resume.youtube, link: `https://youtube.com/@${resume.youtube}` },
+    { label: 'توییتر (X)', value: resume.twitter, link: `https://twitter.com/${resume.twitter}` },
   ].filter(i => i.value && i.value.trim() !== '');
 
   return (
@@ -84,7 +84,13 @@ export default function ResumePage() {
                   {infos.map((info) => (
                     <li key={info.label} className="flex gap-2">
                       <strong className="text-[var(--foreground)] min-w-24">{info.label}:</strong>
-                      <span className="text-left" style={{direction: 'ltr'}}>{info.value}</span>
+                      {info.link ? (
+                        <a href={info.link} target="_blank" rel="noopener noreferrer" className="text-left hover:text-[var(--primary)] transition-colors" style={{direction: 'ltr'}}>
+                          {info.value}
+                        </a>
+                      ) : (
+                        <span className="text-left" style={{direction: 'ltr'}}>{info.value}</span>
+                      )}
                     </li>
                   ))}
                 </ul>

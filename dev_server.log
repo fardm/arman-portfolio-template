@@ -390,3 +390,599 @@ Require stack:
   ]
 }
  GET /resume/ 500 in 41ms
+ ✓ Compiled in 3.2s (498 modules)
+ ✓ Compiled in 289ms (449 modules)
+ ✓ Compiled in 606ms (449 modules)
+ ✓ Compiled in 362ms (449 modules)
+ ✓ Compiled in 328ms (449 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 589ms (337 modules)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "3682694133"
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581) {
+  page: '/'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- /app/.next/server/webpack-runtime.js
+- /app/.next/server/app/page.js
+- /app/node_modules/next/dist/server/require.js
+- /app/node_modules/next/dist/server/load-components.js
+- /app/node_modules/next/dist/build/utils.js
+- /app/node_modules/next/dist/server/dev/hot-middleware.js
+- /app/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /app/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /app/node_modules/next/dist/server/lib/router-server.js
+- /app/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1383:15)
+    at /app/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+    at mod.require (/app/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:147:16)
+    at __webpack_require__.f.require (/app/.next/server/webpack-runtime.js:198:28)
+    at /app/.next/server/webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (/app/.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (/app/.next/server/webpack-runtime.js:162:22)
+    at /app/.next/server/pages/_document.js:1:335
+    at Object.<anonymous> (/app/.next/server/pages/_document.js:1:376)
+    at Module._compile (node:internal/modules/cjs/loader:1705:14)
+    at Object..js (node:internal/modules/cjs/loader:1838:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+    at mod.require (/app/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:147:16)
+    at requirePage (/app/node_modules/next/dist/server/require.js:109:84)
+    at /app/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/app/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/app/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/app/.next/server/webpack-runtime.js',
+    '/app/.next/server/app/page.js',
+    '/app/node_modules/next/dist/server/require.js',
+    '/app/node_modules/next/dist/server/load-components.js',
+    '/app/node_modules/next/dist/build/utils.js',
+    '/app/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/app/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/app/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/app/node_modules/next/dist/server/lib/router-server.js',
+    '/app/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET / 500 in 946ms
+ ✓ Compiled /_not-found in 111ms (339 modules)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "3682694133"
+ GET /_next/static/chunks/fallback/webpack.js 500 in 281ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 279ms
+ GET /_next/static/chunks/fallback/main.js 500 in 277ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 275ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 278ms
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "3682694133"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581) {
+  page: '/'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- /app/.next/server/webpack-runtime.js
+- /app/.next/server/app/_not-found/page.js
+- /app/node_modules/next/dist/server/require.js
+- /app/node_modules/next/dist/server/load-components.js
+- /app/node_modules/next/dist/build/utils.js
+- /app/node_modules/next/dist/server/dev/hot-middleware.js
+- /app/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /app/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /app/node_modules/next/dist/server/lib/router-server.js
+- /app/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1383:15)
+    at /app/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+    at mod.require (/app/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:147:16)
+    at __webpack_require__.f.require (/app/.next/server/webpack-runtime.js:198:28)
+    at /app/.next/server/webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (/app/.next/server/webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (/app/.next/server/webpack-runtime.js:162:22)
+    at /app/.next/server/pages/_document.js:1:335
+    at Object.<anonymous> (/app/.next/server/pages/_document.js:1:376)
+    at Module._compile (node:internal/modules/cjs/loader:1705:14)
+    at Object..js (node:internal/modules/cjs/loader:1838:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+    at mod.require (/app/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:147:16)
+    at requirePage (/app/node_modules/next/dist/server/require.js:109:84)
+    at /app/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/app/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/app/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/app/.next/server/webpack-runtime.js',
+    '/app/.next/server/app/_not-found/page.js',
+    '/app/node_modules/next/dist/server/require.js',
+    '/app/node_modules/next/dist/server/load-components.js',
+    '/app/node_modules/next/dist/build/utils.js',
+    '/app/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/app/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/app/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/app/node_modules/next/dist/server/lib/router-server.js',
+    '/app/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET / 500 in 54ms
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at require (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:40:20064)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108376
+    at ea (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108583)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:110813
+    at Object._fromJSON (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:111370)
+    at JSON.parse (<anonymous>)
+    at ec (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:109078)
+    at eo (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:108123)
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115291
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115308
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115341
+    at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115358
+    at t (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:115581)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at listOnTimeout (node:internal/timers:547:9)
+    at process.processTimers (node:internal/timers:521:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "3682694133"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:43)
+    at JSON.parse (<anonymous>)
+digest: "699521214"
+ GET /_next/static/chunks/fallback/webpack.js 500 in 126ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 125ms
+ GET /_next/static/chunks/fallback/main.js 500 in 122ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 119ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 116ms

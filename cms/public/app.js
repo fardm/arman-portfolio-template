@@ -1,3 +1,76 @@
+
+function hexToHsl(hex) {
+    hex = hex.replace(/^#/, '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) { h = s = 0; } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+function hslToHex(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = x => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+    return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+function generateThemeColors(primaryHex, mode) {
+    const [h, s, l] = hexToHsl(primaryHex);
+    const bgS = Math.min(s, 20);
+    if (mode === 'light') {
+        return {
+            primary: primaryHex,
+            background: hslToHex(h, bgS, 98),
+            foreground: hslToHex(h, bgS, 15),
+            muted: hslToHex(h, bgS, 40),
+            border: hslToHex(h, bgS, 85),
+            accent: hslToHex(h, s, Math.max(0, l - 20))
+        };
+    } else {
+        return {
+            primary: primaryHex,
+            background: hslToHex(h, bgS, 6),
+            foreground: hslToHex(h, bgS, 95),
+            muted: hslToHex(h, bgS, 60),
+            border: hslToHex(h, bgS, 15),
+            accent: hslToHex(h, s, Math.min(100, l + 20))
+        };
+    }
+}
+
 const api = (path, opts) => fetch(path, opts).then((r) => r.json());
 let currentView = 'hero';
 let projects = [];
@@ -49,7 +122,7 @@ function show(view) {
   const navEl = document.getElementById('nav-' + view);
   if (navEl) navEl.classList.add('active');
   // اگر view مربوط به گروه تنظیمات باشد، گروه را باز نگه دار
-  if (['settings', 'theme', 'font'].includes(view)) {
+  if (['settings', 'theme', 'font', 'typography'].includes(view)) {
     const group = document.getElementById('group-settings');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
@@ -65,6 +138,7 @@ function render() {
   if (currentView === 'settings') return renderSettings();
   if (currentView === 'theme') return renderTheme();
   if (currentView === 'font') return renderFont();
+  if (currentView === 'typography') return renderTypography();
   if (currentView === 'publish') return renderPublish();
   if (currentView === 'project-edit') return renderProjectEdit();
   if (currentView === 'hero') return renderHero();
@@ -572,15 +646,18 @@ async function uploadFavicon() {
 }
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
-const PALETTES = {
-  green: { primary: '#b8f542', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', accent: '#8adcf0' },
-  orange: { primary: '#f97316', background: '#1c1917', foreground: '#fafaf9', muted: '#a8a29e', border: '#292524', accent: '#fb923c' },
-  blue: { primary: '#3b82f6', background: '#0f172a', foreground: '#f8fafc', muted: '#94a3b8', border: '#1e293b', accent: '#60a5fa' }
-};
 
 function renderTheme() {
-  const t = site.theme || {};
-  const isCustom = t.palette === 'custom' || !t.palette;
+  const t = site.theme || { mode: 'dark', primary: '#b8f542', isCustom: false };
+  const isCustom = !!t.isCustom;
+  const currentMode = t.mode === 'system' ? 'dark' : (t.mode || 'dark');
+
+  // If not custom, auto generate based on primary and mode
+  let colors = t;
+  if (!isCustom) {
+      const generated = generateThemeColors(t.primary || '#b8f542', currentMode);
+      colors = { ...t, ...generated };
+  }
 
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
@@ -594,64 +671,60 @@ function renderTheme() {
       <div class="grid2" style="margin-bottom:24px">
         <div>
           <label style="margin-top:0">حالت نمایش (تم)</label>
-          <select id="t-mode">
+          <select id="t-mode" onchange="onThemeModeChange(this.value)">
             <option value="dark" ${t.mode === 'dark' ? 'selected' : ''}>تیره (پیش‌فرض)</option>
             <option value="light" ${t.mode === 'light' ? 'selected' : ''}>روشن</option>
             <option value="system" ${t.mode === 'system' ? 'selected' : ''}>تابع سیستم</option>
           </select>
         </div>
         <div>
-          <label style="margin-top:0">پالت رنگی</label>
-          <select id="t-palette" onchange="onPaletteChange(this.value)">
-            <option value="green" ${t.palette === 'green' ? 'selected' : ''}>سبز نئون (پیش‌فرض)</option>
-            <option value="orange" ${t.palette === 'orange' ? 'selected' : ''}>نارنجی گرم</option>
-            <option value="blue" ${t.palette === 'blue' ? 'selected' : ''}>آبی اقیانوسی</option>
-            <option value="custom" ${isCustom ? 'selected' : ''}>سفارشی...</option>
-          </select>
+          <label style="margin-top:0">رنگ اصلی (Primary)</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" id="t-primary-text" value="${colors.primary}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" id="t-primary" value="${colors.primary}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+          </div>
         </div>
+      </div>
+
+      <div style="margin-bottom:16px; display:flex; align-items:center; gap:8px">
+        <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)">
+        <label for="t-custom-checkbox" style="margin:0; cursor:pointer">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
       </div>
 
       <div id="custom-colors" style="display: grid; gap:16px; border-top:1px solid #263243; padding-top:24px; opacity: ${isCustom ? '1' : '0.5'}; pointer-events: ${isCustom ? 'auto' : 'none'}" class="grid2">
         <div style="display:flex; justify-content:space-between; align-items:center">
-          <label style="margin:0">رنگ اصلی (Primary)</label>
-          <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-primary-text" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-primary" value="${t.primary || PALETTES.green.primary}" onchange="document.getElementById('t-primary-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">پس‌زمینه (Background)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-bg-text" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-background').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-background" value="${t.background || PALETTES.green.background}" onchange="document.getElementById('t-bg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
+            <input type="text" id="t-bg-text" value="${colors.background}" onchange="document.getElementById('t-background').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
+            <input type="color" id="t-background" value="${colors.background}" onchange="document.getElementById('t-bg-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">متن (Foreground)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-fg-text" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-foreground').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-foreground" value="${t.foreground || PALETTES.green.foreground}" onchange="document.getElementById('t-fg-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
+            <input type="text" id="t-fg-text" value="${colors.foreground}" onchange="document.getElementById('t-foreground').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
+            <input type="color" id="t-foreground" value="${colors.foreground}" onchange="document.getElementById('t-fg-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">متن کمرنگ (Muted)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-muted-text" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-muted" value="${t.muted || PALETTES.green.muted}" onchange="document.getElementById('t-muted-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
+            <input type="text" id="t-muted-text" value="${colors.muted}" onchange="document.getElementById('t-muted').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
+            <input type="color" id="t-muted" value="${colors.muted}" onchange="document.getElementById('t-muted-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">خطوط (Border)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-border-text" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-border" value="${t.border || PALETTES.green.border}" onchange="document.getElementById('t-border-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
+            <input type="text" id="t-border-text" value="${colors.border}" onchange="document.getElementById('t-border').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
+            <input type="color" id="t-border" value="${colors.border}" onchange="document.getElementById('t-border-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center">
           <label style="margin:0">تأکیدی (Accent)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text" id="t-accent-text" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent').value=this.value" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-accent" value="${t.accent || PALETTES.green.accent}" onchange="document.getElementById('t-accent-text').value=this.value" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
+            <input type="text" id="t-accent-text" value="${colors.accent}" onchange="document.getElementById('t-accent').value=this.value; syncCustomColors()" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr" ${!isCustom ? 'disabled' : ''}>
+            <input type="color" id="t-accent" value="${colors.accent}" onchange="document.getElementById('t-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:40px; padding:0; border:none; border-radius:4px" ${!isCustom ? 'disabled' : ''}>
           </div>
         </div>
       </div>
@@ -663,168 +736,264 @@ function renderTheme() {
     </div>`;
 }
 
-function onPaletteChange(palette) {
-  site.theme = site.theme || {};
-  site.theme.palette = palette;
+function onPrimaryChange(val) {
+    site.theme = site.theme || {};
+    site.theme.primary = val;
+    // Apply generated immediately if not custom
+    if (!site.theme.isCustom) {
+        const mode = site.theme.mode === 'system' ? 'dark' : (site.theme.mode || 'dark');
+        const generated = generateThemeColors(val, mode);
+        Object.assign(site.theme, generated);
+    }
+    renderTheme();
+}
 
-  if (palette !== 'custom' && PALETTES[palette]) {
-    Object.assign(site.theme, PALETTES[palette]);
-  }
+function onThemeModeChange(val) {
+    site.theme = site.theme || {};
+    site.theme.mode = val;
+    if (!site.theme.isCustom) {
+        const mode = val === 'system' ? 'dark' : val;
+        const generated = generateThemeColors(site.theme.primary || '#b8f542', mode);
+        Object.assign(site.theme, generated);
+    }
+    renderTheme();
+}
 
-  renderTheme();
+function onCustomToggle(checked) {
+    site.theme = site.theme || {};
+    site.theme.isCustom = checked;
+    if (checked) {
+        syncCustomColors(); // Save current visible as custom
+    } else {
+        // Regenerate from primary
+        const mode = site.theme.mode === 'system' ? 'dark' : (site.theme.mode || 'dark');
+        const generated = generateThemeColors(site.theme.primary || '#b8f542', mode);
+        Object.assign(site.theme, generated);
+    }
+    renderTheme();
+}
+
+function syncCustomColors() {
+    site.theme = site.theme || {};
+    site.theme.background = document.getElementById('t-background').value;
+    site.theme.foreground = document.getElementById('t-foreground').value;
+    site.theme.muted = document.getElementById('t-muted').value;
+    site.theme.border = document.getElementById('t-border').value;
+    site.theme.accent = document.getElementById('t-accent').value;
 }
 
 function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
-  site.theme = { mode: 'dark', palette: 'green', ...PALETTES.green };
+  const def = generateThemeColors('#b8f542', 'dark');
+  site.theme = { mode: 'dark', primary: '#b8f542', isCustom: false, ...def };
   saveTheme();
 }
 
+
 function renderFont() {
-  const fc = parseFontConfig();
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">فونت</h2>
-        <p class="sub" style="margin-bottom:0">فونت سایت را تنظیم کنید.</p>
+        <h2 style="margin-bottom:4px">فونت‌ها</h2>
+        <p class="sub" style="margin-bottom:0">فونت‌های قابل استفاده در سایت را مدیریت کنید.</p>
+      </div>
+      <button class="btn" onclick="openFontModal()">+ افزودن فونت</button>
+    </div>
+
+    <div class="grid2" id="font-list"></div>
+  `;
+  renderFontList();
+}
+
+function getSiteFonts() {
+    return Array.isArray(site.fonts) ? site.fonts : [];
+}
+
+function renderFontList() {
+    const list = getSiteFonts();
+    const container = document.getElementById('font-list');
+    if (!list.length) {
+        container.innerHTML = '<div class="card" style="grid-column:1/-1; text-align:center; color:#9ba6b5">هیچ فونتی اضافه نشده است.</div>';
+        return;
+    }
+
+    container.innerHTML = list.map((f, i) => `
+      <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${f.name}</strong>
+          <span style="color:#9ba6b5; font-size:0.85rem">منبع: ${f.source === 'google' ? 'Google Fonts' : 'آپلود شده'}</span>
+        </div>
+        <button class="btn danger" style="padding:8px" onclick="deleteSiteFont(${i})" title="حذف">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+    `).join('');
+}
+
+function openFontModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'font-modal';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:500px">
+      <button class="modal-close" onclick="document.getElementById('font-modal').remove()">بستن ×</button>
+      <h3 style="margin-bottom:16px">افزودن فونت</h3>
+
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer">
+          <input type="radio" name="font-source" value="google" checked onchange="toggleFontSourceModal(this.value)"> Google Fonts
+        </label>
+        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-right:16px">
+          <input type="radio" name="font-source" value="custom" onchange="toggleFontSourceModal(this.value)"> آپلود فونت
+        </label>
+      </div>
+
+      <div id="modal-font-google" style="margin-bottom:24px">
+        <label style="margin-top:0">نام فونت (Google Fonts)</label>
+        <input id="modal-google-name" placeholder="مثال: Vazirmatn">
+      </div>
+
+      <div id="modal-font-custom" style="margin-bottom:24px; display:none">
+        <label style="margin-top:0">آپلود فایل فونت</label>
+        <input type="file" id="modal-custom-file" accept=".woff2,.woff,.ttf,.otf">
+        <p style="color:#9ba6b5;font-size:.8rem;margin-top:4px">فرمت WOFF2 پیشنهاد می‌شود.</p>
+      </div>
+
+      <div class="row">
+        <button class="btn sec" style="flex:1; justify-content:center" onclick="document.getElementById('font-modal').remove()">انصراف</button>
+        <button class="btn" style="flex:1; justify-content:center" onclick="saveFontModal()">افزودن فونت</button>
       </div>
     </div>
-    <div class="card" style="padding:24px; max-width:800px">
+  `;
+  document.body.appendChild(overlay);
+}
+
+function toggleFontSourceModal(val) {
+    document.getElementById('modal-font-google').style.display = val === 'google' ? 'block' : 'none';
+    document.getElementById('modal-font-custom').style.display = val === 'custom' ? 'block' : 'none';
+}
+
+async function saveFontModal() {
+    const source = document.querySelector('input[name="font-source"]:checked').value;
+    let newFont = null;
+
+    if (source === 'google') {
+        const name = document.getElementById('modal-google-name').value.trim();
+        if (!name) return alert('لطفا نام فونت را وارد کنید.');
+        newFont = { source: 'google', name, googleFamily: name };
+    } else {
+        const fileInput = document.getElementById('modal-custom-file');
+        const file = fileInput.files[0];
+        if (!file) return alert('لطفا یک فایل فونت انتخاب کنید.');
+
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!FONT_EXTENSIONS.includes(ext)) { alert('فرمت پشتیبانی نمی‌شود.'); return; }
+
+        const buffer = await file.arrayBuffer();
+        await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
+        await loadFonts();
+
+        const isVar = file.name.toLowerCase().includes('variable') || ext === '.woff2';
+        const name = file.name.replace(/\.[^.]+$/, '');
+        const fontPath = `/fonts/${file.name}`;
+
+        newFont = {
+            source: 'custom',
+            name,
+            customFont: { path: fontPath, format: ext.slice(1), isVariable: isVar, weights: isVar ? [100, 900] : [400] }
+        };
+    }
+
+    if (!Array.isArray(site.fonts)) site.fonts = [];
+    site.fonts.push(newFont);
+
+    await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+    document.getElementById('font-modal').remove();
+    renderFontList();
+}
+
+async function deleteSiteFont(i) {
+    const list = getSiteFonts();
+    const font = list[i];
+
+    // Check if in use
+    const typo = site.typography || {};
+    if (typo.bodyFont === font.name || typo.headingFont === font.name) {
+        alert('این فونت در بخش تایپوگرافی در حال استفاده است. ابتدا آن را تغییر دهید.');
+        return;
+    }
+
+    if (!confirm(`فونت "${font.name}" حذف شود؟`)) return;
+    list.splice(i, 1);
+    site.fonts = list;
+    await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+    renderFontList();
+}
+
+function renderTypography() {
+  const typo = site.typography || { bodyFont: '', headingFont: '' };
+  const list = getSiteFonts();
+
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">تایپوگرافی</h2>
+        <p class="sub" style="margin-bottom:0">نحوه استفاده از فونت‌های سایت را تعیین کنید.</p>
+      </div>
+      <button class="btn" onclick="saveTypography()">ذخیره تغییرات</button>
+    </div>
+
+    <div class="card" style="padding:24px; max-width:600px">
       <div style="margin-bottom:24px">
-        <label style="margin-top:0">منبع فونت</label>
-        <select id="t-fontSource" onchange="onFontSourceChange()">
-          <option value="builtin" ${fc.source === 'builtin' ? 'selected' : ''}>فونت‌های داخلی</option>
-          <option value="google" ${fc.source === 'google' ? 'selected' : ''}>گوگل فونت (Google Fonts)</option>
-          <option value="custom" ${fc.source === 'custom' ? 'selected' : ''}>فونت آپلودی</option>
+        <label style="margin-top:0">فونت متن سایت</label>
+        <select id="typo-body">
+          <option value="">(پیش‌فرض سیستم)</option>
+          ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+          <option value="_add">+ افزودن فونت</option>
         </select>
       </div>
 
-      <div id="font-builtin" style="margin-bottom:24px">
-        <label style="margin-top:0">انتخاب فونت داخلی</label>
-        <select id="t-builtinFont">
-          ${BUILTIN_FONTS.map((f) => `<option ${fc.name === f ? 'selected' : ''}>${f}</option>`).join('')}
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">فونت تیترها</label>
+        <select id="typo-heading">
+          <option value="">(همان فونت متن)</option>
+          ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+          <option value="_add">+ افزودن فونت</option>
         </select>
       </div>
+    </div>
+  `;
 
-      <div id="font-google" style="margin-bottom:24px; display:none">
-        <label style="margin-top:0">نام خانواده گوگل فونت</label>
-        <input id="t-googleFamily" value="${fc.googleFamily || fc.name || ''}" placeholder="مثال: Vazirmatn">
-        <p style="color:#9ba6b5;font-size:.85rem;margin-top:6px">نام خانواده را دقیق وارد کنید. پیشنهادها: ${GOOGLE_FONT_SUGGESTIONS.join('، ')}</p>
-      </div>
-
-      <div id="font-custom" style="margin-bottom:24px; display:none">
-        <label style="margin-top:0">انتخاب فونت آپلودی</label>
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
-          <select id="t-customFont" style="flex:1" onchange="onCustomFontChange()"></select>
-          <button class="btn sec" onclick="document.getElementById('font-upload-file').click()">آپلود فونت جدید</button>
-          <input type="file" id="font-upload-file" accept=".woff2,.woff,.ttf,.otf" style="display:none" onchange="uploadFont()">
-        </div>
-        <div id="font-axis-info" style="margin-top:12px"></div>
-      </div>
-
-      <div style="border-top:1px solid #263243; margin-top:24px; padding-top:24px">
-        <button class="btn" onclick="saveFont()">ذخیره تنظیمات فونت</button>
-      </div>
-    </div>`;
-  onFontSourceChange();
-  if (fc.source === 'custom') { loadFonts().then(() => populateCustomFonts(fc.customFont?.path)); }
+  document.getElementById('typo-body').addEventListener('change', (e) => {
+      if(e.target.value === '_add') show('font');
+  });
+  document.getElementById('typo-heading').addEventListener('change', (e) => {
+      if(e.target.value === '_add') show('font');
+  });
 }
 
-function onFontSourceChange() {
-  const source = val('t-fontSource');
-  document.getElementById('font-builtin').style.display = source === 'builtin' ? 'block' : 'none';
-  document.getElementById('font-google').style.display = source === 'google' ? 'block' : 'none';
-  document.getElementById('font-custom').style.display = source === 'custom' ? 'block' : 'none';
-  if (source === 'custom' && fonts.length === 0) loadFonts().then(populateCustomFonts);
+async function saveTypography() {
+    const bodyFont = document.getElementById('typo-body').value;
+    const headingFont = document.getElementById('typo-heading').value;
+
+    site.typography = {
+        bodyFont: bodyFont === '_add' ? '' : bodyFont,
+        headingFont: headingFont === '_add' ? '' : headingFont
+    };
+
+    await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+
+    const btn = document.querySelector('button[onclick="saveTypography()"]');
+    if (btn) {
+      const origText = btn.innerHTML;
+      btn.innerHTML = 'ذخیره شد ✓';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+    }
 }
 
-function populateCustomFonts(selectedPath) {
-  const sel = document.getElementById('t-customFont');
-  if (!sel) return;
-  if (!fonts.length) { sel.innerHTML = '<option value="">هیچ فونتی آپلود نشده</option>'; return; }
-  sel.innerHTML = fonts.map((f) => `<option value="${f.path}" ${selectedPath === f.path ? 'selected' : ''}>${f.name} (${f.format})</option>`).join('');
-  onCustomFontChange();
-}
-
-function onCustomFontChange() {
-  const sel = document.getElementById('t-customFont');
-  if (!sel) return;
-  const fontPath = sel.value;
-  if (!fontPath) { document.getElementById('font-axis-info').innerHTML = ''; return; }
-  const font = fonts.find((f) => f.path === fontPath);
-  if (!font) return;
-  const isVar = font.name.toLowerCase().includes('variable') || font.format === 'woff2';
-  const info = `<div style="padding:10px;border:1px solid #263243;border-radius:8px;background:#0b111b">
-    <strong>ساختار فونت:</strong> ${isVar ? 'فونت متغیر (Variable)' : 'فونت معمولی'}<br>
-    <strong>فرمت:</strong> ${font.format}<br>
-    <strong>حجم:</strong> ${Math.round(font.size / 1024)} کیلوبایت
-  </div>`;
-  document.getElementById('font-axis-info').innerHTML = info;
-}
-
-async function uploadFont() {
-  const file = document.getElementById('font-upload-file').files[0];
-  if (!file) return;
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  if (!FONT_EXTENSIONS.includes(ext)) { alert('فرمت پشتیبانی نمی‌شود. فقط: ' + FONT_EXTENSIONS.join(', ')); return; }
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadFonts();
-  populateCustomFonts(`/fonts/${file.name}`);
-}
-
-async function saveTheme() {
-  const palette = val('t-palette');
-  const t = { mode: val('t-mode'), palette };
-
-  if (palette === 'custom') {
-    t.primary = val('t-primary');
-    t.background = val('t-background');
-    t.foreground = val('t-foreground');
-    t.muted = val('t-muted');
-    t.border = val('t-border');
-    t.accent = val('t-accent');
-  } else {
-    Object.assign(t, PALETTES[palette]);
-  }
-
-  site.theme = t;
-  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-  await loadAll();
-  if (typeof applyTheme === 'function') applyTheme();
-
-  const btn = document.querySelector('button[onclick="saveTheme()"]');
-  if (btn) {
-    const origText = btn.innerHTML;
-    btn.innerHTML = 'ذخیره شد ✓';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
-  }
-}
-
-async function saveFont() {
-  const source = val('t-fontSource');
-  let fontConfig;
-  if (source === 'builtin') {
-    fontConfig = { source: 'builtin', name: val('t-builtinFont') };
-  } else if (source === 'google') {
-    const family = val('t-googleFamily').trim();
-    if (!family) { alert('نام خانواده گوگل فونت الزامی است'); return; }
-    fontConfig = { source: 'google', name: family, googleFamily: family };
-  } else {
-    const fontPath = val('t-customFont');
-    if (!fontPath) { alert('ابتدا یک فونت آپلود کنید'); return; }
-    const font = fonts.find((f) => f.path === fontPath);
-    const isVar = font && (font.name.toLowerCase().includes('variable') || font.format === 'woff2');
-    const name = font ? font.name.replace(/\.[^.]+$/, '') : 'CustomFont';
-    fontConfig = { source: 'custom', name, customFont: { path: fontPath, format: font ? font.format : 'woff2', isVariable: isVar, weights: isVar ? [100, 900] : [400] } };
-  }
-  site.font = JSON.stringify(fontConfig);
-  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-  await loadAll();
-  if (typeof applyTheme === 'function') applyTheme();
-  show('font');
-}
 
 async function renderMedia() {
   await loadMedia();
