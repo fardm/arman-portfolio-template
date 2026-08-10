@@ -88,7 +88,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             <dl className="space-y-5 text-sm">
               <div><dt className="text-[var(--muted)]">سال</dt><dd>{project.year || '—'}</dd></div>
               <div><dt className="text-[var(--muted)]">مشتری</dt><dd>{project.client || '—'}</dd></div>
-              <div><dt className="text-[var(--muted)]">فناوری‌ها</dt><dd>{project.technologies?.join('، ') || '—'}</dd></div>
             </dl>
           </aside>
         </div>

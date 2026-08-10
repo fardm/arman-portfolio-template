@@ -80,12 +80,37 @@ function renderDashboard() {
 }
 
 function renderProjects() {
-  content.innerHTML = `<h2>پروژه‌ها</h2><p class="sub">مدیریت نمونه‌کارها.</p>
-    <button class="btn" onclick="newProject()">+ پروژه جدید</button>
-    <div style="margin-top:16px">${projects.map((p) => `<div class="list-item"><div><strong>${p.title || ''}</strong></div><div class="row"><button class="btn sec" onclick="editProject('${p.slug}')">ویرایش</button><button class="btn sec" onclick="duplicateProject('${p.slug}')">کپی</button><button class="btn danger" onclick="deleteProject('${p.slug}')">حذف</button></div></div>`).join('')}</div>`;
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">پروژه‌ها</h2>
+        <p class="sub" style="margin-bottom:0">مدیریت نمونه‌کارها و پروژه‌ها.</p>
+      </div>
+      <button class="btn" onclick="newProject()">+ ایجاد پروژه جدید</button>
+    </div>
+    <div class="grid2">
+      ${projects.map((p) => `
+        <div class="card" style="display:flex; flex-direction:column; padding:0; overflow:hidden">
+          <div style="height:140px; background:#172231; position:relative">
+             ${p.cover ? `<img src="${p.cover}" style="width:100%; height:100%; object-fit:cover">` : '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#9ba6b5">بدون تصویر</div>'}
+             <span class="tag" style="position:absolute; top:8px; right:8px; background:rgba(23, 48, 59, 0.9)">${p.template === 'video' ? 'ویدیو' : 'تصویر'}</span>
+          </div>
+          <div style="padding:16px; flex:1; display:flex; flex-direction:column">
+            <h3 style="margin-bottom:8px; font-size:1.1rem">${p.title || '(بدون عنوان)'}</h3>
+            <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">${p.description || 'بدون توضیح'}</p>
+            <div class="row" style="margin-top:auto">
+              <button class="btn sec" style="flex:1; justify-content:center" onclick="editProject('${p.slug}')">ویرایش</button>
+              <button class="btn sec" style="padding:10px" onclick="duplicateProject('${p.slug}')" title="کپی"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+              <button class="btn danger" style="padding:10px" onclick="deleteProject('${p.slug}')" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
-function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', role: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; currentView = 'project-edit'; render(); }
+function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; currentView = 'project-edit'; render(); }
 function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); currentView = 'project-edit'; render(); }
 async function duplicateProject(slug) { const p = projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
@@ -248,28 +273,53 @@ async function saveProject() {
     content: val('f-content'),
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-  await loadAll(); show('projects');
+  await loadAll();
+
+  const btn = document.querySelector('button[onclick="saveProject()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
 }
 
 function renderCategories() {
-  content.innerHTML = `<h2>دسته‌ها</h2><p class="sub">دسته‌بندی سلسله‌مراتبی پروژه‌ها.</p>
-    <div class="card"><div id="cat-list"></div><button class="btn" onclick="addCat()">+ دسته جدید</button></div>
-    <div class="row" style="margin-top:16px"><button class="btn" onclick="saveCategories()">ذخیره تغییرات</button></div>`;
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">دسته‌ها</h2>
+        <p class="sub" style="margin-bottom:0">مدیریت دسته‌بندی‌های پروژه‌ها.</p>
+      </div>
+      <button class="btn" onclick="addCat()">+ ایجاد دسته جدید</button>
+    </div>
+    <div class="grid2" id="cat-list"></div>`;
   renderCatList();
 }
 function renderCatList() {
-  document.getElementById('cat-list').innerHTML = categories.map((c, i) => `<div class="list-item">
-    <div class="row">
-      <input value="${c.name}" onchange="categories[${i}].name=this.value" style="width:140px">
-      <input value="${c.slug}" onchange="categories[${i}].slug=this.value" style="width:140px">
-      <select onchange="categories[${i}].parent=this.value||null" style="width:160px"><option value="">بدون والد</option>${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}</select>
-      <input type="number" value="${c.sort}" onchange="categories[${i}].sort=+this.value" style="width:70px">
+  document.getElementById('cat-list').innerHTML = categories.map((c, i) => `
+  <div class="card" style="padding:16px">
+    <div style="margin-bottom:12px">
+      <label style="margin-top:0">نام نمایشی</label>
+      <input value="${c.name}" onchange="categories[${i}].name=this.value; saveCategories()" placeholder="مثال: طراحی وب">
     </div>
-    <button class="btn danger" onclick="categories.splice(${i},1);renderCatList()">حذف</button>
+    <div style="margin-bottom:12px">
+      <label style="margin-top:0">شناسه (slug)</label>
+      <input value="${c.slug}" onchange="categories[${i}].slug=this.value; saveCategories()" placeholder="مثال: web-design">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="margin-top:0">دسته والد</label>
+      <select onchange="categories[${i}].parent=this.value||null; saveCategories()">
+        <option value="">بدون والد (دسته اصلی)</option>
+        ${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn danger" style="width:100%; justify-content:center" onclick="deleteCat(${i})">حذف دسته</button>
   </div>`).join('');
 }
-function addCat() { categories.push({ name: 'دسته جدید', slug: 'new-' + Date.now(), description: '', parent: null, sort: categories.length + 1 }); renderCatList(); }
-async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('categories'); }
+function addCat() { categories.push({ name: '', slug: 'new-' + Date.now(), description: '', parent: null, sort: categories.length + 1 }); renderCatList(); saveCategories(); }
+function deleteCat(i) { if(confirm('حذف شود؟')) { categories.splice(i,1); renderCatList(); saveCategories(); } }
+async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } }); }
 
 function renderResume() {
   content.innerHTML = `<h2>رزومه</h2><p class="sub">اطلاعات رزومه ویرایش و ذخیره می‌شود.</p>
