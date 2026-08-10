@@ -414,39 +414,49 @@ function renderTheme() {
 
 function renderFont() {
   const fc = parseFontConfig();
-  content.innerHTML = `<h2>فونت</h2><p class="sub">فونت سایت را تنظیم کنید.</p>
-    <div class="card">
-      <label>منبع فونت</label>
-      <select id="t-fontSource" onchange="onFontSourceChange()">
-        <option value="builtin" ${fc.source === 'builtin' ? 'selected' : ''}>فونت‌های داخلی</option>
-        <option value="google" ${fc.source === 'google' ? 'selected' : ''}>گوگل فونت</option>
-        <option value="custom" ${fc.source === 'custom' ? 'selected' : ''}>فونت آپلودی</option>
-      </select>
-      <div id="font-builtin" style="margin-top:8px">
-        <label>فونت داخلی</label>
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">فونت</h2>
+        <p class="sub" style="margin-bottom:0">فونت سایت را تنظیم کنید.</p>
+      </div>
+    </div>
+    <div class="card" style="padding:24px; max-width:800px">
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">منبع فونت</label>
+        <select id="t-fontSource" onchange="onFontSourceChange()">
+          <option value="builtin" ${fc.source === 'builtin' ? 'selected' : ''}>فونت‌های داخلی</option>
+          <option value="google" ${fc.source === 'google' ? 'selected' : ''}>گوگل فونت (Google Fonts)</option>
+          <option value="custom" ${fc.source === 'custom' ? 'selected' : ''}>فونت آپلودی</option>
+        </select>
+      </div>
+
+      <div id="font-builtin" style="margin-bottom:24px">
+        <label style="margin-top:0">انتخاب فونت داخلی</label>
         <select id="t-builtinFont">
           ${BUILTIN_FONTS.map((f) => `<option ${fc.name === f ? 'selected' : ''}>${f}</option>`).join('')}
         </select>
       </div>
-      <div id="font-google" style="margin-top:8px;display:none">
-        <label>نام خانواده گوگل فونت</label>
+
+      <div id="font-google" style="margin-bottom:24px; display:none">
+        <label style="margin-top:0">نام خانواده گوگل فونت</label>
         <input id="t-googleFamily" value="${fc.googleFamily || fc.name || ''}" placeholder="مثال: Vazirmatn">
-        <label>نام نمایشی فونت</label>
-        <input id="t-googleName" value="${fc.source === 'google' ? fc.name : ''}" placeholder="نام دلخواه">
-        <p style="color:#9ba6b5;font-size:.8rem;margin-top:4px">نام خانواده را دقیق وارد کنید. پیشنهادها: ${GOOGLE_FONT_SUGGESTIONS.join('، ')}</p>
+        <p style="color:#9ba6b5;font-size:.85rem;margin-top:6px">نام خانواده را دقیق وارد کنید. پیشنهادها: ${GOOGLE_FONT_SUGGESTIONS.join('، ')}</p>
       </div>
-      <div id="font-custom" style="margin-top:8px;display:none">
-        <label>فونت آپلودی</label>
-        <div class="row">
-          <select id="t-customFont" onchange="onCustomFontChange()"></select>
-          <button class="btn sec" onclick="document.getElementById('font-upload-file').click()">آپلود فونت</button>
+
+      <div id="font-custom" style="margin-bottom:24px; display:none">
+        <label style="margin-top:0">انتخاب فونت آپلودی</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+          <select id="t-customFont" style="flex:1" onchange="onCustomFontChange()"></select>
+          <button class="btn sec" onclick="document.getElementById('font-upload-file').click()">آپلود فونت جدید</button>
           <input type="file" id="font-upload-file" accept=".woff2,.woff,.ttf,.otf" style="display:none" onchange="uploadFont()">
         </div>
-        <label>نام نمایشی فونت</label>
-        <input id="t-customName" value="${fc.source === 'custom' ? fc.name : ''}" placeholder="نام دلخواه">
-        <div id="font-axis-info" style="margin-top:8px"></div>
+        <div id="font-axis-info" style="margin-top:12px"></div>
       </div>
-      <div style="margin-top:16px"><button class="btn" onclick="saveFont()">ذخیره</button></div>
+
+      <div style="border-top:1px solid #263243; margin-top:24px; padding-top:24px">
+        <button class="btn" onclick="saveFont()">ذخیره تنظیمات فونت</button>
+      </div>
     </div>`;
   onFontSourceChange();
   if (fc.source === 'custom') { loadFonts().then(() => populateCustomFonts(fc.customFont?.path)); }
@@ -508,15 +518,14 @@ async function saveFont() {
     fontConfig = { source: 'builtin', name: val('t-builtinFont') };
   } else if (source === 'google') {
     const family = val('t-googleFamily').trim();
-    const name = val('t-googleName').trim() || family;
     if (!family) { alert('نام خانواده گوگل فونت الزامی است'); return; }
-    fontConfig = { source: 'google', name, googleFamily: family };
+    fontConfig = { source: 'google', name: family, googleFamily: family };
   } else {
     const fontPath = val('t-customFont');
     if (!fontPath) { alert('ابتدا یک فونت آپلود کنید'); return; }
     const font = fonts.find((f) => f.path === fontPath);
     const isVar = font && (font.name.toLowerCase().includes('variable') || font.format === 'woff2');
-    const name = val('t-customName').trim() || (font ? font.name.replace(/\.[^.]+$/, '') : 'CustomFont');
+    const name = font ? font.name.replace(/\.[^.]+$/, '') : 'CustomFont';
     fontConfig = { source: 'custom', name, customFont: { path: fontPath, format: font ? font.format : 'woff2', isVariable: isVar, weights: isVar ? [100, 900] : [400] } };
   }
   site.font = JSON.stringify(fontConfig);
@@ -526,12 +535,49 @@ async function saveFont() {
 
 async function renderMedia() {
   await loadMedia();
-  content.innerHTML = `<h2>رسانه</h2><p class="sub">فایل‌های آپلود شده.</p>
-    <div class="card"><input type="file" id="media-upload"><button class="btn" onclick="uploadMedia()">آپلود</button></div>
-    <div class="grid2" style="margin-top:16px">${media.map((m) => `<div class="list-item"><div class="row"><img src="${m.path}" class="preview"><div><strong>${m.name}</strong><br><span style="color:#9ba6b5">${Math.round(m.size / 1024)} کیلوبایت</span></div></div><button class="btn danger" onclick="deleteMedia('${m.path}')">حذف</button></div>`).join('')}</div>`;
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">رسانه</h2>
+        <p class="sub" style="margin-bottom:0">مدیریت فایل‌های آپلود شده.</p>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; background:#111a27; padding:8px 16px; border-radius:8px; border:1px solid #263243">
+        <input type="file" id="media-upload" style="background:transparent; border:none; padding:0; width:auto">
+        <button class="btn" onclick="uploadMedia()">آپلود فایل</button>
+      </div>
+    </div>
+    <div class="grid2" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px">
+      ${media.map((m) => `
+        <div class="card" style="padding:12px; position:relative; display:flex; flex-direction:column; align-items:center; text-align:center">
+          <button onclick="deleteMedia('${m.path}')" style="position:absolute; top:8px; left:8px; background:rgba(239, 68, 68, 0.9); color:white; border:none; border-radius:4px; padding:4px; cursor:pointer" title="حذف">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+          <div style="width:100%; height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#0b111b; border-radius:8px; margin-bottom:12px; overflow:hidden" onclick="openLightbox('${m.path}')">
+            <img src="${m.path}" style="max-width:100%; max-height:100%; object-fit:contain">
+          </div>
+          <strong style="word-break:break-all; font-size:0.9rem; line-height:1.4; margin-bottom:4px; width:100%">${m.name}</strong>
+          <span style="color:#9ba6b5; font-size:0.8rem">${Math.round(m.size / 1024)} کیلوبایت</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 async function uploadMedia() { const file = document.getElementById('media-upload').files[0]; if (!file) return; const buffer = await file.arrayBuffer(); await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer }); renderMedia(); }
-async function deleteMedia(p) { await api('/api/media', { method: 'DELETE', body: JSON.stringify({ path: p }), headers: { 'Content-Type': 'application/json' } }); renderMedia(); }
+async function deleteMedia(p) { if(confirm('این فایل حذف شود؟')) { await api('/api/media', { method: 'DELETE', body: JSON.stringify({ path: p }), headers: { 'Content-Type': 'application/json' } }); renderMedia(); } }
+
+function openLightbox(url) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'lightbox-modal';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="position:relative; max-width:90%; max-height:90vh; display:flex; flex-direction:column; align-items:center">
+      <button class="modal-close" style="position:absolute; top:-40px; right:0; font-size:2rem" onclick="document.getElementById('lightbox-modal').remove()">×</button>
+      <img src="${url}" class="lightbox-img">
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
 
 async function waitForPreview(timeoutMs = 30000) {
   const start = Date.now();
