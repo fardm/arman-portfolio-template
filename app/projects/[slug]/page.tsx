@@ -19,7 +19,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
   if (source === 'embed') {
     return (
       <div
-        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden"
+        className="aspect-video w-full rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden"
         dangerouslySetInnerHTML={{ __html: url }}
       />
     );
@@ -31,7 +31,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
         src={url}
         title={`ویدیوی ${title}`}
         controls
-        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+        className="aspect-video w-full rounded-2xl border border-[var(--border)]"
       />
     );
   }
@@ -55,7 +55,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
       <iframe
         title={`ویدیوی ${title}`}
         src={finalUrl}
-        className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+        className="aspect-video w-full rounded-2xl border border-[var(--border)]"
         allowFullScreen
       />
     );
@@ -66,7 +66,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
     <iframe
       title={`ویدیوی ${title}`}
       src={url}
-      className="mt-8 aspect-video w-full rounded-2xl border border-[var(--border)]"
+      className="aspect-video w-full rounded-2xl border border-[var(--border)]"
       allowFullScreen
     />
   );
