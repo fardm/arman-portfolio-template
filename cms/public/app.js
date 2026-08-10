@@ -689,10 +689,11 @@ function renderHero() {
       <hr>
       <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
       <div class="grid2">
-        <div><label>GitHub</label><input id="h-github" value="${h.github || ''}" placeholder="https://github.com/username"></div>
-        <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin || ''}" placeholder="https://linkedin.com/in/username"></div>
-        <div><label>Instagram</label><input id="h-instagram" value="${h.instagram || ''}" placeholder="https://instagram.com/username"></div>
-        <div><label>Telegram</label><input id="h-telegram" value="${h.telegram || ''}" placeholder="https://t.me/username"></div>
+        <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
+        <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
+        <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
+        <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
+        <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
       </div>
       <div class="row" style="margin-top:20px"><button class="btn" onclick="saveHero()">ذخیره</button></div>
     </div>`;
@@ -738,8 +739,16 @@ async function saveHero() {
     linkedin: val('h-linkedin'),
     instagram: val('h-instagram'),
     telegram: val('h-telegram'),
+    youtube: val('h-youtube'),
   };
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
-  show('hero');
+
+  const btn = document.querySelector('button[onclick="saveHero()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
 }

@@ -7,3 +7,13 @@
 
  ✓ Starting...
  ✓ Ready in 1776ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.3s (554 modules)
+ GET / 200 in 5780ms
+ ○ Compiling /projects ...
+ ✓ Compiled /projects in 4.5s (565 modules)
+ GET /projects/ 200 in 4789ms
+ ✓ Compiled /projects/[slug] in 255ms (558 modules)
+ GET /projects/atlas/ 200 in 1154ms
+ ✓ Compiled in 295ms (262 modules)
+ ✓ Compiled in 203ms (262 modules)

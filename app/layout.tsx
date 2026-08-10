@@ -60,13 +60,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const { headTags, bodyFont } = buildFontStyles(site);
 
   return (
-    <html lang="fa" dir="rtl" data-theme="dark">
+    <html lang="fa" dir="rtl" data-theme="dark" suppressHydrationWarning>
       <head>
-        <style>{`:root{--primary:${theme.primary};--background:${theme.background};--foreground:${theme.foreground};--muted:${theme.muted};--border:${theme.border};--accent:${theme.accent};}`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `:root{--primary:${theme.primary};--background:${theme.background};--foreground:${theme.foreground};--muted:${theme.muted};--border:${theme.border};--accent:${theme.accent};}` }} />
         {headTags}
         <script dangerouslySetInnerHTML={{ __html: noFlash }} />
       </head>
-      <body style={{ fontFamily: bodyFont }}>
+      <body style={{ fontFamily: bodyFont }} suppressHydrationWarning>
         <Header site={site} />
         <main>{children}</main>
         <Footer site={site} />

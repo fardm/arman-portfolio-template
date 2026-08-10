@@ -88,6 +88,16 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             <dl className="space-y-5 text-sm">
               <div><dt className="text-[var(--muted)]">سال</dt><dd>{project.year || '—'}</dd></div>
               <div><dt className="text-[var(--muted)]">مشتری</dt><dd>{project.client || '—'}</dd></div>
+              <div>
+                <dt className="text-[var(--muted)] mb-1">دسته‌ها</dt>
+                <dd className="flex flex-wrap gap-1">
+                  {project.categories && project.categories.length > 0 ? project.categories.map((slug) => (
+                    <span className="tag text-xs" key={slug}>
+                      {categories.find((cat) => cat.slug === slug)?.name || slug}
+                    </span>
+                  )) : '—'}
+                </dd>
+              </div>
             </dl>
           </aside>
         </div>
