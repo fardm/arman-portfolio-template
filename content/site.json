@@ -22,7 +22,7 @@
   "seoTitle": "آرمان رضایی | ادیتور و فیلم بردار",
   "seoDescription": "نمونه‌کارهای آرمان رضایی در ادیت و فیلم برداری",
   "ogImage": "/media/profile.svg",
-  "font": "Vazirmatn",
+  "font": "Arad-VF",
   "theme": {
     "mode": "system",
     "baseColor": "#b8f542",
@@ -50,13 +50,20 @@
   "favicon": "/media/profile.jpg",
   "fonts": [
     {
-      "source": "google",
-      "name": "Vazirmatn",
-      "googleFamily": "Vazirmatn"
+      "source": "custom",
+      "name": "Arad-VF",
+      "customFont": {
+        "path": "/fonts/Arad-VF.woff2",
+        "format": "woff2",
+        "isVariable": false,
+        "weights": [
+          400
+        ]
+      }
     }
   ],
   "typography": {
-    "bodyFont": "Vazirmatn",
-    "headingFont": "Vazirmatn"
+    "bodyFont": "Arad-VF",
+    "headingFont": "Arad-VF"
   }
 }
