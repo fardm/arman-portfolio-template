@@ -201,13 +201,11 @@ function renderDashboard() {
 
 function renderProjects() {
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
+    <div style="margin-bottom:24px">
         <h2 style="margin-bottom:4px">پروژه‌ها</h2>
         <p class="sub" style="margin-bottom:0">مدیریت نمونه‌کارها و پروژه‌ها.</p>
       </div>
-      <button class="btn" onclick="newProject()">+ ایجاد پروژه جدید</button>
-    </div>
+    <button class="btn" style="margin-bottom:24px" onclick="newProject()">+ ایجاد پروژه جدید</button>
     <div class="grid2">
       ${projects.map((p) => `
         <div class="card" style="display:flex; flex-direction:column; padding:0; overflow:hidden">
@@ -432,13 +430,11 @@ async function saveProject() {
 
 function renderCategories() {
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
+    <div style="margin-bottom:24px">
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
-        <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
+      <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها. برای ویرایش یا حذف دسته ها روی آن کلیک کنید.</p>
       </div>
-      <button class="btn" onclick="openCatModal()">+ ایجاد دسته جدید</button>
-    </div>
+    <button class="btn" style="margin-bottom:24px" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     <div id="cat-list" style="max-width: 600px;"></div>`;
   renderCatList();
 }
@@ -790,8 +786,10 @@ function renderSettings() {
       </div>
       <label>عنوان سئو</label><input id="s-seoTitle" value="${site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${site.seoDescription || ''}</textarea>
-      <div style="margin-top:16px"><button class="btn" onclick="saveSettings()">ذخیره</button></div>
-    </div>`;
+      <div style="margin-top:16px"></div>
+    </div>
+    <button class="btn" onclick="saveSettings()">ذخیره</button>
+    `;
 }
 
 async function openFaviconPicker() {
@@ -1009,14 +1007,10 @@ function renderTheme() {
         </div>
       </div>
       </div>
-      <aside>
-        <div style="position:sticky; top:24px;">
           <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveTheme()" style="flex:1; justify-content:center">ذخیره</button>
-            <button class="btn sec" onclick="resetTheme()" style="flex:1; justify-content:center">بازنشانی پیش‌فرض</button>
+        <button class="btn" onclick="saveTheme()" style="justify-content:center">ذخیره</button>
+        <button class="btn sec" onclick="resetTheme()" style="justify-content:center">بازنشانی پیش‌فرض</button>
           </div>
-        </div>
-      </aside>
     </div>`;
 }
 
@@ -1625,14 +1619,8 @@ async function saveHero() {
 
 function renderPages() {
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
-        <h2 style="margin-bottom:4px">برگه‌ها</h2>
-        <p class="sub" style="margin-bottom:0">مدیریت صفحات سایت.</p>
-      </div>
-      <button class="btn" onclick="newPage()">+ ایجاد برگه جدید</button>
-    </div>
-
+    <h2 style="margin-bottom:18px">برگه‌ها</h2>
+    <button class="btn" style="margin-bottom:24px" onclick="newPage()">+ ایجاد برگه جدید</button>
     <div class="grid2">
       <!-- System Pages -->
       <div class="card" style="display:flex; flex-direction:column; padding:16px">
@@ -1719,13 +1707,13 @@ function renderMenu() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">منوی سایت</h2>
-        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید. (تغییرات به صورت خودکار ذخیره می‌شود)</p>
+        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
       </div>
     </div>
 
     <div style="max-width:800px">
       <div style="margin-bottom:24px">
-        <button class="btn sec" onclick="addMenuItem()">+ افزودن لینک جدید</button>
+        <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
       </div>
       <div id="menu-list" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
