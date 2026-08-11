@@ -113,7 +113,6 @@ export default function ResumePage() {
                         {link.icon}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs text-[var(--muted)] mb-1 font-medium">{link.label}</span>
                         <strong className="text-[var(--foreground)] text-sm font-bold group-hover:text-[var(--primary)] transition-colors" style={{direction: 'ltr', textAlign: 'right'}}>{link.value}</strong>
                       </div>
                     </a>

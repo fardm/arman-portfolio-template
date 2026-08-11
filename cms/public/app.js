@@ -1,4 +1,8 @@
-
+function addMenuItem() {
+  siteMenu.push({ label: 'لینک جدید', href: '/new-link-' + Date.now() });
+  renderMenuList();
+  saveMenuAuto();
+}
 function hexToHsl(hex) {
     hex = hex.replace(/^#/, '');
     if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -58,7 +62,9 @@ function generateThemeColors(primaryHex) {
             foreground: hslToHex(h, bgS, 15),
             muted: hslToHex(h, bgS, 40),
             border: hslToHex(h, bgS, 85),
-            accent: hslToHex(h, s, Math.max(0, l - 20))
+            accent: hslToHex(h, s, Math.max(0, l - 20)),
+            card: hslToHex(h, bgS, 95),
+            cardHover: hslToHex(h, bgS, 92)
         },
         dark: {
             primary: hslToHex(h, s, Math.min(100, l + 15)),
@@ -66,7 +72,9 @@ function generateThemeColors(primaryHex) {
             foreground: hslToHex(h, bgS, 95),
             muted: hslToHex(h, bgS, 60),
             border: hslToHex(h, bgS, 15),
-            accent: hslToHex(h, s, Math.min(100, l + 20))
+            accent: hslToHex(h, s, Math.min(100, l + 20)),
+            card: hslToHex(h, bgS, 9),
+            cardHover: hslToHex(h, bgS, 12)
         }
     };
 }
@@ -140,7 +148,7 @@ function show(view, updateHash = true) {
   const navEl = document.getElementById('nav-' + view);
   if (navEl) navEl.classList.add('active');
   // اگر view مربوط به گروه تنظیمات باشد، گروه را باز نگه دار
-  if (['settings', 'theme', 'font', 'typography'].includes(view)) {
+  if (['settings', 'color-scheme', 'typography'].includes(view)) {
     const group = document.getElementById('group-settings');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
@@ -157,9 +165,8 @@ function render() {
   if (currentView === 'resume') return renderResume();
   if (currentView === 'media') return renderMedia();
   if (currentView === 'settings') return renderSettings();
-  if (currentView === 'theme') return renderTheme();
-  if (currentView === 'font') return renderFont();
-  if (currentView === 'typography') return renderTypography();
+  if (currentView === 'theme' || currentView === 'color-scheme') return renderTheme();
+    if (currentView === 'typography') return renderTypography();
   if (currentView === 'publish') return renderPublish();
   if (currentView === 'project-edit') return renderProjectEdit();
   if (currentView === 'hero') return renderHero();
@@ -410,120 +417,160 @@ function renderCategories() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
-        <p class="sub" style="margin-bottom:0">مدیریت دسته‌بندی‌های پروژه‌ها.</p>
+        <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
       </div>
       <button class="btn" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     </div>
-    <div id="cat-list"></div>`;
+    <div id="cat-list" style="max-width: 600px;"></div>`;
   renderCatList();
 }
 
 function renderCatNode(c, i, depth = 0) {
   const children = categories.filter(child => child.parent === c.slug);
   let html = `
-    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center; margin-right: ${depth * 32}px; border-right: ${depth > 0 ? '4px solid var(--border)' : '1px solid var(--border)'}; margin-bottom: ${children.length ? '8px' : '16px'}; max-width: 600px;">
-      <div>
-        <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'} <span style="color:var(--muted); font-size:0.85rem">(${c.slug})</span></strong>
-      </div>
-      <div style="display:flex; gap:8px">
-        <button class="btn sec" style="padding:8px" onclick="openCatModal(${i})" title="ویرایش">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </button>
-        <button class="btn danger" style="padding:8px" onclick="deleteCat(${i})" title="حذف">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
+    <div style="display:flex; align-items:center; margin-bottom: 8px;">
+      <div
+        style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:6px; cursor:pointer; transition:background 0.2s;"
+        onmouseenter="this.style.background='var(--card-hover)'"
+        onmouseleave="this.style.background='transparent'"
+        onclick="openCatModal(${i})"
+      >
+        <span style="color:var(--foreground)">${c.name || '(بدون نام)'}</span>
+        <span style="color:var(--muted); font-size:0.8rem">/${c.slug}</span>
       </div>
     </div>
   `;
 
   if (children.length > 0) {
-    html += `<div style="margin-bottom: 16px;">`;
+    html += `<ul style="list-style-type:none; padding-right:24px; border-right:1px solid var(--border); margin-top:4px; margin-bottom:8px;">`;
     children.forEach(child => {
       const childIndex = categories.findIndex(cat => cat.slug === child.slug);
-      html += renderCatNode(child, childIndex, depth + 1);
+      html += `<li>${renderCatNode(child, childIndex, depth + 1)}</li>`;
     });
-    html += `</div>`;
+    html += `</ul>`;
   }
-
   return html;
 }
 
 function renderCatList() {
+  const list = document.getElementById('cat-list');
+  if (!list) return;
+  list.innerHTML = '';
+
   const rootCats = categories.filter(c => !c.parent);
-  let html = '';
+  if (rootCats.length === 0) {
+    list.innerHTML = '<p class="sub">هنوز دسته‌ای ایجاد نشده است.</p>';
+    return;
+  }
+
+  let rootHtml = '<ul style="list-style-type:none; padding:0;">';
   rootCats.forEach(c => {
-    const index = categories.findIndex(cat => cat.slug === c.slug);
-    html += renderCatNode(c, index);
+    const i = categories.findIndex(cat => cat.slug === c.slug);
+    rootHtml += `<li>${renderCatNode(c, i)}</li>`;
   });
-  document.getElementById('cat-list').innerHTML = html;
+  rootHtml += '</ul>';
+  list.innerHTML = rootHtml;
 }
 
 function openCatModal(index = -1) {
-  const isEdit = index >= 0;
-  const c = isEdit ? categories[index] : { name: '', slug: '', parent: null };
+  const isEdit = index > -1;
+  const c = isEdit ? categories[index] : { name: '', slug: '', parent: '' };
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
 
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'cat-modal';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+  // Exclude current category and its children from parent options
+  let parentOptions = '<option value="">(بدون والد - ریشه)</option>';
+  categories.forEach(cat => {
+    if (isEdit && cat.slug === c.slug) return;
+    parentOptions += `<option value="${cat.slug}" ${c.parent === cat.slug ? 'selected' : ''}>${cat.name}</option>`;
+  });
 
-  overlay.innerHTML = `
-    <div class="modal-content" style="max-width:500px">
-      <button class="modal-close" onclick="document.getElementById('cat-modal').remove()">بستن ×</button>
-      <h3 style="margin-bottom:16px">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
+  const delBtnHtml = isEdit ? `<button class="btn danger" style="margin-right:auto;" onclick="deleteCat(${index}); this.parentElement.parentElement.parentElement.remove()">حذف</button>` : '';
 
-      <div style="margin-bottom:12px">
-        <label style="margin-top:0">نام نمایشی</label>
-        <input id="cat-name-input" value="${c.name}" placeholder="مثال: طراحی وب">
+  m.innerHTML = `
+    <div class="modal-content" style="max-width:400px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
       </div>
-      <div style="margin-bottom:12px">
-        <label style="margin-top:0">شناسه (slug)</label>
-        <input id="cat-slug-input" value="${c.slug}" placeholder="مثال: web-design">
+
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">نام دسته</label>
+        <input type="text" id="cat-name" value="${c.name}" ${!isEdit ? 'onkeyup="document.getElementById(\'cat-slug\').value=this.value.toLowerCase().replace(/\\s+/g,\'-\')"' : ''}>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">شناسه (URL Slug)</label>
+        <input type="text" id="cat-slug" value="${c.slug}" dir="ltr">
+        <input type="hidden" id="cat-original-slug" value="${c.slug}">
       </div>
       <div style="margin-bottom:24px">
         <label style="margin-top:0">دسته والد</label>
-        <select id="cat-parent-input">
-          <option value="">بدون والد (دسته اصلی)</option>
-          ${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}
-        </select>
+        <select id="cat-parent">${parentOptions}</select>
       </div>
 
-      <div class="row">
-        <button class="btn" style="flex:1; justify-content:center" onclick="saveCatModal(${index})">ذخیره</button>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn" onclick="saveCat(${index}, this.parentElement.parentElement.parentElement)">ذخیره دسته</button>
+        ${delBtnHtml}
       </div>
     </div>
   `;
-  document.body.appendChild(overlay);
+  document.body.appendChild(m);
 }
 
-function saveCatModal(index) {
-  const name = document.getElementById('cat-name-input').value;
-  const slug = document.getElementById('cat-slug-input').value;
-  const parent = document.getElementById('cat-parent-input').value || null;
+async function saveCat(index, modalNode) {
+  const name = val('cat-name'), slug = val('cat-slug'), parent = val('cat-parent');
+  const originalSlug = val('cat-original-slug');
+  if (!name || !slug) return showMsg('نام و شناسه الزامی است', true);
 
-  if (!slug) return alert('شناسه (slug) الزامی است.');
-
-  if (index >= 0) {
-    categories[index] = { ...categories[index], name, slug, parent };
+  if (index === -1) {
+    if (categories.find(c => c.slug === slug)) return showMsg('این شناسه قبلاً استفاده شده است', true);
+    categories.push({ name, slug, parent });
   } else {
-    categories.push({ name, slug, parent, sort: categories.length + 1 });
+    categories[index] = { name, slug, parent, originalSlug };
   }
 
-  document.getElementById('cat-modal').remove();
-  renderCatList();
-  saveCategories();
+  try {
+    await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } });
+    await loadAll();
+    modalNode.remove();
+    showMsg('دسته با موفقیت ذخیره شد');
+    renderCategories();
+  } catch(e) {
+    showMsg('خطا در ذخیره دسته', true);
+  }
 }
 
 async function deleteCat(i) {
-  if(confirm('حذف شود؟')) {
+  if(confirm('حذف شود؟ با حذف این دسته، تمامی زیردسته‌های آن نیز حذف خواهند شد.')) {
     const deletedSlug = categories[i].slug;
-    categories.splice(i,1);
+
+    // Find all children to delete
+    let toDelete = new Set([deletedSlug]);
+    let added = true;
+    while(added) {
+      added = false;
+      categories.forEach(c => {
+        if(toDelete.has(c.parent) && !toDelete.has(c.slug)) {
+          toDelete.add(c.slug);
+          added = true;
+        }
+      });
+    }
+
+    // Filter categories
+    const newCategories = categories.filter(c => !toDelete.has(c.slug));
+
+    // Update projects
     for (const project of projects) {
-      if (project.categories && project.categories.includes(deletedSlug)) {
-        project.categories = project.categories.filter(c => c !== deletedSlug);
+      if (project.categories && project.categories.some(c => toDelete.has(c))) {
+        project.categories = project.categories.filter(c => !toDelete.has(c));
         await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
       }
     }
+
+    categories.length = 0;
+    categories.push(...newCategories);
+
     renderCatList();
     saveCategories();
   }
@@ -595,7 +642,7 @@ function renderResume() {
       <aside>
         <div style="position:sticky; top:24px; padding:16px; border-radius:12px; background:var(--card); border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,0.05)">
           <div style="display:flex; flex-direction:column; gap:12px">
-            <button class="btn" onclick="saveResume()" style="width:100%; justify-content:center; padding:12px">ذخیره اطلاعات</button>
+            <button class="btn" onclick="saveResume()" style="width:100%; justify-content:center; padding:12px">ذخیره</button>
             <button class="btn sec" onclick="cancelResume()" style="width:100%; justify-content:center; padding:12px">انصراف</button>
           </div>
         </div>
@@ -638,7 +685,7 @@ function addEdu() { (resume.education ||= []).push({ id: 'd' + Date.now(), title
 
 async function cancelResume() {
   resume = await api('/api/resume');
-  renderResume();
+  show('pages');
 }
 
 async function saveResume() {
@@ -1081,78 +1128,140 @@ function renderTypography() {
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">تایپوگرافی</h2>
-        <p class="sub" style="margin-bottom:0">نحوه استفاده از فونت‌های سایت را تعیین کنید.</p>
+        <h2 style="margin-bottom:4px">تایپوگرافی و فونت‌ها</h2>
+        <p class="sub" style="margin-bottom:0">فونت‌ها را مدیریت کرده و فونت پیش‌فرض متن و تیترها را تعیین کنید. (تغییرات خودکار ذخیره می‌شوند)</p>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+
+      <!-- Typography Settings -->
       <div>
         <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; font-size:1.1rem; color:var(--primary)">تخصیص فونت‌ها</h3>
           <div style="margin-bottom:24px">
             <label style="margin-top:0">فونت متن سایت</label>
-            <select id="typo-body">
+            <select id="typo-body" onchange="updateTypoAuto('bodyFont', this.value)">
               <option value="">(پیش‌فرض سیستم)</option>
               ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-              <option value="_add">+ افزودن فونت</option>
             </select>
           </div>
 
           <div style="margin-bottom:24px">
             <label style="margin-top:0">فونت تیترها</label>
-            <select id="typo-heading">
+            <select id="typo-heading" onchange="updateTypoAuto('headingFont', this.value)">
               <option value="">(همان فونت متن)</option>
               ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-              <option value="_add">+ افزودن فونت</option>
             </select>
           </div>
         </div>
       </div>
 
-      <aside>
-        <div class="card" style="position:sticky; top:24px;">
-          <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveTypography()" style="flex:1; justify-content:center">ذخیره</button>
+      <!-- Fonts Manager -->
+      <div>
+        <div class="card" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+          <h3 style="margin-bottom:0px; font-size:1.1rem; color:var(--primary)">فونت‌های آپلود شده</h3>
+          <div id="fonts-list" style="display:flex; flex-direction:column; gap:8px;">
+            ${list.length === 0 ? '<p class="sub" style="font-size:0.9rem">هیچ فونتی یافت نشد.</p>' : ''}
+            ${list.map(f => `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
+                <span style="font-family: ${f.name}, Tahoma">${f.name}</span>
+                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteFont('${f.name}')">حذف</button>
+              </div>
+            `).join('')}
           </div>
+          <button class="btn sec" onclick="openFontModal()">+ افزودن فونت جدید</button>
         </div>
-      </aside>
+      </div>
+
     </div>
   `;
-
-  document.getElementById('typo-body').addEventListener('change', (e) => {
-      if(e.target.value === '_add') show('font');
-  });
-  document.getElementById('typo-heading').addEventListener('change', (e) => {
-      if(e.target.value === '_add') show('font');
-  });
 }
 
-async function saveTypography() {
-    const bodyFont = document.getElementById('typo-body').value;
-    const headingFont = document.getElementById('typo-heading').value;
+async function updateTypoAuto(key, value) {
+  site.typography = site.typography || { bodyFont: '', headingFont: '' };
+  site.typography[key] = value;
 
-    site.typography = {
-        bodyFont: bodyFont === '_add' ? '' : bodyFont,
-        headingFont: headingFont === '_add' ? '' : headingFont
-    };
+  if (site.typography.bodyFont) {
+    site.font = site.typography.bodyFont;
+  } else {
+    site.font = 'Tahoma';
+  }
 
-    if (site.typography.bodyFont) {
-        site.font = site.typography.bodyFont;
-    } else {
-        site.font = 'Tahoma';
-    }
-
+  try {
     await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+    await loadAll();
     applyTheme();
-
-    const btn = document.querySelector('button[onclick="saveTypography()"]');
-    if (btn) {
-      const origText = btn.innerHTML;
-      btn.innerHTML = 'ذخیره شد ✓';
-      btn.classList.add('ok');
-      setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
-    }
+  } catch(e) {
+    showMsg('خطا در ذخیره تایپوگرافی', true);
+  }
 }
+
+function openFontModal() {
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
+  m.innerHTML = `
+    <div class="modal-content" style="max-width:400px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">افزودن فونت جدید</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+      </div>
+
+      <label>نام فونت (انگلیسی):</label>
+      <input type="text" id="new-font-name" placeholder="e.g. Vazirmatn" style="margin-bottom:16px">
+
+      <label>فرمت فونت:</label>
+      <div style="display:flex; gap:16px; margin-bottom:16px; align-items:flex-start" id="new-font-format">
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff2" checked> WOFF2</label>
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff"> WOFF</label>
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="ttf"> TTF</label>
+      </div>
+
+      <label>فایل فونت:</label>
+      <input type="file" id="new-font-file" style="margin-bottom:24px">
+
+      <button class="btn" style="width:100%; justify-content:center" onclick="uploadFontAction(this)">آپلود فونت</button>
+    </div>
+  `;
+  document.body.appendChild(m);
+}
+
+async function uploadFontAction(btn) {
+  const name = document.getElementById('new-font-name').value.trim();
+  const file = document.getElementById('new-font-file').files[0];
+  const format = document.querySelector('input[name="fontFmt"]:checked').value;
+  if(!name || !file) return showMsg('نام و فایل فونت الزامی است', true);
+
+  btn.disabled = true;
+  btn.innerText = 'در حال آپلود...';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('format', format);
+  try {
+    await api('/api/fonts/'+name, {method:'POST', body:fd});
+    await loadAll();
+    document.querySelector('.modal-overlay').remove();
+    if(currentView === 'typography') renderTypography();
+  } catch(e) {
+    showMsg('خطا در آپلود', true);
+    btn.disabled = false;
+    btn.innerText = 'آپلود فونت';
+  }
+}
+
+async function deleteFont(name) {
+  if(!confirm('آیا از حذف این فونت مطمئن هستید؟')) return;
+  try {
+    await api('/api/fonts/'+name, {method:'DELETE'});
+    await loadAll();
+    if(currentView === 'typography') renderTypography();
+  } catch(e) {
+    showMsg('خطا در حذف فونت', true);
+  }
+}
+
+
 
 
 async function renderMedia() {
@@ -1332,9 +1441,9 @@ function renderHero() {
 
       <aside>
         <div class="card" style="position:sticky; top:24px;">
-          <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveHero()" style="flex:1; justify-content:center">ذخیره</button>
-            <button class="btn sec" onclick="cancelHero()" style="flex:1; justify-content:center">انصراف</button>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <button class="btn" onclick="saveHero()" style="justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="cancelHero()" style="justify-content:center">انصراف</button>
           </div>
         </div>
       </aside>
@@ -1343,7 +1452,7 @@ function renderHero() {
 
 async function cancelHero() {
   await loadAll();
-  renderHero();
+  show('pages');
 }
 
 async function openHeroImagePicker() {
@@ -1499,23 +1608,15 @@ function renderMenu() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">منوی سایت</h2>
-        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
+        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید. (تغییرات به صورت خودکار ذخیره می‌شود)</p>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
-      <div>
-        <div id="menu-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px"></div>
+    <div style="max-width:800px">
+      <div style="margin-bottom:24px">
+        <button class="btn sec" onclick="addMenuItem()">+ افزودن لینک جدید</button>
       </div>
-
-      <aside>
-        <div class="card" style="position:sticky; top:24px;">
-          <div class="row" style="margin-bottom:16px">
-            <button class="btn" onclick="saveMenu()" style="flex:1; justify-content:center">ذخیره منو</button>
-            <button class="btn sec" onclick="addMenuItem()" style="flex:1; justify-content:center">+ افزودن لینک جدید</button>
-          </div>
-        </div>
-      </aside>
+      <div id="menu-list" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
   `;
   renderMenuList();
@@ -1544,19 +1645,19 @@ function renderMenuList() {
     const isSystemPage = m.href === '/' || m.href === '/projects' || m.href === '/resume';
     return `
     <div class="card menu-item-card" draggable="true" data-index="${i}" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center; cursor:grab;" ondragstart="handleDragStartMenu(event, ${i})" ondragover="handleDragOverMenu(event)" ondrop="handleDropMenu(event, ${i})" ondragend="handleDragEndMenu(event)">
+      <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+      </div>
       <div style="flex:1">
         <label style="margin-top:0">عنوان لینک</label>
-        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value" placeholder="مثال: درباره من" style="cursor:text;">
+        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value; saveMenuAuto();" placeholder="مثال: درباره من" style="cursor:text;">
       </div>
       <div style="flex:2">
         <label style="margin-top:0">آدرس (URL)</label>
-        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''} style="cursor:text;">
+        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value; saveMenuAuto();" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''} style="cursor:text;">
       </div>
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
         <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف" ${isSystemPage ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-        <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
-        </div>
       </div>
     </div>
   `}).join('');
@@ -1582,6 +1683,7 @@ function handleDropMenu(e, dropIndex) {
   siteMenu.splice(dropIndex, 0, temp);
 
   renderMenuList();
+  saveMenuAuto();
 }
 
 function handleDragEndMenu(e) {
@@ -1589,23 +1691,14 @@ function handleDragEndMenu(e) {
   draggedMenuIndex = null;
 }
 
-function addMenuItem() {
-  siteMenu.push({ label: 'لینک جدید', href: '/' });
-  renderMenuList();
-}
 
-function moveMenuItem(i, dir) {
-  if (i + dir < 0 || i + dir >= siteMenu.length) return;
-  const temp = siteMenu[i];
-  siteMenu[i] = siteMenu[i + dir];
-  siteMenu[i + dir] = temp;
-  renderMenuList();
-}
 
-function deleteMenuItem(i) {
-  if (!confirm('حذف شود؟')) return;
-  siteMenu.splice(i, 1);
-  renderMenuList();
+async function saveMenuAuto() {
+  try {
+    await api('/api/menu', { method: 'POST', body: JSON.stringify(siteMenu), headers: { 'Content-Type': 'application/json' } });
+  } catch (err) {
+    showMsg('خطا در ذخیره خودکار منو', true);
+  }
 }
 
 async function saveMenu() {
