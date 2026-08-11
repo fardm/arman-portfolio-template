@@ -824,9 +824,28 @@ async function uploadFavicon() {
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 
+
 async function saveTheme(skipMsg = false) {
   site.theme = site.theme || {};
   site.theme.mode = 'system';
+  site.theme.schemeMode = window.themeSchemeTab || 'manual';
+
+  if (window.themeSchemeTab === 'auto') {
+      const gen = generateThemeColors(site.theme.baseColor || '#b8f542');
+      site.theme.dark = gen.dark;
+      site.theme.light = gen.light;
+      site.theme.isCustom = false;
+  } else if (window.themeSchemeTab === 'default') {
+      site.theme.baseColor = '#b8f542';
+      site.theme.dark = { primary: '#b8f542', secondary: '#8adcf0', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', card: '#131b2a' };
+      site.theme.light = { primary: '#8ec421', secondary: '#18a1c3', background: '#fafbf9', foreground: '#292e1f', muted: '#6d7a52', border: '#dbe0d1', card: '#f3f5f0' };
+      site.theme.isCustom = false;
+  } else {
+      // manual mode
+      site.theme.isCustom = true;
+      syncCustomColors(); // Ensure inputs are fully synced before saving
+  }
+
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   applyTheme();
 
@@ -841,16 +860,17 @@ async function saveTheme(skipMsg = false) {
   }
 }
 
-
 function renderTheme() {
   const t = site.theme || { baseColor: '#b8f542', isCustom: false, mode: 'system' };
 
   // Initialize window.themeSchemeTab if not set
   if (!window.themeSchemeTab) {
-    if (t.isCustom) {
+    if (t.schemeMode) {
+      window.themeSchemeTab = t.schemeMode;
+    } else if (t.isCustom) {
       window.themeSchemeTab = 'manual';
     } else {
-      window.themeSchemeTab = 'auto'; // Assuming it's auto or default. We'll default to auto for now.
+      window.themeSchemeTab = 'auto';
     }
   }
 
