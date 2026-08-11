@@ -77,7 +77,7 @@ export function renderProjectEdit() {
           <label>توضیح کوتاه</label><input id="f-description" value="${p.description || ''}">
           <div class="grid2" style="margin-top:12px">
             <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
-            <div><label>مشتری</label><input id="f-client" value="${p.client || ''}"></div>
+            <div><label>کارفرما</label><input id="f-client" value="${p.client || ''}"></div>
           </div>
 
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>

@@ -114,7 +114,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
                 <div>
-                  <dt className="text-[var(--muted)] text-xs mb-0.5">مشتری</dt>
+                  <dt className="text-[var(--muted)] text-xs mb-0.5">کارفرما</dt>
                   <dd className="font-medium text-base">{project.client || '—'}</dd>
                 </div>
               </div>

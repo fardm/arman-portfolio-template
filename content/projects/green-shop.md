@@ -5,11 +5,18 @@ description: تجربه‌ای آرام و سریع برای خرید محصول
 cover: /media/norbert-levajsics-R2JCl9zI7og-unsplash.jpg
 year: ۱۴۰۱
 client: گرین
+technologies: []
 categories:
   - video
 template: image
 videoSource: host
 videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+images:
+  - /media/photographer-4216405_1920.jpg
+  - /media/norbert-levajsics-R2JCl9zI7og-unsplash.jpg
+  - /media/neom-gOqBe7ropxM-unsplash.jpg
+  - /media/fabrizio-conti-vu2bIz9aX9I-unsplash.jpg
+  - /media/claudio-poggio-xCK8kr0R0JE-unsplash.jpg
 ---
 ## ایده
 
