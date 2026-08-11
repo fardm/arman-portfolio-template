@@ -1079,87 +1079,139 @@ function renderFontList() {
 }
 
 function openFontModal() {
+  const existing = document.getElementById('font-modal');
+  if (existing) existing.remove();
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'font-modal';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
   overlay.innerHTML = `
-    <div class="modal-content" style="max-width:500px">
-      <button class="modal-close" onclick="document.getElementById('font-modal').remove()">بستن ×</button>
-      <h3 style="margin-bottom:16px">افزودن فونت</h3>
+    <div class="modal-content" style="max-width:480px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">افزودن فونت</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="document.getElementById('font-modal').remove()">×</button>
+      </div>
 
-      <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:12px">
-        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
-          <input type="radio" name="font-source" value="google" checked onchange="toggleFontSourceModal(this.value)"> Google Fonts
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px">
+        <label id="fsrc-google-label" style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:8px; border:2px solid var(--primary); background:color-mix(in srgb, var(--primary) 10%, transparent); cursor:pointer; font-weight:600; transition:all .15s">
+          <input type="radio" name="font-source" value="google" checked onchange="toggleFontSourceModal(this.value)" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Google Font
         </label>
-        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
-          <input type="radio" name="font-source" value="custom" onchange="toggleFontSourceModal(this.value)"> آپلود فونت
+        <label id="fsrc-upload-label" style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:8px; border:2px solid var(--border); cursor:pointer; font-weight:600; transition:all .15s">
+          <input type="radio" name="font-source" value="custom" onchange="toggleFontSourceModal(this.value)" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          آپلود فونت
         </label>
       </div>
 
       <div id="modal-font-google" style="margin-bottom:24px">
-        <label style="margin-top:0">نام فونت (Google Fonts)</label>
-        <input id="modal-google-name" placeholder="مثال: Vazirmatn">
+        <label style="margin-top:0">نام فونت (دقیقاً مطابق Google Fonts)</label>
+        <input id="modal-google-name" placeholder="مثال: Vazirmatn" style="margin-bottom:4px">
+        <p style="color:var(--muted); font-size:.8rem; margin:0">نام فونت را دقیقاً همان‌طور که در <a href="https://fonts.google.com" target="_blank" style="color:var(--primary)">fonts.google.com</a> نوشته شده وارد کنید.</p>
       </div>
 
       <div id="modal-font-custom" style="margin-bottom:24px; display:none">
-        <label style="margin-top:0">آپلود فایل فونت</label>
-        <input type="file" id="modal-custom-file" accept=".woff2,.woff,.ttf,.otf">
-        <p style="color:#9ba6b5;font-size:.8rem;margin-top:4px">فرمت WOFF2 پیشنهاد می‌شود.</p>
+        <label style="margin-top:0">فایل فونت</label>
+        <div id="font-drop-zone" style="border:2px dashed var(--border); border-radius:10px; padding:32px 16px; text-align:center; cursor:pointer; transition:border-color .15s" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFontDrop(event)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p style="color:var(--muted); margin:0 0 10px; font-size:.9rem">فایل را اینجا بکشید یا کلیک کنید</p>
+          <input type="file" id="modal-custom-file" accept=".woff2,.woff,.ttf,.otf" style="display:none" onchange="onFontFileSelected(this)">
+          <button class="btn sec" type="button" style="padding:7px 16px; font-size:.85rem" onclick="document.getElementById('modal-custom-file').click()">انتخاب فایل</button>
+          <p id="font-file-name" style="color:var(--primary); font-size:.85rem; margin:10px 0 0; display:none"></p>
+        </div>
+        <p style="color:var(--muted); font-size:.8rem; margin:6px 0 0">فرمت‌های پشتیبانی‌شده: WOFF2، WOFF، TTF، OTF</p>
       </div>
 
-      <div class="row">
-        <button class="btn sec" style="flex:1; justify-content:center" onclick="document.getElementById('font-modal').remove()">انصراف</button>
-        <button class="btn" style="flex:1; justify-content:center" onclick="saveFontModal()">افزودن فونت</button>
-      </div>
+      <button class="btn" style="width:100%; justify-content:center; padding:12px" onclick="saveFontModal()">افزودن</button>
     </div>
   `;
   document.body.appendChild(overlay);
 }
 
 function toggleFontSourceModal(val) {
-    document.getElementById('modal-font-google').style.display = val === 'google' ? 'block' : 'none';
-    document.getElementById('modal-font-custom').style.display = val === 'custom' ? 'block' : 'none';
+  document.getElementById('modal-font-google').style.display = val === 'google' ? 'block' : 'none';
+  document.getElementById('modal-font-custom').style.display = val === 'custom' ? 'block' : 'none';
+  // Update pill highlight
+  const googleLabel = document.getElementById('fsrc-google-label');
+  const uploadLabel = document.getElementById('fsrc-upload-label');
+  if (val === 'google') {
+    googleLabel.style.borderColor = 'var(--primary)';
+    googleLabel.style.background = 'color-mix(in srgb, var(--primary) 10%, transparent)';
+    uploadLabel.style.borderColor = 'var(--border)';
+    uploadLabel.style.background = 'transparent';
+  } else {
+    uploadLabel.style.borderColor = 'var(--primary)';
+    uploadLabel.style.background = 'color-mix(in srgb, var(--primary) 10%, transparent)';
+    googleLabel.style.borderColor = 'var(--border)';
+    googleLabel.style.background = 'transparent';
+  }
+}
+
+function onFontFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const label = document.getElementById('font-file-name');
+  label.textContent = file.name;
+  label.style.display = 'block';
+}
+
+function handleFontDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('font-drop-zone');
+  zone.style.borderColor = 'var(--border)';
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const input = document.getElementById('modal-custom-file');
+  // Transfer file to the hidden input via DataTransfer
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+  onFontFileSelected(input);
 }
 
 async function saveFontModal() {
-    const source = document.querySelector('input[name="font-source"]:checked').value;
-    let newFont = null;
+  const source = document.querySelector('input[name="font-source"]:checked').value;
+  let newFont = null;
 
-    if (source === 'google') {
-        const name = document.getElementById('modal-google-name').value.trim();
-        if (!name) return alert('لطفا نام فونت را وارد کنید.');
-        newFont = { source: 'google', name, googleFamily: name };
-    } else {
-        const fileInput = document.getElementById('modal-custom-file');
-        const file = fileInput.files[0];
-        if (!file) return alert('لطفا یک فایل فونت انتخاب کنید.');
+  if (source === 'google') {
+    const name = document.getElementById('modal-google-name').value.trim();
+    if (!name) return alert('لطفاً نام فونت را وارد کنید.');
+    newFont = { source: 'google', name, googleFamily: name };
+  } else {
+    const fileInput = document.getElementById('modal-custom-file');
+    const file = fileInput.files[0];
+    if (!file) return alert('لطفاً یک فایل فونت انتخاب کنید.');
 
-        const ext = '.' + file.name.split('.').pop().toLowerCase();
-        if (!FONT_EXTENSIONS.includes(ext)) { alert('فرمت پشتیبانی نمی‌شود.'); return; }
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!FONT_EXTENSIONS.includes(ext)) { alert('فرمت پشتیبانی نمی‌شود.'); return; }
 
-        const buffer = await file.arrayBuffer();
-        await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-        await loadFonts();
+    const buffer = await file.arrayBuffer();
+    await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
+    await loadFonts();
 
-        const isVar = file.name.toLowerCase().includes('variable') || ext === '.woff2';
-        const name = file.name.replace(/\.[^.]+$/, '');
-        const fontPath = `/fonts/${file.name}`;
+    const isVar = file.name.toLowerCase().includes('variable');
+    const name = file.name.replace(/\.[^.]+$/, '');
+    const format = ext.slice(1); // derive format from extension — no manual selection needed
+    newFont = {
+      source: 'custom',
+      name,
+      customFont: { path: `/fonts/${file.name}`, format, isVariable: isVar, weights: isVar ? [100, 900] : [400] }
+    };
+  }
 
-        newFont = {
-            source: 'custom',
-            name,
-            customFont: { path: fontPath, format: ext.slice(1), isVariable: isVar, weights: isVar ? [100, 900] : [400] }
-        };
-    }
+  if (!Array.isArray(site.fonts)) site.fonts = [];
+  if (site.fonts.find(f => f.name === newFont.name)) {
+    return alert(`فونت "${newFont.name}" از قبل وجود دارد.`);
+  }
+  site.fonts.push(newFont);
 
-    if (!Array.isArray(site.fonts)) site.fonts = [];
-    site.fonts.push(newFont);
-
-    await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-    document.getElementById('font-modal').remove();
-    renderFontList();
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+  document.getElementById('font-modal').remove();
+  renderFontList();
+  if (currentView === 'typography') renderTypography();
 }
 
 async function deleteSiteFont(i) {
@@ -1256,59 +1308,6 @@ async function updateTypoAuto(key, value) {
     applyTheme();
   } catch(e) {
     showMsg('خطا در ذخیره تایپوگرافی', true);
-  }
-}
-
-function openFontModal() {
-  const m = document.createElement('div');
-  m.className = 'modal-overlay';
-  m.innerHTML = `
-    <div class="modal-content" style="max-width:400px">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-        <h3 style="margin:0">افزودن فونت جدید</h3>
-        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
-      </div>
-
-      <label>نام فونت (انگلیسی):</label>
-      <input type="text" id="new-font-name" placeholder="e.g. Vazirmatn" style="margin-bottom:16px">
-
-      <label>فرمت فونت:</label>
-      <div style="display:flex; gap:16px; margin-bottom:16px; align-items:flex-start" id="new-font-format">
-        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff2" checked> WOFF2</label>
-        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff"> WOFF</label>
-        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="ttf"> TTF</label>
-      </div>
-
-      <label>فایل فونت:</label>
-      <input type="file" id="new-font-file" style="margin-bottom:24px">
-
-      <button class="btn" style="width:100%; justify-content:center" onclick="uploadFontAction(this)">آپلود فونت</button>
-    </div>
-  `;
-  document.body.appendChild(m);
-}
-
-async function uploadFontAction(btn) {
-  const name = document.getElementById('new-font-name').value.trim();
-  const file = document.getElementById('new-font-file').files[0];
-  const format = document.querySelector('input[name="fontFmt"]:checked').value;
-  if(!name || !file) return showMsg('نام و فایل فونت الزامی است', true);
-
-  btn.disabled = true;
-  btn.innerText = 'در حال آپلود...';
-
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('format', format);
-  try {
-    await api('/api/fonts/'+name, {method:'POST', body:fd});
-    await loadAll();
-    document.querySelector('.modal-overlay').remove();
-    if(currentView === 'typography') renderTypography();
-  } catch(e) {
-    showMsg('خطا در آپلود', true);
-    btn.disabled = false;
-    btn.innerText = 'آپلود فونت';
   }
 }
 
