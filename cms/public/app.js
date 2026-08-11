@@ -805,7 +805,6 @@ function renderTheme() {
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
       <div>
         <div class="card" style="padding:24px">
           <div style="margin-bottom:24px">
@@ -930,7 +929,7 @@ function renderTheme() {
       </div>
       </div>
       <aside>
-        <div class="card" style="position:sticky; top:24px;">
+        <div style="position:sticky; top:24px;">
           <div class="row" style="margin-bottom:16px">
             <button class="btn" onclick="saveTheme()" style="flex:1; justify-content:center">ذخیره</button>
             <button class="btn sec" onclick="resetTheme()" style="flex:1; justify-content:center">بازنشانی پیش‌فرض</button>
@@ -1145,17 +1144,35 @@ function renderTypography() {
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">تایپوگرافی و فونت‌ها</h2>
-        <p class="sub" style="margin-bottom:0">فونت‌ها را مدیریت کرده و فونت پیش‌فرض متن و تیترها را تعیین کنید. (تغییرات خودکار ذخیره می‌شوند)</p>
+        <h2 style="margin-bottom:4px">تنظیم فونت</h2>
+        <p class="sub" style="margin-bottom:0">ابتدا فونت دلخواه خود را اضافه کنید سپس فونت متن و تیتر را تنظیم کنید.</p>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+    <div style="display:flex; flex-direction: column; gap:24px;">
+
+      <!-- Fonts Manager -->
+      <div>
+        <div class="card" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+          <h3 style="margin-bottom:0px; font-size:1.1rem; color:var(--primary)">مدیریت فونت‌ها</h3>
+          <p class="sub" style="margin-bottom:0">فونت های موجود:</p>
+          <div id="fonts-list" style="display:flex; flex-direction:column; gap:8px;">
+            ${list.length === 0 ? '<p class="sub" style="font-size:0.9rem">هیچ فونتی یافت نشد.</p>' : ''}
+            ${list.map(f => `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
+                <span style="font-family: ${f.name}, Tahoma">${f.name}</span>
+                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteFont('${f.name}')">حذف</button>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn sec" onclick="openFontModal()">+ افزودن فونت جدید</button>
+        </div>
+      </div>
 
       <!-- Typography Settings -->
       <div>
         <div class="card" style="padding:24px">
-          <h3 style="margin-bottom:16px; font-size:1.1rem; color:var(--primary)">تخصیص فونت‌ها</h3>
+          <h3 style="margin-bottom:16px; font-size:1.1rem; color:var(--primary)">انتخاب فونت سایت</h3>
           <div style="margin-bottom:24px">
             <label style="margin-top:0">فونت متن سایت</label>
             <select id="typo-body" onchange="updateTypoAuto('bodyFont', this.value)">
@@ -1174,22 +1191,7 @@ function renderTypography() {
         </div>
       </div>
 
-      <!-- Fonts Manager -->
-      <div>
-        <div class="card" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
-          <h3 style="margin-bottom:0px; font-size:1.1rem; color:var(--primary)">فونت‌های آپلود شده</h3>
-          <div id="fonts-list" style="display:flex; flex-direction:column; gap:8px;">
-            ${list.length === 0 ? '<p class="sub" style="font-size:0.9rem">هیچ فونتی یافت نشد.</p>' : ''}
-            ${list.map(f => `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
-                <span style="font-family: ${f.name}, Tahoma">${f.name}</span>
-                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteFont('${f.name}')">حذف</button>
-              </div>
-            `).join('')}
-          </div>
-          <button class="btn sec" onclick="openFontModal()">+ افزودن فونت جدید</button>
-        </div>
-      </div>
+
 
     </div>
   `;
