@@ -45,6 +45,7 @@ export function renderResume() {
             <div><label style="margin-top:0">گیت‌هاب (آیدی)</label><input id="r-github" value="${state.resume.github || ''}" dir="ltr"></div>
             <div><label style="margin-top:0">یوتیوب (آیدی)</label><input id="r-youtube" value="${state.resume.youtube || ''}" dir="ltr"></div>
             <div><label style="margin-top:0">توییتر (X) (آیدی)</label><input id="r-twitter" value="${state.resume.twitter || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">اینستاگرام (آیدی)</label><input id="r-instagram" value="${state.resume.instagram || ''}" dir="ltr"></div>
             <div><label style="margin-top:0">لینک دلخواه (URL کامل)</label><input id="r-customLink" value="${state.resume.customLink || ''}" dir="ltr"></div>
           </div>
         </div>
@@ -131,6 +132,7 @@ export async function saveResume() {
   state.resume.github = val('r-github');
   state.resume.youtube = val('r-youtube');
   state.resume.twitter = val('r-twitter');
+  state.resume.instagram = val('r-instagram');
   state.resume.customLink = val('r-customLink');
   await api('/api/resume', { method: 'POST', body: JSON.stringify(state.resume), headers: { 'Content-Type': 'application/json' } });
   await loadAll();

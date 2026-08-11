@@ -30,10 +30,14 @@ export function Header({ site }: { site: Record<string, unknown> }) {
 }
 
 export function Footer({ site }: { site: Record<string, unknown> }) {
+  const footerText = typeof site.footerText === 'string' && site.footerText.trim() !== ''
+    ? site.footerText
+    : `© ${new Date().getFullYear()} ${String(site.name)}. همه حقوق محفوظ است.`;
+
   return (
     <footer className="border-t border-[var(--border)] py-6">
       <div className="container flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
-        <span>© {new Date().getFullYear()} {String(site.name)}. همه حقوق محفوظ است.</span>
+        <span>{footerText}</span>
         <div className="flex gap-5"></div>
       </div>
     </footer>

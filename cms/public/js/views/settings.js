@@ -17,6 +17,7 @@ export function renderSettings() {
 
       <label>عنوان سئو</label><input id="s-seoTitle" value="${state.site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${state.site.seoDescription || ''}</textarea>
+      <label>متن فوتر</label><textarea id="s-footerText">${state.site.footerText || ''}</textarea>
       <div style="margin-top:16px"></div>
     </div>
     <button class="btn" onclick="saveSettings()">ذخیره</button>
@@ -28,6 +29,7 @@ export async function saveSettings() {
   state.site.favicon = val('s-favicon');
   state.site.seoTitle = val('s-seoTitle');
   state.site.seoDescription = val('s-seoDesc');
+  state.site.footerText = val('s-footerText');
   await api('/api/site', { method: 'POST', body: JSON.stringify(state.site), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
   show('settings');

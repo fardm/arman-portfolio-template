@@ -129,3 +129,4 @@ window.state = state; // Useful for debugging
 loadAll();
 window.saveMenu = saveMenu;
 window.saveMenuAuto = saveMenuAuto;
+window.toggleAdminTheme = window.toggleAdminTheme || function() {};
