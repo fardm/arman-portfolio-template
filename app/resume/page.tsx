@@ -84,8 +84,8 @@ export default function ResumePage() {
           <div>
             {infos.length > 0 && (
               <>
-                <h2 className="mb-6 text-2xl font-bold">اطلاعات</h2>
-                <ul className="space-y-4 text-[var(--muted)] mb-12">
+                <h2 className="mb-2 text-2xl font-bold">اطلاعات</h2>
+                <ul className="space-y-1 text-[var(--muted)] mb-12 bg-[var(--card)] rounded-md px-4 py-2">
                   {infos.map((info) => (
                     <li key={info.label} className="flex items-center gap-4 py-2">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)] border border-[var(--border)]">
@@ -103,12 +103,12 @@ export default function ResumePage() {
 
             {links.length > 0 && (
               <>
-                <h2 className="mb-6 text-2xl font-bold">لینک‌ها</h2>
-                <div className="flex flex-col gap-3 mb-12">
+                <h2 className="mb-2 text-2xl font-bold">لینک‌ها</h2>
+                <div className="flex flex-col gap-3 mb-12 bg-[var(--card)] rounded-md px-4 py-2">
                   {links.map((link) => (
                     <a key={link.label} href={link.link} target="_blank" rel="noopener noreferrer"
                        className="flex items-center gap-4 py-2 group">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
                         {link.icon}
                       </div>
                       <div className="flex flex-col">
@@ -121,7 +121,7 @@ export default function ResumePage() {
             )}
 
             <h2 className="mb-5 text-2xl font-bold">زبان‌ها</h2>
-            <ul className="space-y-2 text-[var(--muted)]">
+            <ul className="space-y-2 text-[var(--muted)] bg-[var(--card)] rounded-md px-4 py-2">
               {resume.languages.map((item) => <li key={item} className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[var(--primary)]"></span>{item}</li>)}
             </ul>
           </div>

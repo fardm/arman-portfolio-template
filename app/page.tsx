@@ -124,7 +124,7 @@ export default function Home() {
               </div>
               <p className="hero-about-text">{about}</p>
               <Link className="button" style={{width: 'fit-content', padding: '8px 20px 8px 10px'}} href="/resume">
-                رزومه من <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                رزومه من <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left-icon lucide-chevron-left"> <path d="m15 18-6-6 6-6" /> </svg>
               </Link>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function Home() {
           </div>
           <div className="mt-10 flex justify-center">
             <Link className="button" style={{padding: '8px 20px 8px 10px'}} href="/projects">
-              مشاهده همه <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+              مشاهده همه <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left-icon lucide-chevron-left"> <path d="m15 18-6-6 6-6" /> </svg>
             </Link>
           </div>
         </div>
