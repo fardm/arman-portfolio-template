@@ -795,8 +795,8 @@ function renderTheme() {
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">پوسته و رنگ‌بندی</h2>
-        <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند.</p>
+        <h2 style="margin-bottom:4px">رنگ‌بندی</h2>
+        <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند. برای ویرایش رنگ ها باید گزینه تنظیم دستی را فعال کنید.</p>
       </div>
     </div>
 

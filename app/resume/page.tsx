@@ -44,7 +44,6 @@ export default function ResumePage() {
   return (
     <section className="section">
       <div className="container max-w-4xl">
-        <p className="eyebrow">مسیر حرفه‌ای</p>
         <h1 className="mt-2 text-5xl font-black">رزومه</h1>
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[1.5fr_1fr]">

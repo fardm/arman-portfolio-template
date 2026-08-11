@@ -24,13 +24,25 @@
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
   "theme": {
-    "mode": "dark",
     "primary": "#b8f542",
-    "background": "#0b111b",
-    "foreground": "#f5f7fa",
-    "muted": "#9ba6b5",
-    "border": "#263243",
-    "accent": "#8adcf0"
+    "isCustom": false,
+    "light": {
+      "primary": "#98df0c",
+      "background": "#fafbf9",
+      "foreground": "#292e1f",
+      "muted": "#6d7a52",
+      "border": "#dbe0d1",
+      "accent": "#88c70a",
+      "card": "#f3f5f0",
+      "cardHover": "#ecefe7"
+    },
+    "dark": {
+      "background": "#0b111b",
+      "foreground": "#f5f7fa",
+      "muted": "#9ba6b5",
+      "border": "#263243",
+      "accent": "#8adcf0"
+    }
   },
   "favicon": "/media/profile.jpg",
   "fonts": [
