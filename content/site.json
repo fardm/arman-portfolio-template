@@ -24,6 +24,7 @@
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
   "theme": {
+    "mode": "system",
     "baseColor": "#b8f542",
     "isCustom": true,
     "light": {
