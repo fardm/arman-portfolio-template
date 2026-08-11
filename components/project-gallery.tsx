@@ -4,10 +4,23 @@ import { useState } from 'react';
 
 export function ProjectGallery({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (!images || images.length === 0) return null;
   if (images.length === 1) {
-    return <img src={images[0]} alt="تصویر پروژه" className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />;
+    return (
+      <>
+        <img src={images[0]} alt="تصویر پروژه" className="w-full rounded-2xl border border-[var(--border)] shadow-sm cursor-pointer object-cover" onClick={() => setLightboxOpen(true)} />
+        {lightboxOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm" onClick={() => setLightboxOpen(false)}>
+            <button className="absolute right-6 top-6 text-white hover:text-gray-300" onClick={() => setLightboxOpen(false)}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <img src={images[0]} alt="تصویر بزرگ پروژه" className="max-h-[90vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+          </div>
+        )}
+      </>
+    );
   }
 
   const next = () => setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -19,7 +32,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
         <img
           src={images[currentIndex]}
           alt="تصویر پروژه"
-          className="h-full w-full object-contain"
+          className="h-full w-full object-cover cursor-pointer" onClick={() => setLightboxOpen(true)}
         />
 
         <button
@@ -50,6 +63,42 @@ export function ProjectGallery({ images }: { images: string[] }) {
           </button>
         ))}
       </div>
+
+      {lightboxOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm" onClick={() => setLightboxOpen(false)}>
+          <button className="absolute right-6 top-6 text-white hover:text-gray-300" onClick={() => setLightboxOpen(false)}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+
+          <img
+            src={images[currentIndex]}
+            alt="تصویر بزرگ پروژه"
+            className="max-h-[90vh] max-w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prev(); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/80 md:right-10"
+                aria-label="قبلی"
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); next(); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/80 md:left-10"
+                aria-label="بعدی"
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

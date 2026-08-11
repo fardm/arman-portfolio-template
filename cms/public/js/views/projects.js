@@ -147,7 +147,10 @@ export async function openCoverPickerModal() {
   overlay.id = 'cover-modal';
   overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
 
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
+      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
+    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
 
   overlay.innerHTML = `
     <div class="modal-content">
@@ -157,7 +160,7 @@ export async function openCoverPickerModal() {
         <input type="file" id="modal-upload-file" accept="image/*" style="flex:1">
         <button class="btn" onclick="uploadCoverFromModal()">آپلود و انتخاب</button>
       </div>
-      <div class="grid2" id="modal-media-grid">
+      <div class="grid2" id="modal-media-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
         ${gridHtml}
       </div>
     </div>
@@ -184,7 +187,10 @@ export async function uploadCoverFromModal() {
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
   await loadMedia();
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
+      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
+    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
   const grid = document.getElementById('modal-media-grid');
   if (grid) grid.innerHTML = gridHtml;
   selectCover(`/media/${file.name}`);
