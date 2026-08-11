@@ -824,16 +824,18 @@ async function uploadFavicon() {
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 
-async function saveTheme() {
+async function saveTheme(skipMsg = false) {
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   applyTheme();
 
-  const btn = document.querySelector('button[onclick="saveTheme()"]');
-  if (btn) {
-    const origText = btn.innerHTML;
-    btn.innerHTML = 'ذخیره شد ✓';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  if (!skipMsg) {
+    const btn = document.querySelector('button[onclick="saveTheme()"]');
+    if (btn) {
+      const origText = btn.innerHTML;
+      btn.innerHTML = 'ذخیره شد ✓';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+    }
   }
 }
 
@@ -1071,7 +1073,19 @@ async function resetTheme() {
     dark: def.dark
   };
 
-  await saveTheme();
+  // Update inputs instantly, then persist in background (no message on save btn)
+  renderTheme();
+  applyTheme();
+  await saveTheme(true);
+
+  // Show confirmation on the reset button
+  const btn = document.querySelector('button[onclick="resetTheme()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'بازنشانی شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
 }
 
 function renderFont() {
