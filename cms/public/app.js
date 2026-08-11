@@ -3,6 +3,12 @@ function addMenuItem() {
   renderMenuList();
   saveMenuAuto();
 }
+
+function deleteMenuItem(i) {
+  siteMenu.splice(i, 1);
+  renderMenuList();
+  saveMenuAuto();
+}
 function hexToHsl(hex) {
     hex = hex.replace(/^#/, '');
     if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
