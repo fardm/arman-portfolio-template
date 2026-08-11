@@ -135,7 +135,7 @@ export default function Home() {
       <section className="section border-t border-[var(--border)]">
         <div className="container">
           <div className="mb-9 text-center">
-            <h2 className="mt-2 text-3xl font-bold">پروژه‌های اخیر</h2>
+            <h2 className="mt-2 text-3xl font-bold">پروژه‌ها</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {featured.map((project) => (

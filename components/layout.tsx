@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 import { getMenu } from '@/lib/content';
+import { MobileMenu } from './mobile-menu';
 
 export function Header({ site }: { site: Record<string, unknown> }) {
   const menu = getMenu();
@@ -21,7 +22,7 @@ export function Header({ site }: { site: Record<string, unknown> }) {
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link className="text-[var(--primary)] sm:hidden" href="/projects" aria-label="مشاهده پروژه‌ها">پروژه‌ها</Link>
+          <MobileMenu menuItems={menuItems} siteName={String(site.name)} />
         </div>
       </div>
     </header>

@@ -26,7 +26,7 @@
   "theme": {
     "mode": "system",
     "baseColor": "#b8f542",
-    "isCustom": true,
+    "isCustom": false,
     "light": {
       "primary": "#8ec421",
       "secondary": "#18a1c3",
@@ -44,7 +44,8 @@
       "muted": "#9ba6b5",
       "border": "#263243",
       "card": "#131b2a"
-    }
+    },
+    "schemeMode": "default"
   },
   "favicon": "/media/profile.jpg",
   "fonts": [

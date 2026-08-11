@@ -77,7 +77,7 @@ function generateThemeColors(baseColorHex) {
             muted: hslToHex(h, bgS, 48),
             border: hslToHex(h, bgS, 85),
             card: hslToHex(h, bgS, 94),
-            cardHover: hslToHex(h, bgS, 89)
+
         },
         dark: {
             // Dark primary: reduced saturation (×0.7) to avoid harshness
@@ -92,7 +92,7 @@ function generateThemeColors(baseColorHex) {
             // Border: neutral dark-gray
             border: hslToHex(h, bgS, 21),
             card: hslToHex(h, bgS, 12),
-            cardHover: hslToHex(h, bgS, 17)
+
         }
     };
 }
@@ -769,21 +769,15 @@ async function saveResume() {
 
 function renderSettings() {
   content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
-    <div class="card">
+    <div class="card" style="width: 850px;">
       <label>نام</label><input id="s-name" value="${site.name || ''}">
       <label>فاوآیکون</label>
       <div class="row">
         <input id="s-favicon" value="${site.favicon || ''}" style="flex:1" placeholder="/media/favicon.ico">
-        <button class="btn sec" onclick="openFaviconPicker()">انتخاب از رسانه</button>
+        <button class="btn sec" onclick="openMediaModal((path) => { document.getElementById('s-favicon').value = path; document.getElementById('favicon-preview').innerHTML = '<img src=&quot;' + path + '&quot; style=&quot;width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px&quot;>'; })">انتخاب از رسانه</button>
       </div>
       <div id="favicon-preview" style="margin-top:8px">${site.favicon ? `<img src="${site.favicon}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">` : ''}</div>
-      <div id="favicon-picker" style="display:none;margin-top:12px">
-        <div class="row" style="margin-bottom:8px">
-          <input type="file" id="favicon-upload-file" accept="image/*,.ico" style="flex:1">
-          <button class="btn" onclick="uploadFavicon()">آپلود و انتخاب</button>
-        </div>
-        <div class="grid2" id="favicon-picker-grid"></div>
-      </div>
+
       <label>عنوان سئو</label><input id="s-seoTitle" value="${site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${site.seoDescription || ''}</textarea>
       <div style="margin-top:16px"></div>
@@ -792,39 +786,36 @@ function renderSettings() {
     `;
 }
 
-async function openFaviconPicker() {
-  const picker = document.getElementById('favicon-picker');
-  if (picker.style.display === 'none') {
-    await loadMedia();
-    picker.style.display = 'block';
-    const grid = document.getElementById('favicon-picker-grid');
-    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
-    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  } else {
-    picker.style.display = 'none';
-  }
-}
 
-function selectFavicon(path) {
-  document.getElementById('s-favicon').value = path;
-  document.getElementById('favicon-preview').innerHTML = `<img src="${path}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">`;
-  document.getElementById('favicon-picker').style.display = 'none';
-}
 
-async function uploadFavicon() {
-  const file = document.getElementById('favicon-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const grid = document.getElementById('favicon-picker-grid');
-  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  selectFavicon(`/media/${file.name}`);
-}
+
+
+
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 
+
 async function saveTheme(skipMsg = false) {
+  site.theme = site.theme || {};
+  site.theme.mode = 'system';
+  site.theme.schemeMode = window.themeSchemeTab || 'manual';
+
+  if (window.themeSchemeTab === 'auto') {
+      const gen = generateThemeColors(site.theme.baseColor || '#b8f542');
+      site.theme.dark = gen.dark;
+      site.theme.light = gen.light;
+      site.theme.isCustom = false;
+  } else if (window.themeSchemeTab === 'default') {
+      site.theme.baseColor = '#b8f542';
+      site.theme.dark = { primary: '#b8f542', secondary: '#8adcf0', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', card: '#131b2a' };
+      site.theme.light = { primary: '#8ec421', secondary: '#18a1c3', background: '#fafbf9', foreground: '#292e1f', muted: '#6d7a52', border: '#dbe0d1', card: '#f3f5f0' };
+      site.theme.isCustom = false;
+  } else {
+      // manual mode
+      site.theme.isCustom = true;
+      syncCustomColors(); // Ensure inputs are fully synced before saving
+  }
+
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   applyTheme();
 
@@ -840,13 +831,42 @@ async function saveTheme(skipMsg = false) {
 }
 
 function renderTheme() {
-  const t = site.theme || { baseColor: '#b8f542', isCustom: false };
-  const isCustom = !!t.isCustom;
-  const c = isCustom ? t : generateThemeColors(t.baseColor || '#b8f542');
-  const d = c.dark || {};
-  const l = c.light || {};
+  const t = site.theme || { baseColor: '#b8f542', isCustom: false, mode: 'system' };
 
-  // Derive panel colors from the theme values themselves
+  // Initialize window.themeSchemeTab if not set
+  if (!window.themeSchemeTab) {
+    if (t.schemeMode) {
+      window.themeSchemeTab = t.schemeMode;
+    } else if (t.isCustom) {
+      window.themeSchemeTab = 'manual';
+    } else {
+      window.themeSchemeTab = 'auto';
+    }
+  }
+
+  const isManual = window.themeSchemeTab === 'manual';
+  const isAuto = window.themeSchemeTab === 'auto';
+  const isDefault = window.themeSchemeTab === 'default';
+
+  // Decide what colors to show based on the tab
+  let d = {}, l = {}, displayBaseColor = t.baseColor || '#b8f542';
+
+  if (isManual) {
+    // Show exact custom colors saved in site.theme
+    d = t.dark || {};
+    l = t.light || {};
+  } else if (isAuto) {
+    // Show generated colors based on baseColor
+    const gen = generateThemeColors(t.baseColor || '#b8f542');
+    d = gen.dark || {};
+    l = gen.light || {};
+  } else if (isDefault) {
+    // Show default hardcoded colors
+    d = { primary: '#b8f542', secondary: '#8adcf0', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', card: '#131b2a' };
+    l = { primary: '#8ec421', secondary: '#18a1c3', background: '#fafbf9', foreground: '#292e1f', muted: '#6d7a52', border: '#dbe0d1', card: '#f3f5f0' };
+    displayBaseColor = '#b8f542';
+  }
+
   const dBg    = d.background || '#0b111b';
   const dCard  = d.card       || '#131b2a';
   const dBdr   = d.border     || '#263243';
@@ -859,7 +879,6 @@ function renderTheme() {
   const lFg    = l.foreground || '#292e1f';
   const lMuted = l.muted      || '#6d7a52';
 
-  // Input field styles reused per panel
   const dInput = `flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:${dCard}; color:${dFg}; border:1px solid ${dBdr}`;
   const lInput = `flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:${lCard}; color:${lFg}; border:1px solid ${lBdr}`;
 
@@ -867,41 +886,57 @@ function renderTheme() {
     const val   = mode === 'd' ? (d[key] || defaultVal) : (l[key] || defaultVal);
     const style = mode === 'd' ? dInput : lInput;
     const muted = mode === 'd' ? dMuted : lMuted;
-    return `
-      <div style="margin-bottom:12px">
-        <label style="margin:0 0 4px 0; color:${muted}">${label}</label>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="text"  id="t-${id}-text"  value="${val}" onchange="document.getElementById('t-${id}').value=this.value; syncCustomColors()" style="${style}">
-          <input type="color" id="t-${id}" value="${val}" onchange="document.getElementById('t-${id}-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
-        </div>
-      </div>`;
+
+    if (isManual) {
+      return `
+        <div style="margin-bottom:12px">
+          <label style="margin:0 0 4px 0; color:${muted}">${label}</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text"  id="t-${id}-text"  value="${val}" onchange="document.getElementById('t-${id}').value=this.value; syncCustomColors()" style="${style}">
+            <input type="color" id="t-${id}" value="${val}" onchange="document.getElementById('t-${id}-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+          </div>
+        </div>`;
+    } else {
+      // Readonly display for auto/default
+      return `
+        <div style="margin-bottom:12px">
+          <label style="margin:0 0 4px 0; color:${muted}">${label}</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="text" readonly value="${val}" style="${style}; opacity:0.7">
+            <div style="width:40px; height:32px; border-radius:4px; background:${val}; border:1px solid rgba(128,128,128,0.3)"></div>
+          </div>
+        </div>`;
+    }
   };
 
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">رنگ‌بندی</h2>
-        <p class="sub" style="margin-bottom:0">یک رنگ پایه انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند. برای ویرایش رنگ ها باید گزینه تنظیم دستی را فعال کنید.</p>
+        <p class="sub" style="margin-bottom:0">طرح رنگ سایت خود را مدیریت کنید.</p>
       </div>
     </div>
 
-    <div>
-      <div class="card" style="padding:24px">
+      <div class="card" style="padding:24px; width:850px;">
         <div style="margin-bottom:24px">
+          <select id="theme-mode-select" onchange="onThemeModeSelect(this.value)" style="max-width:250px; font-weight:bold;">
+            <option value="manual" ${isManual ? 'selected' : ''}>رنگ‌بندی دستی</option>
+            <option value="auto" ${isAuto ? 'selected' : ''}>رنگ‌بندی خودکار</option>
+            <option value="default" ${isDefault ? 'selected' : ''}>رنگ‌بندی پیشفرض</option>
+          </select>
+        </div>
+
+        ${isAuto ? `
+        <div style="margin-bottom:24px; padding-top:16px; border-top:1px solid var(--border)">
           <label style="margin-top:0">رنگ پایه (Base Color)</label>
           <div style="display:flex; gap:8px; align-items:center">
-            <input type="text"  id="t-basecolor-text" value="${c.baseColor || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-            <input type="color" id="t-basecolor"      value="${c.baseColor || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            <input type="text" value="${displayBaseColor}" onchange="onAutoBaseColorChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+            <input type="color" value="${displayBaseColor}" onchange="onAutoBaseColorChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
           </div>
         </div>
+        ` : ''}
 
-        <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
-          <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
-          <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity:${isCustom ? '1' : '0.6'}; pointer-events:${isCustom ? 'auto' : 'none'}">
-
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
           <!-- Dark Mode panel -->
           <div style="background:${dBg}; padding:16px; border-radius:12px; border:1px solid ${dBdr}">
             <h3 style="margin-bottom:16px; color:${dFg}">رنگ‌های حالت تاریک (Dark)</h3>
@@ -925,40 +960,66 @@ function renderTheme() {
             ${colorRow('l', 'border',     'light-border',     'خطوط (Border)',             l.border     || '#000000')}
             ${colorRow('l', 'card',       'light-card',       'کارت (Card)',               l.card       || '#ffffff')}
           </div>
-
         </div>
+
+        ${(isAuto || isDefault) ? `
+        <div style="margin-top:24px">
+          <button class="btn sec" onclick="copyToManualAndSwitch()">استفاده از این رنگ‌ها به‌صورت دستی</button>
+        </div>
+        ` : ''}
+
       </div>
-      <div class="row" style="margin-bottom:16px">
-        <button class="btn" onclick="saveTheme()" style="justify-content:center">ذخیره</button>
-        <button class="btn sec" onclick="resetTheme()" style="justify-content:center">بازنشانی پیش‌فرض</button>
-      </div>
-    </div>`;
+    <button class="btn" onclick="saveTheme()" style="justify-content:center">ذخیره</button>
+    `;
 }
 
-function onPrimaryChange(val) {
+function onThemeModeSelect(mode) {
+    window.themeSchemeTab = mode;
     site.theme = site.theme || {};
-    site.theme.baseColor = val;
-    if (!site.theme.isCustom) {
-        Object.assign(site.theme, generateThemeColors(val));
+    if (mode === 'manual') {
+        site.theme.isCustom = true;
+    } else {
+        site.theme.isCustom = false;
+        if (mode === 'default') {
+            site.theme.baseColor = '#b8f542';
+        }
     }
     renderTheme();
 }
 
-function onCustomToggle(checked) {
+function onAutoBaseColorChange(val) {
     site.theme = site.theme || {};
-    site.theme.isCustom = checked;
-    if (checked) {
-        syncCustomColors();
-    } else {
-        Object.assign(site.theme, generateThemeColors(site.theme.baseColor || '#b8f542'));
+    site.theme.baseColor = val;
+    renderTheme();
+}
+
+function copyToManualAndSwitch() {
+    const isAuto = window.themeSchemeTab === 'auto';
+    const isDefault = window.themeSchemeTab === 'default';
+    let d, l;
+
+    if (isAuto) {
+        const gen = generateThemeColors(site.theme.baseColor || '#b8f542');
+        d = gen.dark;
+        l = gen.light;
+    } else if (isDefault) {
+        d = { primary: '#b8f542', secondary: '#8adcf0', background: '#0b111b', foreground: '#f5f7fa', muted: '#9ba6b5', border: '#263243', card: '#131b2a' };
+        l = { primary: '#8ec421', secondary: '#18a1c3', background: '#fafbf9', foreground: '#292e1f', muted: '#6d7a52', border: '#dbe0d1', card: '#f3f5f0' };
     }
+
+    site.theme = site.theme || {};
+    site.theme.isCustom = true;
+    if (isDefault) site.theme.baseColor = '#b8f542';
+    site.theme.dark = d;
+    site.theme.light = l;
+
+    window.themeSchemeTab = 'manual';
     renderTheme();
 }
 
 function syncCustomColors() {
     site.theme = site.theme || {};
     site.theme.isCustom = true;
-    site.theme.baseColor = document.getElementById('t-basecolor').value;
     site.theme.dark = {
         primary: document.getElementById('t-dark-primary').value,
         secondary: document.getElementById('t-dark-secondary').value,
@@ -977,47 +1038,6 @@ function syncCustomColors() {
         border: document.getElementById('t-light-border').value,
         card: document.getElementById('t-light-card').value,
     };
-}
-
-async function resetTheme() {
-  if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
-
-  site.theme = {
-    baseColor: '#b8f542',
-    isCustom: true,
-    light: {
-      primary:    '#8ec421',
-      secondary:  '#18a1c3',
-      background: '#fafbf9',
-      foreground: '#292e1f',
-      muted:      '#6d7a52',
-      border:     '#dbe0d1',
-      card:       '#f3f5f0'
-    },
-    dark: {
-      primary:    '#b8f542',
-      secondary:  '#8adcf0',
-      background: '#0b111b',
-      foreground: '#f5f7fa',
-      muted:      '#9ba6b5',
-      border:     '#263243',
-      card:       '#131b2a'
-    }
-  };
-
-  // Update inputs instantly, then persist in background (no message on save btn)
-  renderTheme();
-  applyTheme();
-  await saveTheme(true);
-
-  // Show confirmation on the reset button
-  const btn = document.querySelector('button[onclick="resetTheme()"]');
-  if (btn) {
-    const origText = btn.innerHTML;
-    btn.innerHTML = 'بازنشانی شد ✓';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
-  }
 }
 
 function renderFont() {
@@ -1241,14 +1261,10 @@ function renderTypography() {
   const list = getSiteFonts();
 
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
-        <h2 style="margin-bottom:4px">تنظیم فونت</h2>
-        <p class="sub" style="margin-bottom:0">ابتدا فونت دلخواه خود را اضافه کنید سپس فونت متن و تیتر را تنظیم کنید.</p>
-      </div>
-    </div>
+        <h2 style="margin-bottom:4px">فونت</h2>
+        <p class="sub" style="margin-bottom:24px">ابتدا فونت دلخواه خود را اضافه کنید سپس فونت متن و تیتر را تنظیم کنید.</p>
 
-    <div style="display:flex; flex-direction: column; gap:24px;">
+    <div style="display:flex; flex-direction: column; gap:24px; width: 850px;">
 
       <!-- Fonts Manager -->
       <div>
@@ -1463,16 +1479,10 @@ function renderHero() {
           <label>تصویر پروفایل</label>
           <div class="row">
             <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
-            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+            <button class="btn sec" onclick="openMediaModal((path) => { document.getElementById('h-profileImage').value = path; document.getElementById('h-image-preview').innerHTML = '<img src=&quot;' + path + '&quot; class=&quot;preview&quot;>'; })">انتخاب از رسانه</button>
           </div>
           <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
-          <div id="h-image-picker" style="display:none;margin-top:12px">
-            <div class="row" style="margin-bottom:8px">
-              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
-              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
-            </div>
-            <div class="grid2" id="h-picker-grid"></div>
-          </div>
+
           <hr>
           <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
           <div class="grid2">
@@ -1502,35 +1512,11 @@ async function cancelHero() {
   show('pages');
 }
 
-async function openHeroImagePicker() {
-  const picker = document.getElementById('h-image-picker');
-  if (picker.style.display === 'none') {
-    await loadMedia();
-    picker.style.display = 'block';
-    const grid = document.getElementById('h-picker-grid');
-    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
-    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  } else {
-    picker.style.display = 'none';
-  }
-}
 
-function selectHeroImage(path) {
-  document.getElementById('h-profileImage').value = path;
-  document.getElementById('h-image-preview').innerHTML = `<img src="${path}" class="preview">`;
-  document.getElementById('h-image-picker').style.display = 'none';
-}
 
-async function uploadHeroImage() {
-  const file = document.getElementById('h-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const grid = document.getElementById('h-picker-grid');
-  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  selectHeroImage(`/media/${file.name}`);
-}
+
+
+
 
 async function saveHero() {
   site.hero = {
@@ -1751,5 +1737,60 @@ async function saveMenu() {
     btn.innerHTML = 'ذخیره شد ✓';
     btn.classList.add('ok');
     setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('ok'); }, 2000);
+  }
+}
+
+
+let mediaModalCallback = null;
+
+async function openMediaModal(callback) {
+  mediaModalCallback = callback;
+  const modal = document.getElementById('media-modal');
+  if (modal) {
+      modal.style.display = 'flex';
+  }
+  await loadMedia();
+  renderMediaModalGrid();
+}
+
+function closeMediaModal() {
+  const modal = document.getElementById('media-modal');
+  if (modal) {
+      modal.style.display = 'none';
+  }
+  mediaModalCallback = null;
+}
+
+function renderMediaModalGrid() {
+  const grid = document.getElementById('media-modal-grid');
+  if (!grid) return;
+  if (!media.length) {
+    grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+    return;
+  }
+  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectMediaFromModal('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+}
+
+function selectMediaFromModal(path) {
+  if (mediaModalCallback) mediaModalCallback(path);
+  closeMediaModal();
+}
+
+async function uploadMediaFromModal() {
+  const fileInput = document.getElementById('media-modal-upload');
+  const file = fileInput.files[0];
+  if (!file) return alert('لطفاً یک فایل انتخاب کنید.');
+  const buf = await file.arrayBuffer();
+  const res = await api('/api/media?name=' + encodeURIComponent(file.name), {
+    method: 'POST',
+    body: buf,
+    headers: { 'Content-Type': 'application/octet-stream' }
+  });
+  if (res.ok) {
+    fileInput.value = ''; // Reset input
+    await loadMedia();
+    selectMediaFromModal(res.path);
+  } else {
+    alert('خطا در آپلود');
   }
 }
