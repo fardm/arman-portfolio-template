@@ -143,10 +143,6 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             </div>
           </section>
         )}
-        <div className="mt-12 flex justify-between border-t border-[var(--border)] pt-6 text-sm">
-          {projects[index - 1] ? <Link className="text-[var(--primary)]" href={`/projects/${projects[index - 1].slug}`}>← پروژه قبلی</Link> : <span />}
-          {projects[index + 1] ? <Link className="text-[var(--primary)]" href={`/projects/${projects[index + 1].slug}`}>پروژه بعدی →</Link> : <span />}
-        </div>
       </div>
     </article>
   );

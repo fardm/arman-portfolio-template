@@ -1,4 +1,8 @@
-
+function addMenuItem() {
+  siteMenu.push({ label: 'لینک جدید', href: '/new-link-' + Date.now() });
+  renderMenuList();
+  saveMenuAuto();
+}
 function hexToHsl(hex) {
     hex = hex.replace(/^#/, '');
     if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -53,18 +57,24 @@ function generateThemeColors(primaryHex) {
     return {
         primary: primaryHex,
         light: {
+            primary: hslToHex(h, s, Math.max(0, l - 15)),
             background: hslToHex(h, bgS, 98),
             foreground: hslToHex(h, bgS, 15),
             muted: hslToHex(h, bgS, 40),
             border: hslToHex(h, bgS, 85),
-            accent: hslToHex(h, s, Math.max(0, l - 20))
+            accent: hslToHex(h, s, Math.max(0, l - 20)),
+            card: hslToHex(h, bgS, 95),
+            cardHover: hslToHex(h, bgS, 92)
         },
         dark: {
+            primary: hslToHex(h, s, Math.min(100, l + 15)),
             background: hslToHex(h, bgS, 6),
             foreground: hslToHex(h, bgS, 95),
             muted: hslToHex(h, bgS, 60),
             border: hslToHex(h, bgS, 15),
-            accent: hslToHex(h, s, Math.min(100, l + 20))
+            accent: hslToHex(h, s, Math.min(100, l + 20)),
+            card: hslToHex(h, bgS, 9),
+            cardHover: hslToHex(h, bgS, 12)
         }
     };
 }
@@ -101,7 +111,12 @@ async function loadAll() {
   [site, categories, resume, projects, pagesList, siteMenu] = await Promise.all([
     api('/api/site'), api('/api/categories'), api('/api/resume'), api('/api/projects'), api('/api/pages').catch(()=>[]), api('/api/menu').catch(()=>[])
   ]);
-  render();
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    show(hash, false);
+  } else {
+    render();
+  }
 }
 
 async function loadFonts() {
@@ -117,13 +132,23 @@ function toggleGroup(id) {
   if (group) group.classList.toggle('open');
 }
 
-function show(view) {
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.slice(1);
+  if (hash && hash !== currentView) {
+    show(hash, false);
+  }
+});
+
+function show(view, updateHash = true) {
   currentView = view;
+  if (updateHash) {
+    window.location.hash = view;
+  }
   document.querySelectorAll('.nav-item, .nav-child').forEach((el) => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + view);
   if (navEl) navEl.classList.add('active');
   // اگر view مربوط به گروه تنظیمات باشد، گروه را باز نگه دار
-  if (['settings', 'theme', 'font', 'typography'].includes(view)) {
+  if (['settings', 'color-scheme', 'typography'].includes(view)) {
     const group = document.getElementById('group-settings');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
@@ -140,9 +165,8 @@ function render() {
   if (currentView === 'resume') return renderResume();
   if (currentView === 'media') return renderMedia();
   if (currentView === 'settings') return renderSettings();
-  if (currentView === 'theme') return renderTheme();
-  if (currentView === 'font') return renderFont();
-  if (currentView === 'typography') return renderTypography();
+  if (currentView === 'theme' || currentView === 'color-scheme') return renderTheme();
+    if (currentView === 'typography') return renderTypography();
   if (currentView === 'publish') return renderPublish();
   if (currentView === 'project-edit') return renderProjectEdit();
   if (currentView === 'hero') return renderHero();
@@ -189,7 +213,7 @@ function renderProjects() {
 }
 
 function newProject() { editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; currentView = 'project-edit'; render(); }
-function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); currentView = 'project-edit'; render(); }
+function editProject(slug) { editingProject = projects.find((p) => p.slug === slug); editingProject.originalSlug = slug; currentView = 'project-edit'; render(); }
 async function duplicateProject(slug) { const p = projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 
@@ -321,7 +345,9 @@ async function uploadCoverFromModal() {
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
   await loadMedia();
-  renderCoverPickerGrid();
+  const gridHtml = media.length ? media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const grid = document.getElementById('modal-media-grid');
+  if (grid) grid.innerHTML = gridHtml;
   selectCover(`/media/${file.name}`);
 }
 
@@ -368,10 +394,14 @@ async function saveProject() {
     template: val('f-template'),
     videoSource: videoSourceEl ? videoSourceEl.value : (editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (editingProject.videoUrl || ''),
-    content: val('f-content'),
+    content: val('f-content'), originalSlug: editingProject.originalSlug,
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
+
+  editingProject = projects.find(p => p.slug === data.slug) || data;
+  editingProject.originalSlug = data.slug;
+  renderProjectEdit();
 
   const btn = document.querySelector('button[onclick="saveProject()"]');
   if (btn) {
@@ -387,90 +417,164 @@ function renderCategories() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
-        <p class="sub" style="margin-bottom:0">مدیریت دسته‌بندی‌های پروژه‌ها.</p>
+        <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
       </div>
       <button class="btn" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     </div>
-    <div class="grid2" id="cat-list"></div>`;
+    <div id="cat-list" style="max-width: 600px;"></div>`;
   renderCatList();
 }
 
-function renderCatList() {
-  document.getElementById('cat-list').innerHTML = categories.map((c, i) => `
-    <div class="card" style="padding:16px; display:flex; justify-content:space-between; align-items:center">
-      <div>
-        <strong style="font-size:1.1rem; display:block; margin-bottom:4px">${c.name || '(بدون نام)'}</strong>
-        <span style="color:#9ba6b5; font-size:0.85rem">slug: ${c.slug}</span>
-      </div>
-      <div style="display:flex; gap:8px">
-        <button class="btn sec" style="padding:8px" onclick="openCatModal(${i})" title="ویرایش">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </button>
-        <button class="btn danger" style="padding:8px" onclick="deleteCat(${i})" title="حذف">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function openCatModal(index = -1) {
-  const isEdit = index >= 0;
-  const c = isEdit ? categories[index] : { name: '', slug: '', parent: null };
-
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'cat-modal';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
-
-  overlay.innerHTML = `
-    <div class="modal-content" style="max-width:500px">
-      <button class="modal-close" onclick="document.getElementById('cat-modal').remove()">بستن ×</button>
-      <h3 style="margin-bottom:16px">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
-
-      <div style="margin-bottom:12px">
-        <label style="margin-top:0">نام نمایشی</label>
-        <input id="cat-name-input" value="${c.name}" placeholder="مثال: طراحی وب">
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="margin-top:0">شناسه (slug)</label>
-        <input id="cat-slug-input" value="${c.slug}" placeholder="مثال: web-design">
-      </div>
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">دسته والد</label>
-        <select id="cat-parent-input">
-          <option value="">بدون والد (دسته اصلی)</option>
-          ${categories.filter((x) => x.slug !== c.slug).map((x) => `<option value="${x.slug}" ${c.parent === x.slug ? 'selected' : ''}>${x.name}</option>`).join('')}
-        </select>
-      </div>
-
-      <div class="row">
-        <button class="btn" style="flex:1; justify-content:center" onclick="saveCatModal(${index})">ذخیره</button>
+function renderCatNode(c, i, depth = 0) {
+  const children = categories.filter(child => child.parent === c.slug);
+  let html = `
+    <div style="display:flex; align-items:center; margin-bottom: 8px;">
+      <div
+        style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:6px; cursor:pointer; transition:background 0.2s;"
+        onmouseenter="this.style.background='var(--card-hover)'"
+        onmouseleave="this.style.background='transparent'"
+        onclick="openCatModal(${i})"
+      >
+        <span style="color:var(--foreground)">${c.name || '(بدون نام)'}</span>
+        <span style="color:var(--muted); font-size:0.8rem">/${c.slug}</span>
       </div>
     </div>
   `;
-  document.body.appendChild(overlay);
+
+  if (children.length > 0) {
+    html += `<ul style="list-style-type:none; padding-right:24px; border-right:1px solid var(--border); margin-top:4px; margin-bottom:8px;">`;
+    children.forEach(child => {
+      const childIndex = categories.findIndex(cat => cat.slug === child.slug);
+      html += `<li>${renderCatNode(child, childIndex, depth + 1)}</li>`;
+    });
+    html += `</ul>`;
+  }
+  return html;
 }
 
-function saveCatModal(index) {
-  const name = document.getElementById('cat-name-input').value;
-  const slug = document.getElementById('cat-slug-input').value;
-  const parent = document.getElementById('cat-parent-input').value || null;
+function renderCatList() {
+  const list = document.getElementById('cat-list');
+  if (!list) return;
+  list.innerHTML = '';
 
-  if (!slug) return alert('شناسه (slug) الزامی است.');
-
-  if (index >= 0) {
-    categories[index] = { ...categories[index], name, slug, parent };
-  } else {
-    categories.push({ name, slug, parent, sort: categories.length + 1 });
+  const rootCats = categories.filter(c => !c.parent);
+  if (rootCats.length === 0) {
+    list.innerHTML = '<p class="sub">هنوز دسته‌ای ایجاد نشده است.</p>';
+    return;
   }
 
-  document.getElementById('cat-modal').remove();
-  renderCatList();
-  saveCategories();
+  let rootHtml = '<ul style="list-style-type:none; padding:0;">';
+  rootCats.forEach(c => {
+    const i = categories.findIndex(cat => cat.slug === c.slug);
+    rootHtml += `<li>${renderCatNode(c, i)}</li>`;
+  });
+  rootHtml += '</ul>';
+  list.innerHTML = rootHtml;
 }
 
-function deleteCat(i) { if(confirm('حذف شود؟')) { categories.splice(i,1); renderCatList(); saveCategories(); } }
+function openCatModal(index = -1) {
+  const isEdit = index > -1;
+  const c = isEdit ? categories[index] : { name: '', slug: '', parent: '' };
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
+
+  // Exclude current category and its children from parent options
+  let parentOptions = '<option value="">(بدون والد - ریشه)</option>';
+  categories.forEach(cat => {
+    if (isEdit && cat.slug === c.slug) return;
+    parentOptions += `<option value="${cat.slug}" ${c.parent === cat.slug ? 'selected' : ''}>${cat.name}</option>`;
+  });
+
+  const delBtnHtml = isEdit ? `<button class="btn danger" style="margin-right:auto;" onclick="deleteCat(${index}); this.parentElement.parentElement.parentElement.remove()">حذف</button>` : '';
+
+  m.innerHTML = `
+    <div class="modal-content" style="max-width:400px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">نام دسته</label>
+        <input type="text" id="cat-name" value="${c.name}" ${!isEdit ? 'onkeyup="document.getElementById(\'cat-slug\').value=this.value.toLowerCase().replace(/\\s+/g,\'-\')"' : ''}>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">شناسه (URL Slug)</label>
+        <input type="text" id="cat-slug" value="${c.slug}" dir="ltr">
+        <input type="hidden" id="cat-original-slug" value="${c.slug}">
+      </div>
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">دسته والد</label>
+        <select id="cat-parent">${parentOptions}</select>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn" onclick="saveCat(${index}, this.parentElement.parentElement.parentElement)">ذخیره دسته</button>
+        ${delBtnHtml}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+}
+
+async function saveCat(index, modalNode) {
+  const name = val('cat-name'), slug = val('cat-slug'), parent = val('cat-parent');
+  const originalSlug = val('cat-original-slug');
+  if (!name || !slug) return showMsg('نام و شناسه الزامی است', true);
+
+  if (index === -1) {
+    if (categories.find(c => c.slug === slug)) return showMsg('این شناسه قبلاً استفاده شده است', true);
+    categories.push({ name, slug, parent });
+  } else {
+    categories[index] = { name, slug, parent, originalSlug };
+  }
+
+  try {
+    await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } });
+    await loadAll();
+    modalNode.remove();
+    showMsg('دسته با موفقیت ذخیره شد');
+    renderCategories();
+  } catch(e) {
+    showMsg('خطا در ذخیره دسته', true);
+  }
+}
+
+async function deleteCat(i) {
+  if(confirm('حذف شود؟ با حذف این دسته، تمامی زیردسته‌های آن نیز حذف خواهند شد.')) {
+    const deletedSlug = categories[i].slug;
+
+    // Find all children to delete
+    let toDelete = new Set([deletedSlug]);
+    let added = true;
+    while(added) {
+      added = false;
+      categories.forEach(c => {
+        if(toDelete.has(c.parent) && !toDelete.has(c.slug)) {
+          toDelete.add(c.slug);
+          added = true;
+        }
+      });
+    }
+
+    // Filter categories
+    const newCategories = categories.filter(c => !toDelete.has(c.slug));
+
+    // Update projects
+    for (const project of projects) {
+      if (project.categories && project.categories.some(c => toDelete.has(c))) {
+        project.categories = project.categories.filter(c => !toDelete.has(c));
+        await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    categories.length = 0;
+    categories.push(...newCategories);
+
+    renderCatList();
+    saveCategories();
+  }
+}
 async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(categories), headers: { 'Content-Type': 'application/json' } }); }
 
 function renderResume() {
@@ -480,58 +584,69 @@ function renderResume() {
         <h2 style="margin-bottom:4px">رزومه</h2>
         <p class="sub" style="margin-bottom:0">اطلاعات رزومه خود را ویرایش و ذخیره کنید.</p>
       </div>
-      <button class="btn" onclick="saveResume()">ذخیره تغییرات</button>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr; gap:24px; max-width:1000px">
-      <div class="card" style="padding:24px">
-        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات کلی و مهارت‌ها</h3>
-        <label style="margin-top:0">خلاصه (درباره من در رزومه)</label>
-        <textarea id="r-summary" style="min-height:100px; margin-bottom:16px">${resume.summary || ''}</textarea>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات کلی و مهارت‌ها</h3>
+          <label style="margin-top:0">خلاصه (درباره من در رزومه)</label>
+          <textarea id="r-summary" style="min-height:100px; margin-bottom:16px">${resume.summary || ''}</textarea>
 
-        <div class="grid2">
-          <div><label style="margin-top:0">مهارت‌های اصلی (با کاما جدا کنید)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}"></div>
-          <div><label style="margin-top:0">ابزارها و فناوری‌ها (با کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}"></div>
-          <div><label style="margin-top:0">زبان‌ها (با کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}"></div>
+          <div class="grid2">
+            <div><label style="margin-top:0">مهارت‌های اصلی (با کاما جدا کنید)</label><input id="r-skills" value="${(resume.skills || []).join(', ')}"></div>
+            <div><label style="margin-top:0">ابزارها و فناوری‌ها (با کاما)</label><input id="r-tools" value="${(resume.tools || []).join(', ')}"></div>
+            <div><label style="margin-top:0">زبان‌ها (با کاما)</label><input id="r-langs" value="${(resume.languages || []).join(', ')}"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات شخصی و تماس</h3>
+          <div class="grid2">
+            <div><label style="margin-top:0">لوکیشن</label><input id="r-location" value="${resume.location || ''}"></div>
+            <div><label style="margin-top:0">وضعیت تاهل</label><input id="r-marital" value="${resume.maritalStatus || ''}"></div>
+            <div><label style="margin-top:0">وضعیت سربازی</label><input id="r-military" value="${resume.militaryService || ''}"></div>
+            <div><label style="margin-top:0">تاریخ تولد</label><input id="r-birth" value="${resume.birthDate || ''}"></div>
+            <div><label style="margin-top:0">شماره تماس</label><input id="r-phone" value="${resume.phone || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${resume.email || ''}" dir="ltr"></div>
+          </div>
+          <hr>
+          <h4 style="margin-bottom:12px; color:var(--muted)">لینک‌ها</h4>
+          <div class="grid2">
+            <div><label style="margin-top:0">تلگرام (آیدی)</label><input id="r-telegram" value="${resume.telegram || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">لینکدین (آیدی)</label><input id="r-linkedin" value="${resume.linkedin || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">گیت‌هاب (آیدی)</label><input id="r-github" value="${resume.github || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">یوتیوب (آیدی)</label><input id="r-youtube" value="${resume.youtube || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">توییتر (X) (آیدی)</label><input id="r-twitter" value="${resume.twitter || ''}" dir="ltr"></div>
+            <div><label style="margin-top:0">لینک دلخواه (URL کامل)</label><input id="r-customLink" value="${resume.customLink || ''}" dir="ltr"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
+            <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
+          </div>
+          <div id="r-exp" style="display:flex; flex-direction:column; gap:16px"></div>
+        </div>
+
+        <div class="card" style="padding:24px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h3 style="color:var(--primary); margin:0">سوابق تحصیلی</h3>
+            <button class="btn sec" onclick="addEdu()">+ افزودن تحصیلات جدید</button>
+          </div>
+          <div id="r-edu" style="display:flex; flex-direction:column; gap:16px"></div>
         </div>
       </div>
 
-      <div class="card" style="padding:24px">
-        <h3 style="margin-bottom:16px; color:var(--primary)">اطلاعات شخصی و تماس</h3>
-        <div class="grid2">
-          <div><label style="margin-top:0">لوکیشن</label><input id="r-location" value="${resume.location || ''}"></div>
-          <div><label style="margin-top:0">وضعیت تاهل</label><input id="r-marital" value="${resume.maritalStatus || ''}"></div>
-          <div><label style="margin-top:0">وضعیت سربازی</label><input id="r-military" value="${resume.militaryService || ''}"></div>
-          <div><label style="margin-top:0">تاریخ تولد</label><input id="r-birth" value="${resume.birthDate || ''}"></div>
-          <div><label style="margin-top:0">شماره تماس</label><input id="r-phone" value="${resume.phone || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${resume.email || ''}" dir="ltr"></div>
+      <aside>
+        <div style="position:sticky; top:24px; padding:16px; border-radius:12px; background:var(--card); border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <button class="btn" onclick="saveResume()" style="width:100%; justify-content:center; padding:12px">ذخیره</button>
+            <button class="btn sec" onclick="cancelResume()" style="width:100%; justify-content:center; padding:12px">انصراف</button>
+          </div>
         </div>
-        <hr>
-        <h4 style="margin-bottom:12px; color:var(--muted)">شبکه‌های اجتماعی</h4>
-        <div class="grid2">
-          <div><label style="margin-top:0">تلگرام</label><input id="r-telegram" value="${resume.telegram || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">لینکدین</label><input id="r-linkedin" value="${resume.linkedin || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">گیت‌هاب</label><input id="r-github" value="${resume.github || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">یوتیوب</label><input id="r-youtube" value="${resume.youtube || ''}" dir="ltr"></div>
-          <div><label style="margin-top:0">توییتر (X)</label><input id="r-twitter" value="${resume.twitter || ''}" dir="ltr"></div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:24px">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
-          <h3 style="color:var(--primary); margin:0">سوابق شغلی و تجربه‌ها</h3>
-          <button class="btn sec" onclick="addExp()">+ افزودن تجربه جدید</button>
-        </div>
-        <div id="r-exp" style="display:flex; flex-direction:column; gap:16px"></div>
-      </div>
-
-      <div class="card" style="padding:24px">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
-          <h3 style="color:var(--primary); margin:0">سوابق تحصیلی</h3>
-          <button class="btn sec" onclick="addEdu()">+ افزودن تحصیلات جدید</button>
-        </div>
-        <div id="r-edu" style="display:flex; flex-direction:column; gap:16px"></div>
-      </div>
+      </aside>
     </div>
   `;
   renderExp(); renderEdu();
@@ -539,8 +654,8 @@ function renderResume() {
 
 function renderExp() {
   document.getElementById('r-exp').innerHTML = (resume.experience || []).length ? (resume.experience || []).map((e, i) => `
-    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.experience.splice(${i},1);renderExp()">حذف</button>
+    <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="resume.experience.splice(${i},1);renderExp()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2" style="margin-bottom:12px">
         <div><label style="margin-top:0; font-size:0.8rem">عنوان شغلی</label><input value="${e.title}" onchange="resume.experience[${i}].title=this.value" placeholder="مثال: توسعه دهنده ارشد"></div>
         <div><label style="margin-top:0; font-size:0.8rem">نام شرکت/سازمان</label><input value="${e.company}" onchange="resume.experience[${i}].company=this.value" placeholder="مثال: گوگل"></div>
@@ -548,25 +663,30 @@ function renderExp() {
       </div>
       <div><label style="margin-top:0; font-size:0.8rem">توضیحات تکمیلی</label><textarea onchange="resume.experience[${i}].description=this.value" placeholder="شرح وظایف و دستاوردها..." style="min-height:60px">${e.description}</textarea></div>
     </div>
-  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه شغلی ثبت نشده است.</p>';
+  `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ سابقه شغلی ثبت نشده است.</p>';
 }
 
 function addExp() { (resume.experience ||= []).push({ id: 'e' + Date.now(), title: '', company: '', period: '', description: '' }); renderExp(); }
 
 function renderEdu() {
   document.getElementById('r-edu').innerHTML = (resume.education || []).length ? (resume.education || []).map((e, i) => `
-    <div style="border:1px solid #263243; padding:16px; border-radius:8px; background:#0b111b; position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem" onclick="resume.education.splice(${i},1);renderEdu()">حذف</button>
+    <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="resume.education.splice(${i},1);renderEdu()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2">
         <div><label style="margin-top:0; font-size:0.8rem">مقطع و رشته</label><input value="${e.title}" onchange="resume.education[${i}].title=this.value" placeholder="مثال: کارشناسی مهندسی کامپیوتر"></div>
         <div><label style="margin-top:0; font-size:0.8rem">دانشگاه/موسسه</label><input value="${e.school}" onchange="resume.education[${i}].school=this.value" placeholder="مثال: دانشگاه تهران"></div>
         <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="resume.education[${i}].period=this.value" placeholder="مثال: ۱۳۹۶ - ۱۴۰۰"></div>
       </div>
     </div>
-  `).join('') : '<p style="color:#9ba6b5; font-size:0.9rem">هیچ سابقه تحصیلی ثبت نشده است.</p>';
+  `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ سابقه تحصیلی ثبت نشده است.</p>';
 }
 
 function addEdu() { (resume.education ||= []).push({ id: 'd' + Date.now(), title: '', school: '', period: '' }); renderEdu(); }
+
+async function cancelResume() {
+  resume = await api('/api/resume');
+  show('pages');
+}
 
 async function saveResume() {
   resume.summary = val('r-summary');
@@ -584,6 +704,7 @@ async function saveResume() {
   resume.github = val('r-github');
   resume.youtube = val('r-youtube');
   resume.twitter = val('r-twitter');
+  resume.customLink = val('r-customLink');
   await api('/api/resume', { method: 'POST', body: JSON.stringify(resume), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
 
@@ -651,6 +772,19 @@ async function uploadFavicon() {
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 
+async function saveTheme() {
+  await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
+  applyTheme();
+
+  const btn = document.querySelector('button[onclick="saveTheme()"]');
+  if (btn) {
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'ذخیره شد ✓';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
+  }
+}
+
 function renderTheme() {
   const t = site.theme || { primary: '#b8f542', isCustom: false };
   const isCustom = !!t.isCustom;
@@ -664,27 +798,28 @@ function renderTheme() {
         <h2 style="margin-bottom:4px">پوسته و رنگ‌بندی</h2>
         <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند.</p>
       </div>
-      <button class="btn" onclick="saveTheme()">ذخیره تغییرات</button>
     </div>
 
-    <div class="card" style="padding:24px; max-width:1000px">
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">رنگ اصلی (Primary)</label>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-          <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
-        </div>
-      </div>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">رنگ اصلی (Primary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+              <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
 
-      <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
-        <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
-        <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
-      </div>
+          <div style="margin-bottom:24px; display:flex; align-items:center; justify-content:flex-start; gap:8px">
+            <input type="checkbox" id="t-custom-checkbox" ${isCustom ? 'checked' : ''} onchange="onCustomToggle(this.checked)" style="width:16px; height:16px; margin:0; cursor:pointer">
+            <label for="t-custom-checkbox" style="margin:0; cursor:pointer; line-height:1">تنظیم دستی رنگ‌ها (استفاده از مقادیر سفارشی)</label>
+          </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity: ${isCustom ? '1' : '0.6'}; pointer-events: ${isCustom ? 'auto' : 'none'}">
-        <!-- Dark Mode -->
-        <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
-          <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; opacity: ${isCustom ? '1' : '0.6'}; pointer-events: ${isCustom ? 'auto' : 'none'}">
+            <!-- Dark Mode -->
+            <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
+              <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
 
           <div style="margin-bottom:12px">
             <label style="margin:0 0 4px 0; color:#9ba6b5">پس‌زمینه (Background)</label>
@@ -772,6 +907,15 @@ function renderTheme() {
           </div>
         </div>
       </div>
+      </div>
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div class="row" style="margin-bottom:16px">
+            <button class="btn" onclick="saveTheme()" style="flex:1; justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="resetTheme()" style="flex:1; justify-content:center">بازنشانی پیش‌فرض</button>
+          </div>
+        </div>
+      </aside>
     </div>`;
 }
 
@@ -815,11 +959,24 @@ function syncCustomColors() {
     };
 }
 
-function resetTheme() {
+async function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
   const def = generateThemeColors('#b8f542');
-  site.theme = { primary: '#b8f542', isCustom: false, ...def };
-  saveTheme();
+
+  site.theme = {
+    primary: '#b8f542',
+    isCustom: false,
+    light: def.light,
+    dark: {
+      background: "#0b111b",
+      foreground: "#f5f7fa",
+      muted: "#9ba6b5",
+      border: "#263243",
+      accent: "#8adcf0"
+    }
+  };
+
+  await saveTheme();
 }
 
 function renderFont() {
@@ -873,11 +1030,11 @@ function openFontModal() {
       <button class="modal-close" onclick="document.getElementById('font-modal').remove()">بستن ×</button>
       <h3 style="margin-bottom:16px">افزودن فونت</h3>
 
-      <div style="margin-bottom:16px">
-        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer">
+      <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:12px">
+        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
           <input type="radio" name="font-source" value="google" checked onchange="toggleFontSourceModal(this.value)"> Google Fonts
         </label>
-        <label style="margin-top:0; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-right:16px">
+        <label style="margin-top:0; display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap">
           <input type="radio" name="font-source" value="custom" onchange="toggleFontSourceModal(this.value)"> آپلود فونت
         </label>
       </div>
@@ -971,60 +1128,140 @@ function renderTypography() {
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">تایپوگرافی</h2>
-        <p class="sub" style="margin-bottom:0">نحوه استفاده از فونت‌های سایت را تعیین کنید.</p>
+        <h2 style="margin-bottom:4px">تایپوگرافی و فونت‌ها</h2>
+        <p class="sub" style="margin-bottom:0">فونت‌ها را مدیریت کرده و فونت پیش‌فرض متن و تیترها را تعیین کنید. (تغییرات خودکار ذخیره می‌شوند)</p>
       </div>
-      <button class="btn" onclick="saveTypography()">ذخیره تغییرات</button>
     </div>
 
-    <div class="card" style="padding:24px; max-width:600px">
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">فونت متن سایت</label>
-        <select id="typo-body">
-          <option value="">(پیش‌فرض سیستم)</option>
-          ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-          <option value="_add">+ افزودن فونت</option>
-        </select>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+
+      <!-- Typography Settings -->
+      <div>
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px; font-size:1.1rem; color:var(--primary)">تخصیص فونت‌ها</h3>
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">فونت متن سایت</label>
+            <select id="typo-body" onchange="updateTypoAuto('bodyFont', this.value)">
+              <option value="">(پیش‌فرض سیستم)</option>
+              ${list.map(f => `<option value="${f.name}" ${typo.bodyFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+            </select>
+          </div>
+
+          <div style="margin-bottom:24px">
+            <label style="margin-top:0">فونت تیترها</label>
+            <select id="typo-heading" onchange="updateTypoAuto('headingFont', this.value)">
+              <option value="">(همان فونت متن)</option>
+              ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div style="margin-bottom:24px">
-        <label style="margin-top:0">فونت تیترها</label>
-        <select id="typo-heading">
-          <option value="">(همان فونت متن)</option>
-          ${list.map(f => `<option value="${f.name}" ${typo.headingFont === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}
-          <option value="_add">+ افزودن فونت</option>
-        </select>
+      <!-- Fonts Manager -->
+      <div>
+        <div class="card" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+          <h3 style="margin-bottom:0px; font-size:1.1rem; color:var(--primary)">فونت‌های آپلود شده</h3>
+          <div id="fonts-list" style="display:flex; flex-direction:column; gap:8px;">
+            ${list.length === 0 ? '<p class="sub" style="font-size:0.9rem">هیچ فونتی یافت نشد.</p>' : ''}
+            ${list.map(f => `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
+                <span style="font-family: ${f.name}, Tahoma">${f.name}</span>
+                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteFont('${f.name}')">حذف</button>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn sec" onclick="openFontModal()">+ افزودن فونت جدید</button>
+        </div>
       </div>
+
     </div>
   `;
-
-  document.getElementById('typo-body').addEventListener('change', (e) => {
-      if(e.target.value === '_add') show('font');
-  });
-  document.getElementById('typo-heading').addEventListener('change', (e) => {
-      if(e.target.value === '_add') show('font');
-  });
 }
 
-async function saveTypography() {
-    const bodyFont = document.getElementById('typo-body').value;
-    const headingFont = document.getElementById('typo-heading').value;
+async function updateTypoAuto(key, value) {
+  site.typography = site.typography || { bodyFont: '', headingFont: '' };
+  site.typography[key] = value;
 
-    site.typography = {
-        bodyFont: bodyFont === '_add' ? '' : bodyFont,
-        headingFont: headingFont === '_add' ? '' : headingFont
-    };
+  if (site.typography.bodyFont) {
+    site.font = site.typography.bodyFont;
+  } else {
+    site.font = 'Tahoma';
+  }
 
+  try {
     await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-
-    const btn = document.querySelector('button[onclick="saveTypography()"]');
-    if (btn) {
-      const origText = btn.innerHTML;
-      btn.innerHTML = 'ذخیره شد ✓';
-      btn.classList.add('ok');
-      setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
-    }
+    await loadAll();
+    applyTheme();
+  } catch(e) {
+    showMsg('خطا در ذخیره تایپوگرافی', true);
+  }
 }
+
+function openFontModal() {
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
+  m.innerHTML = `
+    <div class="modal-content" style="max-width:400px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">افزودن فونت جدید</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+      </div>
+
+      <label>نام فونت (انگلیسی):</label>
+      <input type="text" id="new-font-name" placeholder="e.g. Vazirmatn" style="margin-bottom:16px">
+
+      <label>فرمت فونت:</label>
+      <div style="display:flex; gap:16px; margin-bottom:16px; align-items:flex-start" id="new-font-format">
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff2" checked> WOFF2</label>
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="woff"> WOFF</label>
+        <label style="display:flex; align-items:center; gap:8px"><input type="radio" name="fontFmt" value="ttf"> TTF</label>
+      </div>
+
+      <label>فایل فونت:</label>
+      <input type="file" id="new-font-file" style="margin-bottom:24px">
+
+      <button class="btn" style="width:100%; justify-content:center" onclick="uploadFontAction(this)">آپلود فونت</button>
+    </div>
+  `;
+  document.body.appendChild(m);
+}
+
+async function uploadFontAction(btn) {
+  const name = document.getElementById('new-font-name').value.trim();
+  const file = document.getElementById('new-font-file').files[0];
+  const format = document.querySelector('input[name="fontFmt"]:checked').value;
+  if(!name || !file) return showMsg('نام و فایل فونت الزامی است', true);
+
+  btn.disabled = true;
+  btn.innerText = 'در حال آپلود...';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('format', format);
+  try {
+    await api('/api/fonts/'+name, {method:'POST', body:fd});
+    await loadAll();
+    document.querySelector('.modal-overlay').remove();
+    if(currentView === 'typography') renderTypography();
+  } catch(e) {
+    showMsg('خطا در آپلود', true);
+    btn.disabled = false;
+    btn.innerText = 'آپلود فونت';
+  }
+}
+
+async function deleteFont(name) {
+  if(!confirm('آیا از حذف این فونت مطمئن هستید؟')) return;
+  try {
+    await api('/api/fonts/'+name, {method:'DELETE'});
+    await loadAll();
+    if(currentView === 'typography') renderTypography();
+  } catch(e) {
+    showMsg('خطا در حذف فونت', true);
+  }
+}
+
+
 
 
 async function renderMedia() {
@@ -1160,37 +1397,62 @@ loadAll();
 // ─── Hero Section ───
 function renderHero() {
   const h = site.hero || {};
-  content.innerHTML = `<h2>صفحه اصلی (Hero)</h2><p class="sub">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
-    <div class="card">
-      <div class="grid2">
-        <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
-        <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">صفحه اصلی (Hero)</h2>
+        <p class="sub" style="margin-bottom:0">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
       </div>
-      <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
-      <label>تصویر پروفایل</label>
-      <div class="row">
-        <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
-        <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
-      </div>
-      <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
-      <div id="h-image-picker" style="display:none;margin-top:12px">
-        <div class="row" style="margin-bottom:8px">
-          <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
-          <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap:24px;">
+      <div>
+        <div class="card" style="padding:24px">
+          <div class="grid2">
+            <div><label>اسم</label><input id="h-name" value="${h.name || site.name || ''}"></div>
+            <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || site.title || ''}"></div>
+          </div>
+          <label>متن درباره من</label><textarea id="h-about" style="min-height:120px">${h.about || site.bio || ''}</textarea>
+          <label>تصویر پروفایل</label>
+          <div class="row">
+            <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
+            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+          </div>
+          <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
+          <div id="h-image-picker" style="display:none;margin-top:12px">
+            <div class="row" style="margin-bottom:8px">
+              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
+              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
+            </div>
+            <div class="grid2" id="h-picker-grid"></div>
+          </div>
+          <hr>
+          <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
+          <div class="grid2">
+            <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
+            <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
+            <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
+            <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
+            <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
+            <div><label>Twitter (X)</label><input id="h-twitter" value="${h.twitter ?? ''}" placeholder="https://twitter.com/username"></div>
+          </div>
         </div>
-        <div class="grid2" id="h-picker-grid"></div>
       </div>
-      <hr>
-      <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
-      <div class="grid2">
-        <div><label>GitHub</label><input id="h-github" value="${h.github ?? ''}" placeholder="https://github.com/username"></div>
-        <div><label>LinkedIn</label><input id="h-linkedin" value="${h.linkedin ?? ''}" placeholder="https://linkedin.com/in/username"></div>
-        <div><label>Instagram</label><input id="h-instagram" value="${h.instagram ?? ''}" placeholder="https://instagram.com/username"></div>
-        <div><label>Telegram</label><input id="h-telegram" value="${h.telegram ?? ''}" placeholder="https://t.me/username"></div>
-        <div><label>YouTube</label><input id="h-youtube" value="${h.youtube ?? ''}" placeholder="https://youtube.com/@username"></div>
-      </div>
-      <div class="row" style="margin-top:20px"><button class="btn" onclick="saveHero()">ذخیره</button></div>
+
+      <aside>
+        <div class="card" style="position:sticky; top:24px;">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <button class="btn" onclick="saveHero()" style="justify-content:center">ذخیره</button>
+            <button class="btn sec" onclick="cancelHero()" style="justify-content:center">انصراف</button>
+          </div>
+        </div>
+      </aside>
     </div>`;
+}
+
+async function cancelHero() {
+  await loadAll();
+  show('pages');
 }
 
 async function openHeroImagePicker() {
@@ -1234,6 +1496,7 @@ async function saveHero() {
     instagram: val('h-instagram'),
     telegram: val('h-telegram'),
     youtube: val('h-youtube'),
+    twitter: val('h-twitter')
   };
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
@@ -1345,16 +1608,21 @@ function renderMenu() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">منوی سایت</h2>
-        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
+        <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید. (تغییرات به صورت خودکار ذخیره می‌شود)</p>
       </div>
-      <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
     </div>
 
-    <div id="menu-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px"></div>
-    <div style="margin-top:24px"><button class="btn" onclick="saveMenu()">ذخیره منو</button></div>
+    <div style="max-width:800px">
+      <div style="margin-bottom:24px">
+        <button class="btn sec" onclick="addMenuItem()">+ افزودن لینک جدید</button>
+      </div>
+      <div id="menu-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
   `;
   renderMenuList();
 }
+
+let draggedMenuIndex = null;
 
 function renderMenuList() {
   const container = document.getElementById('menu-list');
@@ -1371,42 +1639,66 @@ function renderMenuList() {
     container.innerHTML = '<p style="color:#9ba6b5">منوی سایت خالی است.</p>';
     return;
   }
-  container.innerHTML = siteMenu.map((m, i) => `
-    <div class="card" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center">
+
+  // Make items draggable
+  container.innerHTML = siteMenu.map((m, i) => {
+    const isSystemPage = m.href === '/' || m.href === '/projects' || m.href === '/resume';
+    return `
+    <div class="card menu-item-card" draggable="true" data-index="${i}" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center; cursor:grab;" ondragstart="handleDragStartMenu(event, ${i})" ondragover="handleDragOverMenu(event)" ondrop="handleDropMenu(event, ${i})" ondragend="handleDragEndMenu(event)">
+      <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+      </div>
       <div style="flex:1">
         <label style="margin-top:0">عنوان لینک</label>
-        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value" placeholder="مثال: درباره من">
+        <input value="${m.label}" onchange="siteMenu[${i}].label=this.value; saveMenuAuto();" placeholder="مثال: درباره من" style="cursor:text;">
       </div>
       <div style="flex:2">
         <label style="margin-top:0">آدرس (URL)</label>
-        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value" dir="ltr" placeholder="مثال: /about">
+        <input value="${m.href}" onchange="siteMenu[${i}].href=this.value; saveMenuAuto();" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''} style="cursor:text;">
       </div>
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
-        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="بالا">↑</button>
-        <button class="btn sec" style="padding:8px" onclick="moveMenuItem(${i}, 1)" ${i === siteMenu.length - 1 ? 'disabled' : ''} title="پایین">↓</button>
-        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف" ${isSystemPage ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
-function addMenuItem() {
-  siteMenu.push({ label: 'لینک جدید', href: '/' });
-  renderMenuList();
+function handleDragStartMenu(e, index) {
+  draggedMenuIndex = index;
+  e.target.style.opacity = '0.5';
+  e.dataTransfer.effectAllowed = 'move';
 }
 
-function moveMenuItem(i, dir) {
-  if (i + dir < 0 || i + dir >= siteMenu.length) return;
-  const temp = siteMenu[i];
-  siteMenu[i] = siteMenu[i + dir];
-  siteMenu[i + dir] = temp;
-  renderMenuList();
+function handleDragOverMenu(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
 }
 
-function deleteMenuItem(i) {
-  if (!confirm('حذف شود؟')) return;
-  siteMenu.splice(i, 1);
+function handleDropMenu(e, dropIndex) {
+  e.preventDefault();
+  if (draggedMenuIndex === null || draggedMenuIndex === dropIndex) return;
+
+  const temp = siteMenu[draggedMenuIndex];
+  siteMenu.splice(draggedMenuIndex, 1);
+  siteMenu.splice(dropIndex, 0, temp);
+
   renderMenuList();
+  saveMenuAuto();
+}
+
+function handleDragEndMenu(e) {
+  e.target.style.opacity = '1';
+  draggedMenuIndex = null;
+}
+
+
+
+async function saveMenuAuto() {
+  try {
+    await api('/api/menu', { method: 'POST', body: JSON.stringify(siteMenu), headers: { 'Content-Type': 'application/json' } });
+  } catch (err) {
+    showMsg('خطا در ذخیره خودکار منو', true);
+  }
 }
 
 async function saveMenu() {
