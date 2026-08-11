@@ -774,16 +774,10 @@ function renderSettings() {
       <label>فاوآیکون</label>
       <div class="row">
         <input id="s-favicon" value="${site.favicon || ''}" style="flex:1" placeholder="/media/favicon.ico">
-        <button class="btn sec" onclick="openFaviconPicker()">انتخاب از رسانه</button>
+        <button class="btn sec" onclick="openMediaModal((path) => { document.getElementById('s-favicon').value = path; document.getElementById('favicon-preview').innerHTML = '<img src=&quot;' + path + '&quot; style=&quot;width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px&quot;>'; })">انتخاب از رسانه</button>
       </div>
       <div id="favicon-preview" style="margin-top:8px">${site.favicon ? `<img src="${site.favicon}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">` : ''}</div>
-      <div id="favicon-picker" style="display:none;margin-top:12px">
-        <div class="row" style="margin-bottom:8px">
-          <input type="file" id="favicon-upload-file" accept="image/*,.ico" style="flex:1">
-          <button class="btn" onclick="uploadFavicon()">آپلود و انتخاب</button>
-        </div>
-        <div class="grid2" id="favicon-picker-grid"></div>
-      </div>
+
       <label>عنوان سئو</label><input id="s-seoTitle" value="${site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${site.seoDescription || ''}</textarea>
       <div style="margin-top:16px"></div>
@@ -792,35 +786,11 @@ function renderSettings() {
     `;
 }
 
-async function openFaviconPicker() {
-  const picker = document.getElementById('favicon-picker');
-  if (picker.style.display === 'none') {
-    await loadMedia();
-    picker.style.display = 'block';
-    const grid = document.getElementById('favicon-picker-grid');
-    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
-    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  } else {
-    picker.style.display = 'none';
-  }
-}
 
-function selectFavicon(path) {
-  document.getElementById('s-favicon').value = path;
-  document.getElementById('favicon-preview').innerHTML = `<img src="${path}" style="width:32px;height:32px;border-radius:4px;border:1px solid #263243;object-fit:contain;background:#0b111b;padding:2px">`;
-  document.getElementById('favicon-picker').style.display = 'none';
-}
 
-async function uploadFavicon() {
-  const file = document.getElementById('favicon-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const grid = document.getElementById('favicon-picker-grid');
-  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectFavicon('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  selectFavicon(`/media/${file.name}`);
-}
+
+
+
 async function saveSettings() { site.name = val('s-name'); site.favicon = val('s-favicon'); site.seoTitle = val('s-seoTitle'); site.seoDescription = val('s-seoDesc'); await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('settings'); }
 
 
@@ -1516,16 +1486,10 @@ function renderHero() {
           <label>تصویر پروفایل</label>
           <div class="row">
             <input id="h-profileImage" value="${h.profileImage || site.profileImage || ''}" style="flex:1">
-            <button class="btn sec" onclick="openHeroImagePicker()">انتخاب از رسانه</button>
+            <button class="btn sec" onclick="openMediaModal((path) => { document.getElementById('h-profileImage').value = path; document.getElementById('h-image-preview').innerHTML = '<img src=&quot;' + path + '&quot; class=&quot;preview&quot;>'; })">انتخاب از رسانه</button>
           </div>
           <div id="h-image-preview" style="margin-top:8px">${(h.profileImage || site.profileImage) ? `<img src="${h.profileImage || site.profileImage}" class="preview">` : ''}</div>
-          <div id="h-image-picker" style="display:none;margin-top:12px">
-            <div class="row" style="margin-bottom:8px">
-              <input type="file" id="h-upload-file" accept="image/*" style="flex:1">
-              <button class="btn" onclick="uploadHeroImage()">آپلود و انتخاب</button>
-            </div>
-            <div class="grid2" id="h-picker-grid"></div>
-          </div>
+
           <hr>
           <h3 style="margin-bottom:12px">شبکه‌های اجتماعی</h3>
           <div class="grid2">
@@ -1555,35 +1519,11 @@ async function cancelHero() {
   show('pages');
 }
 
-async function openHeroImagePicker() {
-  const picker = document.getElementById('h-image-picker');
-  if (picker.style.display === 'none') {
-    await loadMedia();
-    picker.style.display = 'block';
-    const grid = document.getElementById('h-picker-grid');
-    if (!media.length) { grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>'; return; }
-    grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  } else {
-    picker.style.display = 'none';
-  }
-}
 
-function selectHeroImage(path) {
-  document.getElementById('h-profileImage').value = path;
-  document.getElementById('h-image-preview').innerHTML = `<img src="${path}" class="preview">`;
-  document.getElementById('h-image-picker').style.display = 'none';
-}
 
-async function uploadHeroImage() {
-  const file = document.getElementById('h-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const grid = document.getElementById('h-picker-grid');
-  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectHeroImage('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
-  selectHeroImage(`/media/${file.name}`);
-}
+
+
+
 
 async function saveHero() {
   site.hero = {
@@ -1804,5 +1744,60 @@ async function saveMenu() {
     btn.innerHTML = 'ذخیره شد ✓';
     btn.classList.add('ok');
     setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('ok'); }, 2000);
+  }
+}
+
+
+let mediaModalCallback = null;
+
+async function openMediaModal(callback) {
+  mediaModalCallback = callback;
+  const modal = document.getElementById('media-modal');
+  if (modal) {
+      modal.style.display = 'flex';
+  }
+  await loadMedia();
+  renderMediaModalGrid();
+}
+
+function closeMediaModal() {
+  const modal = document.getElementById('media-modal');
+  if (modal) {
+      modal.style.display = 'none';
+  }
+  mediaModalCallback = null;
+}
+
+function renderMediaModalGrid() {
+  const grid = document.getElementById('media-modal-grid');
+  if (!grid) return;
+  if (!media.length) {
+    grid.innerHTML = '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+    return;
+  }
+  grid.innerHTML = media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectMediaFromModal('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('');
+}
+
+function selectMediaFromModal(path) {
+  if (mediaModalCallback) mediaModalCallback(path);
+  closeMediaModal();
+}
+
+async function uploadMediaFromModal() {
+  const fileInput = document.getElementById('media-modal-upload');
+  const file = fileInput.files[0];
+  if (!file) return alert('لطفاً یک فایل انتخاب کنید.');
+  const buf = await file.arrayBuffer();
+  const res = await api('/api/media?name=' + encodeURIComponent(file.name), {
+    method: 'POST',
+    body: buf,
+    headers: { 'Content-Type': 'application/octet-stream' }
+  });
+  if (res.ok) {
+    fileInput.value = ''; // Reset input
+    await loadMedia();
+    selectMediaFromModal(res.path);
+  } else {
+    alert('خطا در آپلود');
   }
 }

@@ -114,4 +114,17 @@ document.addEventListener("DOMContentLoaded", applyTheme);
 </aside>
 <main class="main"><div id="content"></div></main>
 </div>
+<div id="media-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeMediaModal()">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="margin:0;">انتخاب رسانه</h3>
+      <button class="modal-close" style="margin:0; font-size:1.5rem;" onclick="closeMediaModal()">&times;</button>
+    </div>
+    <div class="row" style="margin-bottom:16px">
+      <input type="file" id="media-modal-upload" accept="image/*" style="flex:1">
+      <button class="btn" onclick="uploadMediaFromModal()">آپلود و انتخاب</button>
+    </div>
+    <div class="grid2" id="media-modal-grid" style="max-height:60vh; overflow-y:auto; padding-right:8px;"></div>
+  </div>
+</div>
 <script src="/app.js"></script></body></html>
