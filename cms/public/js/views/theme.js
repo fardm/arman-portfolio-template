@@ -127,7 +127,7 @@ export function renderTheme() {
         </div>
 
         ${isAuto ? `
-        <div style="margin-bottom:24px; padding-top:16px; border-top:1px solid var(--border)">
+        <div style="margin-bottom:24px;">
           <label style="margin-top:0">رنگ پایه (Base Color)</label>
           <div style="display:flex; gap:8px; align-items:center">
             <input type="text" value="${displayBaseColor}" onchange="onAutoBaseColorChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
