@@ -1,7 +1,7 @@
 ---
-title: ایونت کوهنوردی
+title: ولاگ کوهنوردی
 slug: mont
-description: فیلم برداری ایونت کوهنوردی ایلیا
+description: فیلم برداری ولاگ کوهنوردی ایلیا
 cover: /media/neom-gOqBe7ropxM-unsplash.jpg
 year: '1404'
 client: ایلیا گروپ
