@@ -16,11 +16,12 @@ export async function openMediaModal(callback, isGallery = false) {
   }
 
   const galleryBtn = document.getElementById('media-modal-gallery-btn');
+  if(galleryBtn) { galleryBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> گالری'; }
   if (galleryBtn) {
     if (galleryMode) {
-      galleryBtn.classList.remove('sec');
+      galleryBtn.classList.add('sec'); galleryBtn.style.borderColor = 'var(--primary)'; galleryBtn.style.color = 'var(--primary)';
     } else {
-      galleryBtn.classList.add('sec');
+      galleryBtn.style.borderColor = ''; galleryBtn.style.color = '';
     }
   }
 
@@ -45,10 +46,11 @@ export function toggleMediaModalGalleryMode() {
   const galleryBtn = document.getElementById('media-modal-gallery-btn');
   if (galleryBtn) {
     if (galleryMode) {
-      galleryBtn.classList.remove('sec');
+      galleryBtn.style.borderColor = 'var(--primary)';
+      galleryBtn.style.color = 'var(--primary)';
     } else {
-      galleryBtn.classList.add('sec');
-      // If we turned off gallery mode and have multiple selections, keep only the last one
+      galleryBtn.style.borderColor = '';
+      galleryBtn.style.color = '';
       if (selectedPaths.length > 1) {
         selectedPaths = [selectedPaths[selectedPaths.length - 1]];
       }
@@ -78,6 +80,7 @@ export function renderMediaModalGrid() {
     return;
   }
 
+  grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(120px, 1fr))";
   grid.innerHTML = state.media.map((m) => {
     const isSelected = selectedPaths.includes(m.path);
     const checkmarkHtml = isSelected
@@ -86,27 +89,32 @@ export function renderMediaModalGrid() {
 
     const borderStyle = isSelected ? 'border: 2px solid var(--primary);' : 'border: 2px solid transparent;';
 
-    return \`<div class="list-item" style="cursor:pointer; position:relative; padding:4px; \${borderStyle} border-radius:8px;" onclick="selectMediaFromModal('\${m.path}')">
-      \${checkmarkHtml}
-      <div class="row" style="margin:0;"><img src="\${m.path}" class="preview" style="margin:0;"><strong>\${m.name}</strong></div>
-    </div>\`;
+    return `<div class="card" style="cursor:pointer; position:relative; padding:0; ${borderStyle} border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectMediaFromModal('${m.path}')">
+      ${checkmarkHtml}
+      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
+    </div>`;
   }).join('');
 }
 
 export function selectMediaFromModal(path) {
+  const idx = selectedPaths.indexOf(path);
   if (galleryMode) {
-    const idx = selectedPaths.indexOf(path);
     if (idx > -1) {
       selectedPaths.splice(idx, 1);
     } else {
       selectedPaths.push(path);
     }
-    updateSelectionCount();
-    renderMediaModalGrid();
   } else {
-    selectedPaths = [path];
-    confirmMediaSelection();
+    // Single mode: just set the selected path
+    if (idx > -1) {
+      selectedPaths = []; // deselect if clicked again
+    } else {
+      selectedPaths = [path];
+    }
   }
+  updateSelectionCount();
+  renderMediaModalGrid();
 }
 
 export function confirmMediaSelection() {

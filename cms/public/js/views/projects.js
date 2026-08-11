@@ -45,14 +45,14 @@ export function renderProjectEdit() {
   const unselectedCats = state.categories.filter(c => !p.categories.includes(c.slug));
 
 
-  const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => \`
+  const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => `
     <div style="display:flex; align-items:center; gap:8px; background:var(--card); padding:8px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', ${idx})" ondragover="event.preventDefault()" ondrop="event.preventDefault(); window.reorderProjectImage(${idx}, event.dataTransfer.getData('text/plain'))">
-      <div style="cursor:grab">≡</div>
+      <div style="cursor:grab; opacity:0.5"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg></div>
       <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
       <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
-      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removeProjectImage(${idx})">✕</button>
+      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removeProjectImage(${idx})"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
     </div>
-  \`).join('') : '';
+  `).join('') : '';
 
   const catsHtml = `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
@@ -112,13 +112,13 @@ export function renderProjectEdit() {
                 `<label style="margin-top:12px">لینک ویدئو</label><input id="f-videoUrl" style="direction:ltr;text-align:left" value="${p.videoUrl || ''}" onchange="state.editingProject.videoUrl=this.value">`
               }
             ` : ''}
-            ${p.template === 'image' ? \`
+            ${p.template === 'image' ? `
               <div style="margin-top:16px;">
                 <label>تصاویر پروژه</label>
                 <div id="project-images-list" style="margin-bottom:8px;">${imagesHtml}</div>
                 <button class="btn sec" style="width:100%; justify-content:center" onclick="window.openProjectImagePicker()">انتخاب تصویر</button>
               </div>
-            \` : ''}
+            ` : ''}
 
           </div>
 
@@ -262,7 +262,7 @@ window.openProjectImagePicker = function() {
     // Remove duplicates
     state.editingProject.images = [...new Set(state.editingProject.images)];
     renderProjectEdit();
-  }, true); // Open in gallery mode
+  }); // Use default single mode
 };
 
 window.removeProjectImage = function(index) {

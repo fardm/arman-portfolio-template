@@ -44,7 +44,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all \${currentIndex === index ? 'border-[var(--primary)] opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+            className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${currentIndex === index ? 'border-[var(--primary)] opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
           >
             <img src={img} alt="" className="h-full w-full object-cover" />
           </button>
