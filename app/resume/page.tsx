@@ -46,7 +46,7 @@ export default function ResumePage() {
       <div className="container max-w-4xl">
         <h1 className="mt-2 text-5xl font-black">رزومه</h1>
 
-        <div className="mt-14 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+        <div className="mt-14 grid gap-12 lg:grid-cols-[2fr_1fr]">
           <div>
             <h2 className="mb-6 text-2xl font-bold">درباره من</h2>
             <p className="mb-12 text-lg text-[var(--muted)]">{resume.summary}</p>
