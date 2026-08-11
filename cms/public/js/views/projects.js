@@ -33,7 +33,7 @@ export function renderProjects() {
   `;
 }
 
-export function newProject() { state.editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], template: 'image', videoUrl: '' }; show('project-edit', false); render(); }
+export function newProject() { state.editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], images: [], template: 'image', videoUrl: '' }; show('project-edit', false); render(); }
 export function editProject(slug) { state.editingProject = state.projects.find((p) => p.slug === slug); state.editingProject.originalSlug = slug; show('project-edit', false); render(); }
 export async function duplicateProject(slug) { const p = state.projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 export async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
@@ -43,6 +43,16 @@ export function renderProjectEdit() {
 
   const selectedCats = state.categories.filter(c => p.categories.includes(c.slug));
   const unselectedCats = state.categories.filter(c => !p.categories.includes(c.slug));
+
+
+  const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => `
+    <div style="display:flex; align-items:center; gap:8px; background:var(--card); padding:8px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', ${idx})" ondragover="event.preventDefault()" ondrop="event.preventDefault(); window.reorderProjectImage(${idx}, event.dataTransfer.getData('text/plain'))">
+      <div style="cursor:grab; opacity:0.5"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg></div>
+      <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
+      <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
+      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removeProjectImage(${idx})"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+    </div>
+  `).join('') : '';
 
   const catsHtml = `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
@@ -102,6 +112,14 @@ export function renderProjectEdit() {
                 `<label style="margin-top:12px">لینک ویدئو</label><input id="f-videoUrl" style="direction:ltr;text-align:left" value="${p.videoUrl || ''}" onchange="state.editingProject.videoUrl=this.value">`
               }
             ` : ''}
+            ${p.template === 'image' ? `
+              <div style="margin-top:16px;">
+                <label>تصاویر پروژه</label>
+                <div id="project-images-list" style="margin-bottom:8px;">${imagesHtml}</div>
+                <button class="btn sec" style="width:100%; justify-content:center" onclick="window.openProjectImagePicker()">انتخاب تصویر</button>
+              </div>
+            ` : ''}
+
           </div>
 
           <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
@@ -129,7 +147,10 @@ export async function openCoverPickerModal() {
   overlay.id = 'cover-modal';
   overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
 
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
+      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
+    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
 
   overlay.innerHTML = `
     <div class="modal-content">
@@ -139,7 +160,7 @@ export async function openCoverPickerModal() {
         <input type="file" id="modal-upload-file" accept="image/*" style="flex:1">
         <button class="btn" onclick="uploadCoverFromModal()">آپلود و انتخاب</button>
       </div>
-      <div class="grid2" id="modal-media-grid">
+      <div class="grid2" id="modal-media-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
         ${gridHtml}
       </div>
     </div>
@@ -166,7 +187,10 @@ export async function uploadCoverFromModal() {
   const buffer = await file.arrayBuffer();
   await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
   await loadMedia();
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="list-item" style="cursor:pointer" onclick="selectCover('${m.path}')"><div class="row"><img src="${m.path}" class="preview"><strong>${m.name}</strong></div></div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
+  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
+      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
+      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
+    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
   const grid = document.getElementById('modal-media-grid');
   if (grid) grid.innerHTML = gridHtml;
   selectCover(`/media/${file.name}`);
@@ -215,7 +239,7 @@ export async function saveProject() {
     template: val('f-template'),
     videoSource: videoSourceEl ? videoSourceEl.value : (state.editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (state.editingProject.videoUrl || ''),
-    content: val('f-content'), originalSlug: state.editingProject.originalSlug,
+    content: val('f-content'), images: state.editingProject.images || [], originalSlug: state.editingProject.originalSlug,
   };
   await api('/api/projects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
@@ -232,3 +256,33 @@ export async function saveProject() {
     setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
   }
 }
+
+window.openProjectImagePicker = function() {
+  window.openMediaModal((selected) => {
+    if (!state.editingProject.images) state.editingProject.images = [];
+    if (Array.isArray(selected)) {
+      state.editingProject.images.push(...selected);
+    } else if (selected) {
+      state.editingProject.images.push(selected);
+    }
+    // Remove duplicates
+    state.editingProject.images = [...new Set(state.editingProject.images)];
+    renderProjectEdit();
+  }); // Use default single mode
+};
+
+window.removeProjectImage = function(index) {
+  if (state.editingProject.images && state.editingProject.images.length > index) {
+    state.editingProject.images.splice(index, 1);
+    renderProjectEdit();
+  }
+};
+
+window.reorderProjectImage = function(toIndex, fromIndexStr) {
+  const fromIndex = parseInt(fromIndexStr, 10);
+  if (isNaN(fromIndex) || fromIndex === toIndex || !state.editingProject.images) return;
+
+  const img = state.editingProject.images.splice(fromIndex, 1)[0];
+  state.editingProject.images.splice(toIndex, 0, img);
+  renderProjectEdit();
+};

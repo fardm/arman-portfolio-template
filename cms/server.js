@@ -32,6 +32,7 @@ function projectToMarkdown(data) {
     template: data.template || 'image',
     videoSource: data.videoSource || 'host',
     videoUrl: data.videoUrl || '',
+    images: data.images || [],
   };
   return matter.stringify(data.content || '', fm);
 }

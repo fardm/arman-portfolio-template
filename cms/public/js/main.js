@@ -2,7 +2,7 @@ import { state, dom } from './core/state.js';
 import { api } from './core/api.js';
 import { loadAll, loadFonts, loadMedia } from './core/data.js';
 import { show, render, toggleGroup } from './core/router.js';
-import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal } from './components/media-modal.js';
+import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal, toggleMediaModalGalleryMode, confirmMediaSelection } from './components/media-modal.js';
 import { newProject, editProject, duplicateProject, deleteProject, toggleCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal, uploadCoverFromModal, selectCover } from './views/projects.js';
 import { openCatModal, saveCat, deleteCat } from './views/categories.js';
 import { addExp, renderExp, addEdu, renderEdu, saveResume, cancelResume } from './views/resume.js';
@@ -55,6 +55,8 @@ window.openPreview = async function openPreview() {
 
 // Expose other components needed in HTML or dynamically generated strings
 window.openMediaModal = openMediaModal;
+window.toggleMediaModalGalleryMode = toggleMediaModalGalleryMode;
+window.confirmMediaSelection = confirmMediaSelection;
 window.closeMediaModal = closeMediaModal;
 window.selectMediaFromModal = selectMediaFromModal;
 window.uploadMediaFromModal = uploadMediaFromModal;

@@ -122,9 +122,16 @@ document.addEventListener("DOMContentLoaded", applyTheme);
     </div>
     <div class="row" style="margin-bottom:16px">
       <input type="file" id="media-modal-upload" accept="image/*" style="flex:1">
-      <button class="btn" onclick="uploadMediaFromModal()">آپلود و انتخاب</button>
+      <button class="btn" onclick="uploadMediaFromModal()">آپلود</button>
     </div>
     <div class="grid2" id="media-modal-grid" style="max-height:60vh; overflow-y:auto; padding-right:8px;"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:16px; align-items:center">
+      <button id="media-modal-gallery-btn" class="btn sec" onclick="toggleMediaModalGalleryMode()">حالت گالری</button>
+      <div style="display:flex; gap:8px; align-items:center">
+        <span id="media-modal-selection-count" style="display:none; color:var(--muted); font-size:0.9rem;"></span>
+        <button id="media-modal-confirm-btn" class="btn" onclick="confirmMediaSelection()">افزودن</button>
+      </div>
+    </div>
   </div>
 </div>
 <script type="module" src="/js/main.js"></script></body></html>

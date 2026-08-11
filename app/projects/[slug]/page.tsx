@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCategories, getProject, getProjects } from '@/lib/content';
+import { ProjectGallery } from '@/components/project-gallery';
 
 function renderMarkdown(markdown: string) {
   return markdown.split('\n').map((line, index) => {
@@ -90,7 +91,8 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>
-            {project.template !== 'video' && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
+            {project.template !== 'video' && project.images && project.images.length > 0 && <ProjectGallery images={project.images} />}
+            {project.template !== 'video' && (!project.images || project.images.length === 0) && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
             {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.videoSource || 'host', project.title)}
             <div className="prose mt-10 max-w-none">{renderMarkdown(project.content)}</div>
           </div>
