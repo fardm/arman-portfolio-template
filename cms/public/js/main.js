@@ -10,7 +10,7 @@ import { uploadMedia, deleteMedia, openLightbox } from './views/media.js';
 import { saveSettings } from './views/settings.js';
 import { saveTheme, onThemeModeSelect, onAutoBaseColorChange, copyToManualAndSwitch, syncCustomColors } from './views/theme.js';
 import { openFontModal, toggleFontSourceModal, onFontFileSelected, handleFontDrop, saveFontModal, deleteSiteFont, updateTypoAuto } from './views/typography.js';
-import { startPublish, renderPublish } from './views/publish.js';
+import { startPublish, renderPublish, startLocalTest } from './views/publish.js';
 import { newPage, editPage, deletePage, savePage } from './views/pages.js';
 import { addMenuItem, deleteMenuItem, saveMenu, saveMenuAuto, handleDragStartMenu, handleDragOverMenu, handleDropMenu, handleDragEndMenu } from './views/menu.js';
 import { saveHero, cancelHero } from './views/hero.js';
@@ -104,6 +104,7 @@ window.updateTypoAuto = updateTypoAuto;
 
 window.startPublish = startPublish;
 window.renderPublish = renderPublish;
+window.startLocalTest = startLocalTest;
 
 window.newPage = newPage;
 window.editPage = editPage;

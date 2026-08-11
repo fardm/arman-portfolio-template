@@ -218,6 +218,20 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+
+      // Test endpoint
+      if (pathname === '/api/test' && method === 'POST') {
+        const testProc = spawn('npm', ['run', 'test'], { cwd: root, shell: true });
+        let output = '';
+        testProc.stdout.on('data', (d) => (output += d.toString()));
+        testProc.stderr.on('data', (d) => (output += d.toString()));
+        return new Promise((resolve) => {
+          testProc.on('close', (code) => {
+            resolve(send(res, code === 0 ? 200 : 500, { ok: code === 0, output }));
+          });
+        });
+      }
+
       // Publish to GitHub
       if (pathname === '/api/publish' && method === 'POST') {
         const status = await runGit(['status', '--porcelain']);
