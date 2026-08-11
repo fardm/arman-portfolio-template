@@ -443,30 +443,66 @@ function renderCategories() {
   renderCatList();
 }
 
-function renderCatNode(c, i, depth = 0) {
+function renderCatNode(c, i, depth = 0, isLast = false) {
   const children = categories.filter(child => child.parent === c.slug);
+  const indent = depth * 28;
+
+  // Connector lines: a horizontal stub coming off the vertical rail
+  const connector = depth > 0 ? `
+    <div style="
+      position:absolute;
+      right:${indent - 20}px;
+      top:50%;
+      width:16px;
+      height:0;
+      border-top:1px solid var(--border);
+    "></div>` : '';
+
   let html = `
-    <div style="display:flex; align-items:center; margin-bottom: 8px;">
+    <div style="position:relative; margin-bottom:6px;">
+      ${connector}
       <div
-        style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:6px; cursor:pointer; transition:background 0.2s;"
-        onmouseenter="this.style.background='var(--card-hover)'"
-        onmouseleave="this.style.background='transparent'"
+        style="
+          margin-right:${indent}px;
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          padding:7px 12px;
+          border-radius:8px;
+          border:1px solid var(--border);
+          background:var(--card);
+          cursor:pointer;
+          transition:border-color .15s, background .15s;
+          min-width:160px;
+        "
+        onmouseenter="this.style.borderColor='var(--primary)'; this.style.background='var(--card-hover)'"
+        onmouseleave="this.style.borderColor='var(--border)'; this.style.background='var(--card)'"
         onclick="openCatModal(${i})"
       >
-        <span style="color:var(--foreground)">${c.name || '(بدون نام)'}</span>
-        <span style="color:var(--muted); font-size:0.8rem">/${c.slug}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg>
+        <span style="color:var(--foreground); font-size:.9rem">${c.name || '(بدون نام)'}</span>
       </div>
-    </div>
-  `;
+    </div>`;
 
   if (children.length > 0) {
-    html += `<ul style="list-style-type:none; padding-right:24px; border-right:1px solid var(--border); margin-top:4px; margin-bottom:8px;">`;
-    children.forEach(child => {
+    // Vertical rail running down beside the children
+    const railRight = indent + 8;
+    html += `<div style="position:relative; margin-bottom:2px;">
+      <div style="
+        position:absolute;
+        right:${railRight}px;
+        top:0;
+        bottom:6px;
+        width:0;
+        border-right:1px solid var(--border);
+      "></div>`;
+    children.forEach((child, ci) => {
       const childIndex = categories.findIndex(cat => cat.slug === child.slug);
-      html += `<li>${renderCatNode(child, childIndex, depth + 1)}</li>`;
+      html += renderCatNode(child, childIndex, depth + 1, ci === children.length - 1);
     });
-    html += `</ul>`;
+    html += `</div>`;
   }
+
   return html;
 }
 
@@ -481,13 +517,13 @@ function renderCatList() {
     return;
   }
 
-  let rootHtml = '<ul style="list-style-type:none; padding:0;">';
-  rootCats.forEach(c => {
+  let html = '<div style="padding-top:4px;">';
+  rootCats.forEach((c, ri) => {
     const i = categories.findIndex(cat => cat.slug === c.slug);
-    rootHtml += `<li>${renderCatNode(c, i)}</li>`;
+    html += renderCatNode(c, i, 0, ri === rootCats.length - 1);
   });
-  rootHtml += '</ul>';
-  list.innerHTML = rootHtml;
+  html += '</div>';
+  list.innerHTML = html;
 }
 
 function openCatModal(index = -1) {
