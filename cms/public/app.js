@@ -1318,16 +1318,12 @@ async function updateTypoAuto(key, value) {
 async function renderMedia() {
   await loadMedia();
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
-        <h2 style="margin-bottom:4px">رسانه</h2>
-        <p class="sub" style="margin-bottom:0">مدیریت فایل‌های آپلود شده.</p>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center; background:var(--card); padding:8px 16px; border-radius:8px; border:1px solid var(--border)">
+      <h2 style="margin-bottom:4px">رسانه</h2>
+      <p class="sub" style="margin-bottom:24px">مدیریت فایل‌های آپلود شده.</p>
+      <div style="margin-bottom:24px; width:fit-content; display:flex; gap:8px; align-items:center; background:var(--card); padding:8px 16px; border-radius:8px; border:1px solid var(--border)">
         <input type="file" id="media-upload" style="background:transparent; border:none; padding:0; width:auto">
         <button class="btn" onclick="uploadMedia()">آپلود فایل</button>
       </div>
-    </div>
     <div class="grid2" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px">
       ${media.map((m) => `
         <div class="card" style="padding:12px; position:relative; display:flex; flex-direction:column; align-items:center; text-align:center">
