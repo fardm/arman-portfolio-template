@@ -769,7 +769,7 @@ async function saveResume() {
 
 function renderSettings() {
   content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
-    <div class="card">
+    <div class="card" style="width: 850px;">
       <label>نام</label><input id="s-name" value="${site.name || ''}">
       <label>فاوآیکون</label>
       <div class="row">
@@ -917,8 +917,7 @@ function renderTheme() {
       </div>
     </div>
 
-    <div>
-      <div class="card" style="padding:24px">
+      <div class="card" style="padding:24px; width:850px;">
         <div style="margin-bottom:24px">
           <select id="theme-mode-select" onchange="onThemeModeSelect(this.value)" style="max-width:250px; font-weight:bold;">
             <option value="manual" ${isManual ? 'selected' : ''}>رنگ‌بندی دستی</option>
@@ -970,10 +969,8 @@ function renderTheme() {
         ` : ''}
 
       </div>
-      <div class="row" style="margin-bottom:16px">
-        <button class="btn" onclick="saveTheme()" style="justify-content:center">ذخیره</button>
-      </div>
-    </div>`;
+    <button class="btn" onclick="saveTheme()" style="justify-content:center">ذخیره</button>
+    `;
 }
 
 function onThemeModeSelect(mode) {
@@ -1264,14 +1261,10 @@ function renderTypography() {
   const list = getSiteFonts();
 
   content.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
-      <div>
-        <h2 style="margin-bottom:4px">تنظیم فونت</h2>
-        <p class="sub" style="margin-bottom:0">ابتدا فونت دلخواه خود را اضافه کنید سپس فونت متن و تیتر را تنظیم کنید.</p>
-      </div>
-    </div>
+        <h2 style="margin-bottom:4px">فونت</h2>
+        <p class="sub" style="margin-bottom:24px">ابتدا فونت دلخواه خود را اضافه کنید سپس فونت متن و تیتر را تنظیم کنید.</p>
 
-    <div style="display:flex; flex-direction: column; gap:24px;">
+    <div style="display:flex; flex-direction: column; gap:24px; width: 850px;">
 
       <!-- Fonts Manager -->
       <div>
