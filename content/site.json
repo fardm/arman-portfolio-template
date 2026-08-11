@@ -26,6 +26,7 @@
   "theme": {
     "baseColor": "#f54242",
     "isCustom": false,
+    "mode": "dark",
     "light": {
       "primary": "#c73333",
       "secondary": "#259393",
