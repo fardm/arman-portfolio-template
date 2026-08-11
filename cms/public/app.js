@@ -1064,13 +1064,28 @@ function syncCustomColors() {
 
 async function resetTheme() {
   if(!confirm('همه رنگ‌ها به حالت پیش‌فرض بازنشانی شوند؟')) return;
-  const def = generateThemeColors('#b8f542');
 
   site.theme = {
     baseColor: '#b8f542',
-    isCustom: false,
-    light: def.light,
-    dark: def.dark
+    isCustom: true,
+    light: {
+      primary:    '#8ec421',
+      secondary:  '#18a1c3',
+      background: '#fafbf9',
+      foreground: '#292e1f',
+      muted:      '#6d7a52',
+      border:     '#dbe0d1',
+      card:       '#f3f5f0'
+    },
+    dark: {
+      primary:    '#b8f542',
+      secondary:  '#8adcf0',
+      background: '#0b111b',
+      foreground: '#f5f7fa',
+      muted:      '#9ba6b5',
+      border:     '#263243',
+      card:       '#131b2a'
+    }
   };
 
   // Update inputs instantly, then persist in background (no message on save btn)

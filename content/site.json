@@ -25,26 +25,24 @@
   "font": "Vazirmatn",
   "theme": {
     "baseColor": "#b8f542",
-    "isCustom": false,
+    "isCustom": true,
     "light": {
-      "primary": "#96c733",
-      "secondary": "#492593",
-      "background": "#f7f8f7",
-      "foreground": "#1d1d1b",
-      "muted": "#7c8174",
-      "border": "#d9dbd7",
-      "card": "#f0f0ef",
-      "cardHover": "#e3e4e2"
+      "primary": "#8ec421",
+      "secondary": "#18a1c3",
+      "background": "#fafbf9",
+      "foreground": "#292e1f",
+      "muted": "#6d7a52",
+      "border": "#dbe0d1",
+      "card": "#f3f5f0"
     },
     "dark": {
-      "primary": "#c3e382",
-      "secondary": "#8865cd",
-      "background": "#171816",
-      "foreground": "#f0f0ef",
-      "muted": "#8c9084",
-      "border": "#363833",
-      "card": "#1f201d",
-      "cardHover": "#2c2e29"
+      "primary": "#b8f542",
+      "secondary": "#8adcf0",
+      "background": "#0b111b",
+      "foreground": "#f5f7fa",
+      "muted": "#9ba6b5",
+      "border": "#263243",
+      "card": "#131b2a"
     }
   },
   "favicon": "/media/profile.jpg",
