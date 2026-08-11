@@ -1,0 +1,197 @@
+import { state, dom } from '../core/state.js';
+import { api } from '../core/api.js';
+import { loadAll } from '../core/data.js';
+import { val, showMsg } from '../utils/helpers.js';
+
+export function renderCategories() {
+  dom.content.innerHTML = `
+    <div style="margin-bottom:24px">
+        <h2 style="margin-bottom:4px">دسته‌ها</h2>
+      <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها. برای ویرایش یا حذف دسته ها روی آن کلیک کنید.</p>
+      </div>
+    <button class="btn" style="margin-bottom:24px" onclick="openCatModal()">+ ایجاد دسته جدید</button>
+    <div id="cat-list" style="max-width: 600px;"></div>`;
+  renderCatList();
+}
+
+function renderCatNode(c, i, depth = 0, isLast = false) {
+  const children = state.categories.filter(child => child.parent === c.slug);
+  const indent = depth * 28;
+
+  const connector = depth > 0 ? `
+    <div style="
+      position:absolute;
+      right:${indent - 20}px;
+      top:50%;
+      width:16px;
+      height:0;
+      border-top:1px solid var(--border);
+    "></div>` : '';
+
+  let html = `
+    <div style="position:relative; margin-bottom:6px;">
+      ${connector}
+      <div
+        style="
+          margin-right:${indent}px;
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          padding:7px 12px;
+          border-radius:8px;
+          border:1px solid var(--border);
+          background:var(--card);
+          cursor:pointer;
+          transition:border-color .15s, background .15s;
+          min-width:160px;
+        "
+        onmouseenter="this.style.borderColor='var(--primary)'; this.style.background='var(--card-hover)'"
+        onmouseleave="this.style.borderColor='var(--border)'; this.style.background='var(--card)'"
+        onclick="openCatModal(${i})"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg>
+        <span style="color:var(--foreground); font-size:.9rem">${c.name || '(بدون نام)'}</span>
+      </div>
+    </div>`;
+
+  if (children.length > 0) {
+    const railRight = indent + 8;
+    html += `<div style="position:relative; margin-bottom:2px;">
+      <div style="
+        position:absolute;
+        right:${railRight}px;
+        top:0;
+        bottom:6px;
+        width:0;
+        border-right:1px solid var(--border);
+      "></div>`;
+    children.forEach((child, ci) => {
+      const childIndex = state.categories.findIndex(cat => cat.slug === child.slug);
+      html += renderCatNode(child, childIndex, depth + 1, ci === children.length - 1);
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+export function renderCatList() {
+  const list = document.getElementById('cat-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const rootCats = state.categories.filter(c => !c.parent);
+  if (rootCats.length === 0) {
+    list.innerHTML = '<p class="sub">هنوز دسته‌ای ایجاد نشده است.</p>';
+    return;
+  }
+
+  let html = '<div style="padding-top:4px;">';
+  rootCats.forEach((c, ri) => {
+    const i = state.categories.findIndex(cat => cat.slug === c.slug);
+    html += renderCatNode(c, i, 0, ri === rootCats.length - 1);
+  });
+  html += '</div>';
+  list.innerHTML = html;
+}
+
+export function openCatModal(index = -1) {
+  const isEdit = index > -1;
+  const c = isEdit ? state.categories[index] : { name: '', slug: '', parent: '' };
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
+
+  let parentOptions = '<option value="">(بدون والد - ریشه)</option>';
+  state.categories.forEach(cat => {
+    if (isEdit && cat.slug === c.slug) return;
+    parentOptions += `<option value="${cat.slug}" ${c.parent === cat.slug ? 'selected' : ''}>${cat.name}</option>`;
+  });
+
+  const delBtnHtml = isEdit ? `<button class="btn danger" style="margin-right:auto;" onclick="deleteCat(${index}); this.parentElement.parentElement.parentElement.remove()">حذف</button>` : '';
+
+  m.innerHTML = `
+    <div class="modal-content" style="max-width:400px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+        <h3 style="margin:0">${isEdit ? 'ویرایش دسته' : 'ایجاد دسته جدید'}</h3>
+        <button class="modal-close" style="color:var(--foreground); margin:0" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">نام دسته</label>
+        <input type="text" id="cat-name" value="${c.name}" ${!isEdit ? 'onkeyup="document.getElementById(\'cat-slug\').value=this.value.toLowerCase().replace(/\\s+/g,\'-\')" ' : ''}>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="margin-top:0">شناسه (URL Slug)</label>
+        <input type="text" id="cat-slug" value="${c.slug}" dir="ltr">
+        <input type="hidden" id="cat-original-slug" value="${c.slug}">
+      </div>
+      <div style="margin-bottom:24px">
+        <label style="margin-top:0">دسته والد</label>
+        <select id="cat-parent">${parentOptions}</select>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn" onclick="saveCat(${index}, this.parentElement.parentElement.parentElement)">ذخیره دسته</button>
+        ${delBtnHtml}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+}
+
+export async function saveCat(index, modalNode) {
+  const name = val('cat-name'), slug = val('cat-slug'), parent = val('cat-parent');
+  const originalSlug = val('cat-original-slug');
+  if (!name || !slug) return showMsg('نام و شناسه الزامی است', true);
+
+  if (index === -1) {
+    if (state.categories.find(c => c.slug === slug)) return showMsg('این شناسه قبلاً استفاده شده است', true);
+    state.categories.push({ name, slug, parent });
+  } else {
+    state.categories[index] = { name, slug, parent, originalSlug };
+  }
+
+  try {
+    await api('/api/categories', { method: 'POST', body: JSON.stringify(state.categories), headers: { 'Content-Type': 'application/json' } });
+    await loadAll();
+    modalNode.remove();
+    showMsg('دسته با موفقیت ذخیره شد');
+    renderCategories();
+  } catch(e) {
+    showMsg('خطا در ذخیره دسته', true);
+  }
+}
+
+export async function deleteCat(i) {
+  if(confirm('حذف شود؟ با حذف این دسته، تمامی زیردسته‌های آن نیز حذف خواهند شد.')) {
+    const deletedSlug = state.categories[i].slug;
+
+    let toDelete = new Set([deletedSlug]);
+    let added = true;
+    while(added) {
+      added = false;
+      state.categories.forEach(c => {
+        if(toDelete.has(c.parent) && !toDelete.has(c.slug)) {
+          toDelete.add(c.slug);
+          added = true;
+        }
+      });
+    }
+
+    const newCategories = state.categories.filter(c => !toDelete.has(c.slug));
+
+    for (const project of state.projects) {
+      if (project.categories && project.categories.some(c => toDelete.has(c))) {
+        project.categories = project.categories.filter(c => !toDelete.has(c));
+        await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    state.categories.length = 0;
+    state.categories.push(...newCategories);
+
+    renderCatList();
+    saveCategories();
+  }
+}
+export async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(state.categories), headers: { 'Content-Type': 'application/json' } }); }
