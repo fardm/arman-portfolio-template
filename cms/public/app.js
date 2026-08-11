@@ -1190,11 +1190,10 @@ async function saveFontModal() {
 
     const buffer = await file.arrayBuffer();
     await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-    await loadFonts();
 
     const isVar = file.name.toLowerCase().includes('variable');
     const name = file.name.replace(/\.[^.]+$/, '');
-    const format = ext.slice(1); // derive format from extension — no manual selection needed
+    const format = ext.slice(1);
     newFont = {
       source: 'custom',
       name,
@@ -1210,15 +1209,21 @@ async function saveFontModal() {
 
   await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
   document.getElementById('font-modal').remove();
-  renderFontList();
-  if (currentView === 'typography') renderTypography();
+
+  // Refresh whichever view is active
+  if (currentView === 'typography') {
+    renderTypography();
+  } else {
+    renderFontList();
+  }
 }
 
 async function deleteSiteFont(i) {
     const list = getSiteFonts();
     const font = list[i];
+    if (!font) return;
 
-    // Check if in use
+    // Guard: in use
     const typo = site.typography || {};
     if (typo.bodyFont === font.name || typo.headingFont === font.name) {
         alert('این فونت در بخش تایپوگرافی در حال استفاده است. ابتدا آن را تغییر دهید.');
@@ -1226,10 +1231,27 @@ async function deleteSiteFont(i) {
     }
 
     if (!confirm(`فونت "${font.name}" حذف شود؟`)) return;
+
+    // Remove from site.fonts in memory and persist
     list.splice(i, 1);
     site.fonts = list;
     await api('/api/site', { method: 'POST', body: JSON.stringify(site), headers: { 'Content-Type': 'application/json' } });
-    renderFontList();
+
+    // Also delete the physical font file for uploaded fonts
+    if (font.source === 'custom' && font.customFont?.path) {
+        await fetch('/api/fonts', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: font.customFont.path })
+        });
+    }
+
+    // Refresh the active view
+    if (currentView === 'typography') {
+        renderTypography();
+    } else {
+        renderFontList();
+    }
 }
 
 function renderTypography() {
@@ -1253,10 +1275,10 @@ function renderTypography() {
           <p class="sub" style="margin-bottom:0">فونت های موجود:</p>
           <div id="fonts-list" style="display:flex; flex-direction:column; gap:8px;">
             ${list.length === 0 ? '<p class="sub" style="font-size:0.9rem">هیچ فونتی یافت نشد.</p>' : ''}
-            ${list.map(f => `
+            ${list.map((f, i) => `
               <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--background); border-radius:8px; border:1px solid var(--border);">
                 <span style="font-family: ${f.name}, Tahoma">${f.name}</span>
-                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteFont('${f.name}')">حذف</button>
+                <button class="btn sec" style="padding:4px; border:none; color:#ef4444" onclick="deleteSiteFont(${i})">حذف</button>
               </div>
             `).join('')}
           </div>
@@ -1310,20 +1332,6 @@ async function updateTypoAuto(key, value) {
     showMsg('خطا در ذخیره تایپوگرافی', true);
   }
 }
-
-async function deleteFont(name) {
-  if(!confirm('آیا از حذف این فونت مطمئن هستید؟')) return;
-  try {
-    await api('/api/fonts/'+name, {method:'DELETE'});
-    await loadAll();
-    if(currentView === 'typography') renderTypography();
-  } catch(e) {
-    showMsg('خطا در حذف فونت', true);
-  }
-}
-
-
-
 
 async function renderMedia() {
   await loadMedia();
