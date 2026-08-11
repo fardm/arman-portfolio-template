@@ -51,30 +51,35 @@ function hslToHex(h, s, l) {
     return '#' + toHex(r) + toHex(g) + toHex(b);
 }
 
-function generateThemeColors(primaryHex) {
-    const [h, s, l] = hexToHsl(primaryHex);
-    const bgS = Math.min(s, 20);
+function generateThemeColors(baseColorHex) {
+    const [h, s, l] = hexToHsl(baseColorHex);
+    // Complementary hue: opposite side of the color wheel
+    const hComp = (h + 180) % 360;
+    // Very low saturation for neutral backgrounds and muted text
+    const bgS = Math.min(s, 8);
+    // Moderate saturation for secondary (complementary) color
+    const secS = Math.max(40, Math.min(s, 70));
     return {
-        primary: primaryHex,
+        baseColor: baseColorHex,
         light: {
-            primary: hslToHex(h, s, Math.max(0, l - 15)),
-            background: hslToHex(h, bgS, 98),
-            foreground: hslToHex(h, bgS, 15),
-            muted: hslToHex(h, bgS, 40),
-            border: hslToHex(h, bgS, 85),
-            accent: hslToHex(h, s, Math.max(0, l - 20)),
-            card: hslToHex(h, bgS, 95),
-            cardHover: hslToHex(h, bgS, 92)
+            primary: hslToHex(h, s, Math.max(20, l - 15)),
+            secondary: hslToHex(hComp, secS, 35),
+            background: hslToHex(h, bgS, 97),
+            foreground: hslToHex(h, bgS, 12),
+            muted: hslToHex(h, bgS, 45),
+            border: hslToHex(h, bgS, 86),
+            card: hslToHex(h, bgS, 94),
+            cardHover: hslToHex(h, bgS, 90)
         },
         dark: {
-            primary: hslToHex(h, s, Math.min(100, l + 15)),
-            background: hslToHex(h, bgS, 6),
+            primary: hslToHex(h, s, Math.min(80, l + 15)),
+            secondary: hslToHex(hComp, secS, 65),
+            background: hslToHex(h, bgS, 7),
             foreground: hslToHex(h, bgS, 95),
-            muted: hslToHex(h, bgS, 60),
-            border: hslToHex(h, bgS, 15),
-            accent: hslToHex(h, s, Math.min(100, l + 20)),
-            card: hslToHex(h, bgS, 9),
-            cardHover: hslToHex(h, bgS, 12)
+            muted: hslToHex(h, bgS, 55),
+            border: hslToHex(h, bgS, 18),
+            card: hslToHex(h, bgS, 10),
+            cardHover: hslToHex(h, bgS, 14)
         }
     };
 }
@@ -786,9 +791,9 @@ async function saveTheme() {
 }
 
 function renderTheme() {
-  const t = site.theme || { primary: '#b8f542', isCustom: false };
+  const t = site.theme || { baseColor: '#b8f542', isCustom: false };
   const isCustom = !!t.isCustom;
-  const c = isCustom ? t : generateThemeColors(t.primary || '#b8f542');
+  const c = isCustom ? t : generateThemeColors(t.baseColor || '#b8f542');
   const d = c.dark || {};
   const l = c.light || {};
 
@@ -796,7 +801,7 @@ function renderTheme() {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
         <h2 style="margin-bottom:4px">رنگ‌بندی</h2>
-        <p class="sub" style="margin-bottom:0">یک رنگ اصلی انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند. برای ویرایش رنگ ها باید گزینه تنظیم دستی را فعال کنید.</p>
+        <p class="sub" style="margin-bottom:0">یک رنگ پایه انتخاب کنید، بقیه رنگ‌ها برای هر دو حالت تاریک و روشن خودکار ساخته می‌شوند. برای ویرایش رنگ ها باید گزینه تنظیم دستی را فعال کنید.</p>
       </div>
     </div>
 
@@ -804,10 +809,10 @@ function renderTheme() {
       <div>
         <div class="card" style="padding:24px">
           <div style="margin-bottom:24px">
-            <label style="margin-top:0">رنگ اصلی (Primary)</label>
+            <label style="margin-top:0">رنگ پایه (Base Color)</label>
             <div style="display:flex; gap:8px; align-items:center">
-              <input type="text" id="t-primary-text" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
-              <input type="color" id="t-primary" value="${c.primary || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
+              <input type="text" id="t-basecolor-text" value="${c.baseColor || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:100px; padding:4px 8px; font-family:monospace; direction:ltr">
+              <input type="color" id="t-basecolor" value="${c.baseColor || '#b8f542'}" onchange="onPrimaryChange(this.value)" style="width:40px; height:40px; padding:0; border:none; border-radius:4px">
             </div>
           </div>
 
@@ -820,6 +825,22 @@ function renderTheme() {
             <!-- Dark Mode -->
             <div style="background:#0b111b; padding:16px; border-radius:12px; border:1px solid #263243">
               <h3 style="margin-bottom:16px; color:#f5f7fa">رنگ‌های حالت تاریک (Dark)</h3>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">رنگ اصلی (Primary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-primary-text" value="${d.primary || ''}" onchange="document.getElementById('t-dark-primary').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-primary" value="${d.primary || '#b8f542'}" onchange="document.getElementById('t-dark-primary-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">رنگ ثانویه (Secondary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-secondary-text" value="${d.secondary || ''}" onchange="document.getElementById('t-dark-secondary').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-secondary" value="${d.secondary || '#000000'}" onchange="document.getElementById('t-dark-secondary-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
 
           <div style="margin-bottom:12px">
             <label style="margin:0 0 4px 0; color:#9ba6b5">پس‌زمینه (Background)</label>
@@ -852,19 +873,27 @@ function renderTheme() {
               <input type="color" id="t-dark-border" value="${d.border || '#000000'}" onchange="document.getElementById('t-dark-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
             </div>
           </div>
-
-          <div style="margin-bottom:12px">
-            <label style="margin:0 0 4px 0; color:#9ba6b5">تأکیدی (Accent)</label>
-            <div style="display:flex; gap:8px; align-items:center">
-              <input type="text" id="t-dark-accent-text" value="${d.accent || ''}" onchange="document.getElementById('t-dark-accent').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
-              <input type="color" id="t-dark-accent" value="${d.accent || '#000000'}" onchange="document.getElementById('t-dark-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
-            </div>
-          </div>
         </div>
 
         <!-- Light Mode -->
         <div style="background:#f4f6f5; padding:16px; border-radius:12px; border:1px solid #d4dde0">
           <h3 style="margin-bottom:16px; color:#1a2530">رنگ‌های حالت روشن (Light)</h3>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">رنگ اصلی (Primary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-primary-text" value="${l.primary || ''}" onchange="document.getElementById('t-light-primary').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-primary" value="${l.primary || '#000000'}" onchange="document.getElementById('t-light-primary-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">رنگ ثانویه (Secondary)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-secondary-text" value="${l.secondary || ''}" onchange="document.getElementById('t-light-secondary').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-secondary" value="${l.secondary || '#000000'}" onchange="document.getElementById('t-light-secondary-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
 
           <div style="margin-bottom:12px">
             <label style="margin:0 0 4px 0; color:#5b6b78">پس‌زمینه (Background)</label>
@@ -897,14 +926,6 @@ function renderTheme() {
               <input type="color" id="t-light-border" value="${l.border || '#000000'}" onchange="document.getElementById('t-light-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
             </div>
           </div>
-
-          <div style="margin-bottom:12px">
-            <label style="margin:0 0 4px 0; color:#5b6b78">تأکیدی (Accent)</label>
-            <div style="display:flex; gap:8px; align-items:center">
-              <input type="text" id="t-light-accent-text" value="${l.accent || ''}" onchange="document.getElementById('t-light-accent').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
-              <input type="color" id="t-light-accent" value="${l.accent || '#000000'}" onchange="document.getElementById('t-light-accent-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
-            </div>
-          </div>
         </div>
       </div>
       </div>
@@ -921,7 +942,7 @@ function renderTheme() {
 
 function onPrimaryChange(val) {
     site.theme = site.theme || {};
-    site.theme.primary = val;
+    site.theme.baseColor = val;
     if (!site.theme.isCustom) {
         Object.assign(site.theme, generateThemeColors(val));
     }
@@ -934,7 +955,7 @@ function onCustomToggle(checked) {
     if (checked) {
         syncCustomColors();
     } else {
-        Object.assign(site.theme, generateThemeColors(site.theme.primary || '#b8f542'));
+        Object.assign(site.theme, generateThemeColors(site.theme.baseColor || '#b8f542'));
     }
     renderTheme();
 }
@@ -942,20 +963,22 @@ function onCustomToggle(checked) {
 function syncCustomColors() {
     site.theme = site.theme || {};
     site.theme.isCustom = true;
-    site.theme.primary = document.getElementById('t-primary').value;
+    site.theme.baseColor = document.getElementById('t-basecolor').value;
     site.theme.dark = {
+        primary: document.getElementById('t-dark-primary').value,
+        secondary: document.getElementById('t-dark-secondary').value,
         background: document.getElementById('t-dark-bg').value,
         foreground: document.getElementById('t-dark-fg').value,
         muted: document.getElementById('t-dark-muted').value,
         border: document.getElementById('t-dark-border').value,
-        accent: document.getElementById('t-dark-accent').value,
     };
     site.theme.light = {
+        primary: document.getElementById('t-light-primary').value,
+        secondary: document.getElementById('t-light-secondary').value,
         background: document.getElementById('t-light-bg').value,
         foreground: document.getElementById('t-light-fg').value,
         muted: document.getElementById('t-light-muted').value,
         border: document.getElementById('t-light-border').value,
-        accent: document.getElementById('t-light-accent').value,
     };
 }
 
@@ -964,16 +987,10 @@ async function resetTheme() {
   const def = generateThemeColors('#b8f542');
 
   site.theme = {
-    primary: '#b8f542',
+    baseColor: '#b8f542',
     isCustom: false,
     light: def.light,
-    dark: {
-      background: "#0b111b",
-      foreground: "#f5f7fa",
-      muted: "#9ba6b5",
-      border: "#263243",
-      accent: "#8adcf0"
-    }
+    dark: def.dark
   };
 
   await saveTheme();

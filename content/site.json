@@ -24,24 +24,27 @@
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
   "theme": {
-    "primary": "#b8f542",
+    "baseColor": "#b8f542",
     "isCustom": false,
     "light": {
       "primary": "#98df0c",
-      "background": "#fafbf9",
-      "foreground": "#292e1f",
-      "muted": "#6d7a52",
-      "border": "#dbe0d1",
-      "accent": "#88c70a",
-      "card": "#f3f5f0",
-      "cardHover": "#ecefe7"
+      "secondary": "#441b98",
+      "background": "#f8f8f7",
+      "foreground": "#1f211c",
+      "muted": "#767c6a",
+      "border": "#dcded8",
+      "card": "#f0f1ee",
+      "cardHover": "#e6e8e3"
     },
     "dark": {
-      "background": "#0b111b",
-      "foreground": "#f5f7fa",
-      "muted": "#9ba6b5",
-      "border": "#263243",
-      "accent": "#8adcf0"
+      "primary": "#d4f98b",
+      "secondary": "#9167e4",
+      "background": "#121310",
+      "foreground": "#f3f3f1",
+      "muted": "#8f9583",
+      "border": "#2f322a",
+      "card": "#1a1c17",
+      "cardHover": "#252721"
     }
   },
   "favicon": "/media/profile.jpg",

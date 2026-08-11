@@ -63,8 +63,8 @@ export default function ResumePage() {
 
             <h2 className="mb-6 mt-12 text-2xl font-bold">تحصیلات</h2>
             {resume.education.map((item) => (
-              <div className="mb-6 border-r-2 border-[var(--accent)] pr-5" key={item.id}>
-                <p className="text-sm text-[var(--accent)]">{item.period}</p>
+              <div className="mb-6 border-r-2 border-[var(--secondary)] pr-5" key={item.id}>
+                <p className="text-sm text-[var(--secondary)]">{item.period}</p>
                 <h3 className="mt-1 font-bold">{item.title}</h3>
                 <p className="text-[var(--muted)]">{item.school}</p>
               </div>

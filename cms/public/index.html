@@ -73,14 +73,15 @@ function applyTheme() {
       const isLight = document.documentElement.getAttribute('data-theme') === 'light';
       const c = isLight ? (t.light || {}) : (t.dark || {});
 
-      if (t.primary) { root.style.setProperty('--primary', c.primary || t.primary); }
+      if (c.primary) { root.style.setProperty('--primary', c.primary); }
+      else if (t.baseColor) { root.style.setProperty('--primary', t.baseColor); }
+      if (c.secondary) root.style.setProperty('--secondary', c.secondary);
       if (c.card) root.style.setProperty('--card', c.card);
       if (c.cardHover) root.style.setProperty('--card-hover', c.cardHover);
       if (c.background) { root.style.setProperty('--background', c.background); document.body.style.background = c.background; }
       if (c.foreground) { root.style.setProperty('--foreground', c.foreground); document.body.style.color = c.foreground; }
       if (c.muted) root.style.setProperty('--muted', c.muted);
       if (c.border) root.style.setProperty('--border', c.border);
-      if (c.accent) root.style.setProperty('--accent', c.accent);
 
       const fc = typeof site.font === 'string' && site.font.startsWith('{') ? JSON.parse(site.font) : { name: site.font || 'Tahoma' };
       if (fc.name) document.body.style.fontFamily = fc.name + ', Tahoma, Arial, sans-serif';
