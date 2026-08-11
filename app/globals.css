@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --primary:#b8f542; --background:#0b111b; --foreground:#f5f7fa; --muted:#9ba6b5; --border:#263243; --secondary:#8adcf0;
-  --card:#111a27; --card-hover:#587085; --tag-bg:#17303b; --prose:#d5dce5; --button-text:#0b111b; --selection-text:#09100d;
+  --primary:#b8f542; --background:#161616; --foreground:#f0f0f0; --muted:#888888; --border:#2e2e2e; --secondary:#8adcf0;
+  --card:#1e1e1e; --card-hover:#282828; --tag-bg:#1a2a1a; --prose:#c8c8c8; --button-text:#111111; --selection-text:#111111;
 }
 :root[data-theme="light"] {
-  --primary:#1e4431; --background:#f4f6f5; --foreground:#1a2530; --muted:#5b6b78; --border:#d4dde0; --secondary:#2a7a9b;
-  --card:#ffffff; --card-hover:#1e4431; --tag-bg:#e1ece6; --prose:#33414d; --button-text:#ffffff; --selection-text:#ffffff;
+  --primary:#3a6b2a; --background:#f7f7f7; --foreground:#1a1a1a; --muted:#6b6b6b; --border:#dedede; --secondary:#2a7a9b;
+  --card:#f0f0f0; --card-hover:#e8e8e8; --tag-bg:#eaf0ea; --prose:#3a3a3a; --button-text:#ffffff; --selection-text:#ffffff;
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }

@@ -55,31 +55,38 @@ function generateThemeColors(baseColorHex) {
     const [h, s, l] = hexToHsl(baseColorHex);
     // Complementary hue: opposite side of the color wheel
     const hComp = (h + 180) % 360;
-    // Very low saturation for neutral backgrounds and muted text
-    const bgS = Math.min(s, 8);
+    // Near-achromatic saturation for neutral surfaces (background, muted, border, card)
+    const bgS = Math.min(s, 5);
     // Moderate saturation for secondary (complementary) color
-    const secS = Math.max(40, Math.min(s, 70));
+    const secS = Math.max(35, Math.min(s, 60));
+    // Reduced saturation for light-mode primary (softer, less vivid)
+    const lightPriS = Math.round(s * 0.65);
     return {
         baseColor: baseColorHex,
         light: {
-            primary: hslToHex(h, s, Math.max(20, l - 15)),
-            secondary: hslToHex(hComp, secS, 35),
+            primary: hslToHex(h, lightPriS, Math.max(22, l - 12)),
+            secondary: hslToHex(hComp, secS, 36),
             background: hslToHex(h, bgS, 97),
-            foreground: hslToHex(h, bgS, 12),
-            muted: hslToHex(h, bgS, 45),
-            border: hslToHex(h, bgS, 86),
+            foreground: hslToHex(h, bgS, 11),
+            muted: hslToHex(h, bgS, 48),
+            border: hslToHex(h, bgS, 85),
             card: hslToHex(h, bgS, 94),
-            cardHover: hslToHex(h, bgS, 90)
+            cardHover: hslToHex(h, bgS, 89)
         },
         dark: {
-            primary: hslToHex(h, s, Math.min(80, l + 15)),
-            secondary: hslToHex(hComp, secS, 65),
-            background: hslToHex(h, bgS, 7),
-            foreground: hslToHex(h, bgS, 95),
-            muted: hslToHex(h, bgS, 55),
-            border: hslToHex(h, bgS, 18),
-            card: hslToHex(h, bgS, 10),
-            cardHover: hslToHex(h, bgS, 14)
+            // Dark primary: reduced saturation (×0.7) to avoid harshness
+            primary: hslToHex(h, Math.round(s * 0.7), Math.min(70, l + 12)),
+            // Dark secondary: slightly desaturated complementary
+            secondary: hslToHex(hComp, Math.round(secS * 0.85), 60),
+            // Charcoal gray background — near-zero hue influence
+            background: hslToHex(h, bgS, 9),
+            foreground: hslToHex(h, bgS, 94),
+            // Muted: neutral mid-gray, clearly lighter than background
+            muted: hslToHex(h, bgS, 54),
+            // Border: neutral dark-gray
+            border: hslToHex(h, bgS, 21),
+            card: hslToHex(h, bgS, 12),
+            cardHover: hslToHex(h, bgS, 17)
         }
     };
 }
@@ -198,7 +205,7 @@ function renderProjects() {
     <div class="grid2">
       ${projects.map((p) => `
         <div class="card" style="display:flex; flex-direction:column; padding:0; overflow:hidden">
-          <div style="height:140px; background:#172231; position:relative">
+          <div style="height:140px; background:var(--card); position:relative">
              ${p.cover ? `<img src="${p.cover}" style="width:100%; height:100%; object-fit:cover">` : '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#9ba6b5">بدون تصویر</div>'}
              <span class="tag" style="position:absolute; top:8px; right:8px; background:rgba(23, 48, 59, 0.9)">${p.template === 'video' ? 'ویدیو' : 'تصویر'}</span>
           </div>
@@ -872,6 +879,22 @@ function renderTheme() {
               <input type="color" id="t-dark-border" value="${d.border || '#000000'}" onchange="document.getElementById('t-dark-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
             </div>
           </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">کارت (Card)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-card-text" value="${d.card || ''}" onchange="document.getElementById('t-dark-card').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-card" value="${d.card || '#000000'}" onchange="document.getElementById('t-dark-card-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#9ba6b5">هاور کارت (Card Hover)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-dark-cardhover-text" value="${d.cardHover || ''}" onchange="document.getElementById('t-dark-cardhover').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#111a27; color:#f5f7fa; border:1px solid #263243">
+              <input type="color" id="t-dark-cardhover" value="${d.cardHover || '#000000'}" onchange="document.getElementById('t-dark-cardhover-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
         </div>
 
         <!-- Light Mode -->
@@ -925,6 +948,22 @@ function renderTheme() {
               <input type="color" id="t-light-border" value="${l.border || '#000000'}" onchange="document.getElementById('t-light-border-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
             </div>
           </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">کارت (Card)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-card-text" value="${l.card || ''}" onchange="document.getElementById('t-light-card').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-card" value="${l.card || '#ffffff'}" onchange="document.getElementById('t-light-card-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="margin:0 0 4px 0; color:#5b6b78">هاور کارت (Card Hover)</label>
+            <div style="display:flex; gap:8px; align-items:center">
+              <input type="text" id="t-light-cardhover-text" value="${l.cardHover || ''}" onchange="document.getElementById('t-light-cardhover').value=this.value; syncCustomColors()" style="flex:1; padding:4px 8px; font-family:monospace; direction:ltr; background:#ffffff; color:#1a2530; border:1px solid #d4dde0">
+              <input type="color" id="t-light-cardhover" value="${l.cardHover || '#000000'}" onchange="document.getElementById('t-light-cardhover-text').value=this.value; syncCustomColors()" style="width:40px; height:32px; padding:0; border:none; border-radius:4px">
+            </div>
+          </div>
         </div>
       </div>
       </div>
@@ -970,6 +1009,8 @@ function syncCustomColors() {
         foreground: document.getElementById('t-dark-fg').value,
         muted: document.getElementById('t-dark-muted').value,
         border: document.getElementById('t-dark-border').value,
+        card: document.getElementById('t-dark-card').value,
+        cardHover: document.getElementById('t-dark-cardhover').value,
     };
     site.theme.light = {
         primary: document.getElementById('t-light-primary').value,
@@ -978,6 +1019,8 @@ function syncCustomColors() {
         foreground: document.getElementById('t-light-fg').value,
         muted: document.getElementById('t-light-muted').value,
         border: document.getElementById('t-light-border').value,
+        card: document.getElementById('t-light-card').value,
+        cardHover: document.getElementById('t-light-cardhover').value,
     };
 }
 
@@ -1291,7 +1334,7 @@ async function renderMedia() {
         <h2 style="margin-bottom:4px">رسانه</h2>
         <p class="sub" style="margin-bottom:0">مدیریت فایل‌های آپلود شده.</p>
       </div>
-      <div style="display:flex; gap:8px; align-items:center; background:#111a27; padding:8px 16px; border-radius:8px; border:1px solid #263243">
+      <div style="display:flex; gap:8px; align-items:center; background:var(--card); padding:8px 16px; border-radius:8px; border:1px solid var(--border)">
         <input type="file" id="media-upload" style="background:transparent; border:none; padding:0; width:auto">
         <button class="btn" onclick="uploadMedia()">آپلود فایل</button>
       </div>

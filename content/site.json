@@ -24,27 +24,27 @@
   "ogImage": "/media/profile.svg",
   "font": "Vazirmatn",
   "theme": {
-    "baseColor": "#b8f542",
+    "baseColor": "#f54242",
     "isCustom": false,
     "light": {
-      "primary": "#98df0c",
-      "secondary": "#441b98",
-      "background": "#f8f8f7",
-      "foreground": "#1f211c",
-      "muted": "#767c6a",
-      "border": "#dcded8",
-      "card": "#f0f1ee",
-      "cardHover": "#e6e8e3"
+      "primary": "#c73333",
+      "secondary": "#259393",
+      "background": "#f8f7f7",
+      "foreground": "#1d1b1b",
+      "muted": "#817474",
+      "border": "#dbd7d7",
+      "card": "#f0efef",
+      "cardHover": "#e4e2e2"
     },
     "dark": {
-      "primary": "#d4f98b",
-      "secondary": "#9167e4",
-      "background": "#121310",
-      "foreground": "#f3f3f1",
-      "muted": "#8f9583",
-      "border": "#2f322a",
-      "card": "#1a1c17",
-      "cardHover": "#252721"
+      "primary": "#e38282",
+      "secondary": "#65cdcd",
+      "background": "#181616",
+      "foreground": "#f0efef",
+      "muted": "#908484",
+      "border": "#383333",
+      "card": "#201d1d",
+      "cardHover": "#2e2929"
     }
   },
   "favicon": "/media/profile.jpg",
