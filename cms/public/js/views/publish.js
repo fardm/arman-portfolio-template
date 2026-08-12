@@ -92,7 +92,7 @@ export async function startLocalTest() {
     html += `<div style="margin-bottom:8px">✓ Output verification</div>`;
 
     if (r.output) {
-       html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:#0b111b;padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${r.output}</pre></details>`;
+       html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${r.output}</pre></details>`;
     }
     html += `</div>`;
 
