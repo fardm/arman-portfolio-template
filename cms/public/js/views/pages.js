@@ -13,7 +13,7 @@ export function renderPages() {
       <div class="card" style="display:flex; flex-direction:column; padding:16px">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
           <strong style="font-size:1.1rem">صفحه اصلی</strong>
-          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
+          <span class="tag" style="background:color-mix(in srgb, var(--secondary) 12%, transparent); color:var(--secondary)">(سیستمی)</span>
         </div>
         <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت محتوای هیرو و شبکه‌های اجتماعی صفحه اول.</p>
         <button class="btn sec" style="margin-top:auto" onclick="show('hero')">ویرایش صفحه اصلی</button>
@@ -22,7 +22,7 @@ export function renderPages() {
       <div class="card" style="display:flex; flex-direction:column; padding:16px">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
           <strong style="font-size:1.1rem">رزومه</strong>
-          <span class="tag" style="background:#2a1515; color:#ef4444">اختصاصی (سیستمی)</span>
+          <span class="tag" style="background:color-mix(in srgb, var(--secondary) 12%, transparent); color:var(--secondary)">(سیستمی)</span>
         </div>
         <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px">مدیریت سوابق شغلی، تحصیلی و اطلاعات تماس.</p>
         <button class="btn sec" style="margin-top:auto" onclick="show('resume')">ویرایش رزومه</button>

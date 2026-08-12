@@ -25,7 +25,7 @@ export async function renderPublish(resultHtml = '') {
     if (status.hasChanges) {
       html += `<div class="card">`;
       html += `<div class="msg ok" style="margin-bottom:12px">تغییرات آماده انتشار هستند.</div>`;
-      html += `<pre style="background:#0b111b;padding:12px;border-radius:8px;overflow:auto;max-height:220px;font-size:.8rem;margin:0">${status.changes || ''}</pre>`;
+      html += `<pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:220px;font-size:.8rem;margin:0">${status.changes || ''}</pre>`;
       html += `</div>`;
       btn.disabled = false;
     } else {
@@ -60,7 +60,7 @@ export async function startPublish() {
       html += r.steps.map((s) => `<div style="margin-bottom:8px">✓ ${s.step} — ${s.ok ? 'موفق' : 'ناموفق'}${s.message ? ` (${s.message})` : ''}</div>`).join('');
 
       let logs = r.steps.map((s) => `### ${s.step}\n${s.output || '—'}`).join('\n\n');
-      html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:#0b111b;padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${logs}</pre></details>`;
+      html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${logs}</pre></details>`;
     }
     html += `</div>`;
   }
