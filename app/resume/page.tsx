@@ -1,4 +1,5 @@
 import { getResume, getSite } from '@/lib/content';
+import { Icon } from '@/src/icons';
 
 export default function ResumePage() {
   const resume = getResume() as {
@@ -32,8 +33,26 @@ export default function ResumePage() {
     { label: 'ایمیل', value: resume.email, icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> },
   ].filter(i => i.value && i.value.trim() !== '');
 
-  const linkIcon = <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>;
-  const links = ((resume as any).links || []).filter((i: any) => i.url && i.url.trim() !== '').map((i: any) => ({ label: i.label, link: i.url, value: i.label, icon: linkIcon }));
+  const linkIcon = <Icon name="link" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />;
+
+  const links = ((resume as any).links || []).filter((i: any) => i.url && i.url.trim() !== '').map((i: any) => {
+    let iconName = 'link';
+    const url = i.url.toLowerCase();
+    if (url.includes('github.com')) iconName = 'github';
+    else if (url.includes('instagram.com')) iconName = 'instagram';
+    else if (url.includes('linkedin.com')) iconName = 'linkedin';
+    else if (url.includes('t.me') || url.includes('telegram.org') || url.includes('telegram.me')) iconName = 'telegram';
+    else if (url.includes('twitter.com') || url.includes('x.com')) iconName = 'x';
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) iconName = 'youtube';
+
+    return {
+      label: i.label,
+      link: i.url,
+      value: i.label,
+      icon: <Icon name={iconName as any} width="20" height="20" />
+    };
+  });
+
 
   return (
     <section className="section">

@@ -33,7 +33,7 @@ export function renderPosts() {
   `;
 }
 
-export function newPost() { state.editingPost = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], images: [], template: 'image', videoUrl: '' }; show('post-edit', false); render(); }
+export function newPost() { state.editingPost = { title: '', slug: '', description: '', content: '', cover: '', categories: [], images: [], template: 'image', videoUrl: '' }; show('post-edit', false); render(); }
 export function editPost(slug) { state.editingPost = state.posts.find((p) => p.slug === slug); state.editingPost.originalSlug = slug; show('post-edit', false); render(); }
 export async function duplicatePost(slug) { const p = state.posts.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/posts', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('posts'); }
 export async function deletePost(slug) { if (!confirm('حذف شود؟')) return; await api('/api/posts', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('posts'); }
@@ -42,8 +42,8 @@ export function renderPostEdit() {
 
   const p = state.editingPost;
 
-  const selectedCats = state.postCategories.filter(c => p.categories.includes(c.slug));
-  const unselectedCats = state.postCategories.filter(c => !p.categories.includes(c.slug));
+  const selectedCats = state.categories.filter(c => c.type === 'posts').filter(c => p.categories.includes(c.slug));
+  const unselectedCats = state.categories.filter(c => c.type === 'posts').filter(c => !p.categories.includes(c.slug));
 
 
   const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => `
@@ -55,27 +55,28 @@ export function renderPostEdit() {
     </div>
   `).join('') : '';
 
+
+  const imagesHtml = p.images && p.images.length ? p.images.map((img, idx) => `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--card); padding:4px 8px; border-radius:4px; border:1px solid var(--border);">
+      <div style="display:flex; flex-direction:column; gap:2px; cursor:ns-resize;" ondragover="event.preventDefault()" ondrop="window.reorderPostImage(${idx}, event.dataTransfer.getData('text/plain'))">
+        <svg draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${idx}')" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      </div>
+      <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
+      <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
+      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+    </div>
+  `).join('') : '';
+
   const catsHtml = `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-      ${selectedCats.map(c => `<span class="tag">${c.name} <span style="cursor:pointer;color:#ef4444;margin-inline-start:4px" onclick="toggleCat('${c.slug}', false)">×</span></span>`).join('')}
+      ${selectedCats.map(c => `<span class="tag">${c.name} <span style="cursor:pointer;color:#ef4444;margin-inline-start:4px" onclick="togglePostCat('${c.slug}', false)">×</span></span>`).join('')}
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap">
-      ${unselectedCats.map(c => `<button class="btn sec" style="padding:4px 8px;font-size:0.8rem" onclick="toggleCat('${c.slug}', true)">+ ${c.name}</button>`).join('')}
+      ${unselectedCats.map(c => `<button class="btn sec" style="padding:4px 8px;font-size:0.8rem" onclick="togglePostCat('${c.slug}', true)">+ ${c.name}</button>`).join('')}
     </div>
   `;
 
-  // Table of Contents logic based on post content headings
-  let tocHtml = '<p style="color:#9ba6b5;font-size:0.9rem">هیچ تیتری یافت نشد.</p>';
-  if (p.content) {
-    const headings = p.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### '));
-    if (headings.length > 0) {
-      tocHtml = '<ul style="margin:0; padding-right:16px; font-size:0.9rem;">' + headings.map(h => {
-        const isH3 = h.startsWith('### ');
-        const text = isH3 ? h.slice(4) : h.slice(3);
-        return `<li style="margin-bottom:4px; color:var(--muted); ${isH3 ? 'padding-right:12px;' : ''}">${text}</li>`;
-      }).join('') + '</ul>';
-    }
-  }
+
 
   dom.content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
@@ -87,7 +88,7 @@ export function renderPostEdit() {
       <div>
         <div class="card" style="margin-bottom:16px">
           <label style="margin-top:0">عنوان پست</label>
-          <input id="f-title" value="${p.title || ''}" onchange="if(!document.getElementById('f-slug').value) { const s = this.value.trim().toLowerCase().replace(/\s+/g, '-'); document.getElementById('f-slug').value = s; state.editingPost.slug = s; }">
+          <input id="f-title" value="${p.title || ''}" >
           <label style="margin-top:12px">نامک (Slug)</label>
           <input id="f-slug" value="${p.slug || ''}" style="direction:ltr; text-align:left">
           <label style="margin-top:12px">توضیحات کوتاه</label>
@@ -95,7 +96,7 @@ export function renderPostEdit() {
         </div>
         <div class="card">
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>
-          <textarea id="f-content" style="min-height:300px" oninput="window.updateToc()">${p.content || ''}</textarea>
+          <textarea id="f-content" style="min-height:300px" >${p.content || ''}</textarea>
         </div>
       </div>
 
@@ -107,9 +108,36 @@ export function renderPostEdit() {
           </div>
 
           <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
-            <label style="margin-top:0">فهرست مطالب</label>
-            <div id="post-toc" style="margin-top:8px">${tocHtml}</div>
+            <label style="margin-top:0">قالب پست</label>
+            <select id="f-template" onchange="onPostTemplateChange(this.value)">
+              <option value="image" ${p.template !== 'video' ? 'selected' : ''}>تصویری</option>
+              <option value="video" ${p.template === 'video' ? 'selected' : ''}>ویدئویی</option>
+            </select>
+            ${p.template === 'video' ? `
+              <label style="margin-top:12px">منبع ویدئو</label>
+              <select id="f-videoSource" onchange="onPostVideoSourceChange(this.value)">
+                <option value="host" ${p.videoSource === 'host' || !p.videoSource ? 'selected' : ''}>هاست شخصی (MP4)</option>
+                <option value="youtube" ${p.videoSource === 'youtube' ? 'selected' : ''}>یوتیوب</option>
+                <option value="aparat" ${p.videoSource === 'aparat' ? 'selected' : ''}>آپارات / iframe</option>
+                <option value="embed" ${p.videoSource === 'embed' ? 'selected' : ''}>کد امبد (Embed)</option>
+              </select>
+              ${p.videoSource === 'embed' ?
+                `<label style="margin-top:12px">کد امبد</label><textarea id="f-videoUrl" style="min-height:100px;font-family:monospace;direction:ltr;text-align:left" onchange="state.editingPost.videoUrl=this.value">${p.videoUrl || ''}</textarea>`
+                :
+                `<label style="margin-top:12px">لینک ویدئو</label><input id="f-videoUrl" style="direction:ltr;text-align:left" value="${p.videoUrl || ''}" onchange="state.editingPost.videoUrl=this.value">`
+              }
+            ` : ''}
+            ${p.template === 'image' ? `
+              <div style="margin-top:16px;">
+                <label>تصاویر پست</label>
+                <div id="post-images-list" style="margin-bottom:8px;">${imagesHtml}</div>
+                <button class="btn sec" style="width:100%; justify-content:center" onclick="window.openPostImagePicker()">انتخاب تصویر</button>
+              </div>
+            ` : ''}
           </div>
+
+
+
 
           <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #263243">
             <label style="margin-top:0">دسته‌ها</label>
@@ -129,33 +157,13 @@ export function renderPostEdit() {
     </div>`;
 }
 
-export async function openCoverPickerModal() {
-  await loadMedia();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'cover-modal';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
 
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
-      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
-      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
-    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
-
-  overlay.innerHTML = `
-    <div class="modal-content">
-      <button class="modal-close" onclick="document.getElementById('cover-modal').remove()">بستن ×</button>
-      <h3 style="margin-bottom:16px">انتخاب تصویر بند انگشتی</h3>
-      <div class="row" style="margin-bottom:16px">
-        <input type="file" id="modal-upload-file" accept="image/*" style="flex:1">
-        <button class="btn" onclick="uploadCoverFromModal()">آپلود و انتخاب</button>
-      </div>
-      <div class="grid2" id="modal-media-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
-        ${gridHtml}
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+export function openCoverPickerModal() {
+  window.openMediaModal((selected) => {
+    selectCover(selected);
+  });
 }
+
 
 export function selectCover(path) {
   const fCover = document.getElementById('f-cover');
@@ -170,20 +178,7 @@ export function selectCover(path) {
   if (modal) modal.remove();
 }
 
-export async function uploadCoverFromModal() {
-  const file = document.getElementById('modal-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
-      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
-      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
-    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
-  const grid = document.getElementById('modal-media-grid');
-  if (grid) grid.innerHTML = gridHtml;
-  selectCover(`/media/${file.name}`);
-}
+
 
 export function syncEditingPost() {
   state.editingPost.title = val('f-title');
@@ -191,24 +186,17 @@ export function syncEditingPost() {
   state.editingPost.description = val('f-description');
   state.editingPost.cover = val('f-cover');
   state.editingPost.content = val('f-content');
+  const videoSourceEl = document.getElementById('f-videoSource');
+  if (videoSourceEl) state.editingPost.videoSource = videoSourceEl.value;
+  const videoUrlEl = document.getElementById('f-videoUrl');
+  if (videoUrlEl) state.editingPost.videoUrl = videoUrlEl.value;
+  const templateEl = document.getElementById('f-template');
+  if (templateEl) state.editingPost.template = templateEl.value;
 }
 
-window.updateToc = function() {
-  const content = document.getElementById('f-content').value;
-  const headings = content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### '));
-  let tocHtml = '<p style="color:#9ba6b5;font-size:0.9rem">هیچ تیتری یافت نشد.</p>';
-  if (headings.length > 0) {
-    tocHtml = '<ul style="margin:0; padding-right:16px; font-size:0.9rem;">' + headings.map(h => {
-      const isH3 = h.startsWith('### ');
-      const text = isH3 ? h.slice(4) : h.slice(3);
-      return `<li style="margin-bottom:4px; color:var(--muted); ${isH3 ? 'padding-right:12px;' : ''}">${text}</li>`;
-    }).join('') + '</ul>';
-  }
-  const tocEl = document.getElementById('post-toc');
-  if (tocEl) tocEl.innerHTML = tocHtml;
-};
 
-export function toggleCat(slug, checked) {
+
+export function togglePostCat(slug, checked) {
   syncEditingPost();
   if (checked) state.editingPost.categories.push(slug);
   else state.editingPost.categories = state.editingPost.categories.filter((c) => c !== slug);
@@ -219,7 +207,12 @@ export async function savePost() {
   const data = {
     ...state.editingPost,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
-    content: val('f-content'), originalSlug: state.editingPost.originalSlug,
+    content: val('f-content'),
+    images: state.editingPost.images || [],
+    template: val('f-template') || 'image',
+    videoSource: document.getElementById('f-videoSource') ? document.getElementById('f-videoSource').value : (state.editingPost.videoSource || 'host'),
+    videoUrl: document.getElementById('f-videoUrl') ? document.getElementById('f-videoUrl').value : (state.editingPost.videoUrl || ''),
+    originalSlug: state.editingPost.originalSlug,
   };
   await api('/api/posts', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
@@ -236,3 +229,44 @@ export async function savePost() {
     setTimeout(() => { btn.innerHTML = origText; btn.classList.remove('ok'); }, 2000);
   }
 }
+
+
+export function onPostTemplateChange(value) {
+  syncEditingPost();
+  state.editingPost.template = value;
+  renderPostEdit();
+}
+
+export function onPostVideoSourceChange(value) {
+  syncEditingPost();
+  state.editingPost.videoSource = value;
+  renderPostEdit();
+}
+
+window.openPostImagePicker = function() {
+  window.openMediaModal((selected) => {
+    if (!state.editingPost.images) state.editingPost.images = [];
+    if (Array.isArray(selected)) {
+      state.editingPost.images.push(...selected);
+    } else if (selected) {
+      state.editingPost.images.push(selected);
+    }
+    state.editingPost.images = [...new Set(state.editingPost.images)];
+    renderPostEdit();
+  });
+};
+
+window.removePostImage = function(index) {
+  if (state.editingPost.images && state.editingPost.images.length > index) {
+    state.editingPost.images.splice(index, 1);
+    renderPostEdit();
+  }
+};
+
+window.reorderPostImage = function(toIndex, fromIndexStr) {
+  const fromIndex = parseInt(fromIndexStr, 10);
+  if (isNaN(fromIndex) || fromIndex === toIndex || !state.editingPost.images) return;
+  const img = state.editingPost.images.splice(fromIndex, 1)[0];
+  state.editingPost.images.splice(toIndex, 0, img);
+  renderPostEdit();
+};

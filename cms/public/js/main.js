@@ -3,9 +3,8 @@ import { api } from './core/api.js';
 import { loadAll, loadFonts, loadMedia } from './core/data.js';
 import { show, render, toggleGroup } from './core/router.js';
 import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal, toggleMediaModalGalleryMode, confirmMediaSelection } from './components/media-modal.js';
-import { newProject, editProject, duplicateProject, deleteProject, toggleCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal, uploadCoverFromModal, selectCover } from './views/projects.js';
-import { openPostCatModal, savePostCat, deletePostCat } from './views/post-categories.js';
-import { newPost, editPost, duplicatePost, deletePost, savePost } from './views/posts.js';
+import { newProject, editProject, duplicateProject, deleteProject, toggleProjectCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal,  selectCover } from './views/projects.js';
+import { newPost, editPost, duplicatePost, deletePost, savePost, togglePostCat, onPostTemplateChange, onPostVideoSourceChange } from './views/posts.js';
 import { openCatModal, saveCat, deleteCat } from './views/categories.js';
 import { addExp, renderExp, addEdu, renderEdu, addLink, renderLinks, saveResume, cancelResume } from './views/resume.js';
 import { uploadMedia, deleteMedia, openLightbox } from './views/media.js';
@@ -59,6 +58,8 @@ window.openPreview = async function openPreview() {
 window.openMediaModal = openMediaModal;
 window.toggleMediaModalGalleryMode = toggleMediaModalGalleryMode;
 window.confirmMediaSelection = confirmMediaSelection;
+window.confirmMediaSelection = confirmMediaSelection;
+window.confirmMediaSelection = confirmMediaSelection;
 window.closeMediaModal = closeMediaModal;
 window.selectMediaFromModal = selectMediaFromModal;
 window.uploadMediaFromModal = uploadMediaFromModal;
@@ -67,17 +68,13 @@ window.newProject = newProject;
 window.editProject = editProject;
 window.duplicateProject = duplicateProject;
 window.deleteProject = deleteProject;
-window.toggleCat = toggleCat;
+window.toggleProjectCat = toggleProjectCat;
 window.saveProject = saveProject;
 window.onTemplateChange = onTemplateChange;
 window.onVideoSourceChange = onVideoSourceChange;
 window.openCoverPickerModal = openCoverPickerModal;
-window.uploadCoverFromModal = uploadCoverFromModal;
 window.selectCover = selectCover;
 
-window.openPostCatModal = openPostCatModal;
-window.savePostCat = savePostCat;
-window.deletePostCat = deletePostCat;
 
 window.newPost = newPost;
 window.editPost = editPost;
@@ -144,3 +141,14 @@ loadAll();
 window.saveMenu = saveMenu;
 window.saveMenuAuto = saveMenuAuto;
 window.toggleAdminTheme = window.toggleAdminTheme || function() {};
+
+
+window.toggleProjectCat = toggleProjectCat;
+window.togglePostCat = togglePostCat;
+window.onPostTemplateChange = onPostTemplateChange;
+window.onPostVideoSourceChange = onPostVideoSourceChange;
+window.openPostImagePicker = window.openPostImagePicker || function() {};
+window.removePostImage = window.removePostImage || function() {};
+window.reorderPostImage = window.reorderPostImage || function() {};
+window.removeProjectImage = window.removeProjectImage || function() {};
+window.reorderProjectImage = window.reorderProjectImage || function() {};

@@ -1,12 +1,20 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {  getPost, getPosts, getPostCategories } from '@/lib/content';
-
+import { ProjectGallery } from '@/components/project-gallery';
 
 function renderMarkdown(markdown: string) {
+  // Let's create an id generator
+  const getSlug = (text: string) => text.trim().toLowerCase().replace(/\s+/g, '-');
   return markdown.split('\n').map((line, index) => {
-    if (line.startsWith('## ')) return <h2 key={index}>{line.slice(3)}</h2>;
-    if (line.startsWith('### ')) return <h3 key={index}>{line.slice(4)}</h3>;
+    if (line.startsWith('## ')) {
+      const text = line.slice(3);
+      return <h2 id={getSlug(text)} key={index}>{text}</h2>;
+    }
+    if (line.startsWith('### ')) {
+      const text = line.slice(4);
+      return <h3 id={getSlug(text)} key={index}>{text}</h3>;
+    }
     if (line.startsWith('- ')) return <li key={index}>{line.slice(2)}</li>;
     if (!line.trim()) return <div key={index} className="h-2" />;
     if (line.startsWith('<')) return <div key={index} dangerouslySetInnerHTML={{ __html: line }} />;
@@ -14,7 +22,63 @@ function renderMarkdown(markdown: string) {
   });
 }
 
+function parseVideoUrl(url: string, source: string, title: string) {
+  if (!url) return null;
 
+  if (source === 'embed') {
+    return (
+      <div
+        className="aspect-video w-full rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden"
+        dangerouslySetInnerHTML={{ __html: url }}
+      />
+    );
+  }
+
+  if (source === 'host') {
+    return (
+      <video
+        src={url}
+        title={`ویدیوی ${title}`}
+        controls
+        className="aspect-video w-full rounded-2xl border border-[var(--border)]"
+      />
+    );
+  }
+
+  if (source === 'youtube') {
+    let youtubeId = '';
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === 'youtu.be') youtubeId = parsed.pathname.slice(1);
+      else if (parsed.hostname.includes('youtube.com')) {
+        if (parsed.pathname.startsWith('/embed/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.pathname.startsWith('/shorts/')) youtubeId = parsed.pathname.slice(8);
+        else if (parsed.searchParams.get('v')) youtubeId = parsed.searchParams.get('v') || '';
+      }
+    } catch {}
+    if (!youtubeId && url.match(/^[a-zA-Z0-9_-]{11}$/)) youtubeId = url;
+
+    const finalUrl = youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : url;
+
+    return (
+      <iframe
+        title={`ویدیوی ${title}`}
+        src={finalUrl}
+        className="aspect-video w-full rounded-2xl border border-[var(--border)]"
+        allowFullScreen
+      />
+    );
+  }
+
+  return (
+    <iframe
+      title={`ویدیوی ${title}`}
+      src={url}
+      className="aspect-video w-full rounded-2xl border border-[var(--border)]"
+      allowFullScreen
+    />
+  );
+}
 
 export async function generateStaticParams() {
   const posts = getPosts();
@@ -30,6 +94,10 @@ export default function PostPage({ params }: { params: { slug: string } }) {
   const posts = getPosts();
   const index = posts.findIndex((item) => item.slug === post.slug);
   const related = posts.filter((item) => item.slug !== post.slug && item.categories?.some((cat) => post.categories?.includes(cat))).slice(0, 2);
+
+  const getSlug = (text: string) => text.trim().toLowerCase().replace(/\s+/g, '-');
+  const headings = post.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### '));
+
   return (
     <article className="section pt-10 md:pt-20">
       <div className="container">
@@ -37,7 +105,9 @@ export default function PostPage({ params }: { params: { slug: string } }) {
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>
-            {post.cover && <img src={post.cover} alt={`تصویر پست ${post.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
+            {post.template !== 'video' && post.images && post.images.length > 0 && <ProjectGallery images={post.images} />}
+            {post.template !== 'video' && (!post.images || post.images.length === 0) && post.cover && <img src={post.cover} alt={`تصویر پست ${post.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
+            {post.template === 'video' && post.videoUrl && parseVideoUrl(post.videoUrl, post.videoSource || 'host', post.title)}
             <div className="prose mt-10 max-w-none">{renderMarkdown(post.content)}</div>
           </div>
 
@@ -45,12 +115,12 @@ export default function PostPage({ params }: { params: { slug: string } }) {
              <div className="mb-6">
                 <h3 className="text-lg font-bold mb-3 border-b border-[var(--border)] pb-2">فهرست مطالب</h3>
                 <div className="text-sm space-y-2 text-[var(--muted)]">
-                  {post.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### ')).length > 0 ? (
+                  {headings.length > 0 ? (
                     <ul className="space-y-1">
-                      {post.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### ')).map((line, i) => {
+                      {headings.map((line, i) => {
                         const isH3 = line.startsWith('### ');
                         const text = isH3 ? line.slice(4) : line.slice(3);
-                        return <li key={i} className={isH3 ? "mr-3" : ""}>{text}</li>;
+                        return <li key={i} className={isH3 ? "mr-3" : ""}><a href={`#${getSlug(text)}`} className="hover:text-[var(--primary)] transition-colors">{text}</a></li>;
                       })}
                     </ul>
                   ) : (

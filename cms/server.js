@@ -78,9 +78,7 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/site' && method === 'POST') { const d = await readBody(req); writeJson('content/site.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/categories' && method === 'GET') return send(res, 200, readJson('content/categories.json'));
       if (pathname === '/api/categories' && method === 'POST') { const d = await readBody(req); writeJson('content/categories.json', d); return send(res, 200, { ok: true }); }
-      if (pathname === '/api/post_categories' && method === 'GET') return send(res, 200, readJson('content/post_categories.json'));
-      if (pathname === '/api/post_categories' && method === 'POST') { const d = await readBody(req); writeJson('content/post_categories.json', d); return send(res, 200, { ok: true }); }
-      if (pathname === '/api/resume' && method === 'GET') return send(res, 200, readJson('content/resume.json'));
+                  if (pathname === '/api/resume' && method === 'GET') return send(res, 200, readJson('content/resume.json'));
       if (pathname === '/api/resume' && method === 'POST') { const d = await readBody(req); writeJson('content/resume.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/projects' && method === 'GET') {
         const dir = path.join(root, 'content/projects');

@@ -3,15 +3,28 @@ import { api } from '../core/api.js';
 import { loadAll } from '../core/data.js';
 import { val, showMsg } from '../utils/helpers.js';
 
+
+window.switchCatType = function(type) {
+  state.currentCatType = type;
+  renderCategories();
+};
 export function renderCategories() {
+
+
+  let currentCatType = state.currentCatType || 'projects';
   dom.content.innerHTML = `
     <div style="margin-bottom:24px">
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
-      <p class="sub" style="margin-bottom:0">مدیریت ساختار درختی دسته‌بندی‌ها. برای ویرایش یا حذف دسته ها روی آن کلیک کنید.</p>
-      </div>
+        <p class="sub" style="margin-bottom:16px">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn ${currentCatType === 'projects' ? '' : 'sec'}" onclick="window.switchCatType('projects')">پروژه‌ها</button>
+          <button class="btn ${currentCatType === 'posts' ? '' : 'sec'}" onclick="window.switchCatType('posts')">پست‌ها</button>
+        </div>
+    </div>
     <button class="btn" style="margin-bottom:24px" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     <div id="cat-list" style="max-width: 600px;"></div>`;
   renderCatList();
+
 }
 
 function renderCatNode(c, i, depth = 0, isLast = false) {
@@ -80,7 +93,7 @@ export function renderCatList() {
   if (!list) return;
   list.innerHTML = '';
 
-  const rootCats = state.categories.filter(c => !c.parent);
+  const rootCats = state.categories.filter(c => !c.parent && c.type === (state.currentCatType || 'projects'));
   if (rootCats.length === 0) {
     list.innerHTML = '<p class="sub">هنوز دسته‌ای ایجاد نشده است.</p>';
     return;
@@ -97,7 +110,7 @@ export function renderCatList() {
 
 export function openCatModal(index = -1) {
   const isEdit = index > -1;
-  const c = isEdit ? state.categories[index] : { name: '', slug: '', parent: '' };
+  const c = isEdit ? state.categories[index] : { name: '', slug: '', parent: '', type: state.currentCatType || 'projects' };
   const m = document.createElement('div');
   m.className = 'modal-overlay';
 
@@ -118,7 +131,7 @@ export function openCatModal(index = -1) {
 
       <div style="margin-bottom:16px">
         <label style="margin-top:0">نام دسته</label>
-        <input type="text" id="cat-name" value="${c.name}" ${!isEdit ? 'onkeyup="document.getElementById(\'cat-slug\').value=this.value.toLowerCase().replace(/\\s+/g,\'-\')" ' : ''}>
+        <input type="text" id="cat-name" value="${c.name}" ${!isEdit ? ' ' : ''}>
       </div>
       <div style="margin-bottom:16px">
         <label style="margin-top:0">شناسه (URL Slug)</label>
@@ -141,14 +154,15 @@ export function openCatModal(index = -1) {
 
 export async function saveCat(index, modalNode) {
   const name = val('cat-name'), slug = val('cat-slug'), parent = val('cat-parent');
+  const type = state.currentCatType || 'projects';
   const originalSlug = val('cat-original-slug');
   if (!name || !slug) return showMsg('نام و شناسه الزامی است', true);
 
   if (index === -1) {
     if (state.categories.find(c => c.slug === slug)) return showMsg('این شناسه قبلاً استفاده شده است', true);
-    state.categories.push({ name, slug, parent });
+    state.categories.push({ name, slug, parent, type, sort: 999 });
   } else {
-    state.categories[index] = { name, slug, parent, originalSlug };
+    state.categories[index] = { ...state.categories[index], name, slug, parent, originalSlug };
   }
 
   try {
@@ -182,6 +196,18 @@ export async function deleteCat(i) {
 
     for (const project of state.projects) {
       if (project.categories && project.categories.some(c => toDelete.has(c))) {
+        project.categories = project.categories.filter(c => !toDelete.has(c));
+        await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    for (const post of state.posts) {
+      if (post.categories && post.categories.some(c => toDelete.has(c))) {
+        post.categories = post.categories.filter(c => !toDelete.has(c));
+        await api('/api/posts', { method: 'POST', body: JSON.stringify(post), headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+ && project.categories.some(c => toDelete.has(c))) {
         project.categories = project.categories.filter(c => !toDelete.has(c));
         await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
       }

@@ -33,7 +33,7 @@ export function renderProjects() {
   `;
 }
 
-export function newProject() { state.editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', technologies: [], categories: [], images: [], template: 'image', videoUrl: '' }; show('project-edit', false); render(); }
+export function newProject() { state.editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', categories: [], images: [], template: 'image', videoUrl: '' }; show('project-edit', false); render(); }
 export function editProject(slug) { state.editingProject = state.projects.find((p) => p.slug === slug); state.editingProject.originalSlug = slug; show('project-edit', false); render(); }
 export async function duplicateProject(slug) { const p = state.projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 export async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
@@ -41,8 +41,8 @@ export async function deleteProject(slug) { if (!confirm('حذف شود؟')) ret
 export function renderProjectEdit() {
   const p = state.editingProject;
 
-  const selectedCats = state.categories.filter(c => p.categories.includes(c.slug));
-  const unselectedCats = state.categories.filter(c => !p.categories.includes(c.slug));
+  const selectedCats = state.categories.filter(c => c.type !== 'posts').filter(c => p.categories.includes(c.slug));
+  const unselectedCats = state.categories.filter(c => c.type !== 'posts').filter(c => !p.categories.includes(c.slug));
 
 
   const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => `
@@ -56,10 +56,10 @@ export function renderProjectEdit() {
 
   const catsHtml = `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-      ${selectedCats.map(c => `<span class="tag">${c.name} <span style="cursor:pointer;color:#ef4444;margin-inline-start:4px" onclick="toggleCat('${c.slug}', false)">×</span></span>`).join('')}
+      ${selectedCats.map(c => `<span class="tag">${c.name} <span style="cursor:pointer;color:#ef4444;margin-inline-start:4px" onclick="toggleProjectCat('${c.slug}', false)">×</span></span>`).join('')}
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap">
-      ${unselectedCats.map(c => `<button class="btn sec" style="padding:4px 8px;font-size:0.8rem" onclick="toggleCat('${c.slug}', true)">+ ${c.name}</button>`).join('')}
+      ${unselectedCats.map(c => `<button class="btn sec" style="padding:4px 8px;font-size:0.8rem" onclick="toggleProjectCat('${c.slug}', true)">+ ${c.name}</button>`).join('')}
     </div>
   `;
 
@@ -140,33 +140,13 @@ export function renderProjectEdit() {
     </div>`;
 }
 
-export async function openCoverPickerModal() {
-  await loadMedia();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'cover-modal';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
 
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
-      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
-      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
-    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
-
-  overlay.innerHTML = `
-    <div class="modal-content">
-      <button class="modal-close" onclick="document.getElementById('cover-modal').remove()">بستن ×</button>
-      <h3 style="margin-bottom:16px">انتخاب تصویر بند انگشتی</h3>
-      <div class="row" style="margin-bottom:16px">
-        <input type="file" id="modal-upload-file" accept="image/*" style="flex:1">
-        <button class="btn" onclick="uploadCoverFromModal()">آپلود و انتخاب</button>
-      </div>
-      <div class="grid2" id="modal-media-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
-        ${gridHtml}
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+export function openCoverPickerModal() {
+  window.openMediaModal((selected) => {
+    selectCover(selected);
+  });
 }
+
 
 export function selectCover(path) {
   const fCover = document.getElementById('f-cover');
@@ -181,20 +161,7 @@ export function selectCover(path) {
   if (modal) modal.remove();
 }
 
-export async function uploadCoverFromModal() {
-  const file = document.getElementById('modal-upload-file').files[0];
-  if (!file) return;
-  const buffer = await file.arrayBuffer();
-  await fetch('/api/media?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
-  await loadMedia();
-  const gridHtml = state.media.length ? state.media.map((m) => `<div class="card" style="cursor:pointer; position:relative; padding:0; border: 2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1; display:flex; flex-direction:column;" onclick="selectCover('${m.path}')">
-      <img src="${m.path}" style="width:100%; height:100%; object-fit:cover; margin:0; flex:1;">
-      <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:4px 8px; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:left;">${m.name}</div>
-    </div>`).join('') : '<p style="color:#9ba6b5">هیچ رسانه‌ای موجود نیست.</p>';
-  const grid = document.getElementById('modal-media-grid');
-  if (grid) grid.innerHTML = gridHtml;
-  selectCover(`/media/${file.name}`);
-}
+
 
 export function syncEditingProject() {
   state.editingProject.title = val('f-title');
@@ -210,7 +177,7 @@ export function syncEditingProject() {
   if (videoUrlEl) state.editingProject.videoUrl = videoUrlEl.value;
 }
 
-export function toggleCat(slug, checked) {
+export function toggleProjectCat(slug, checked) {
   syncEditingProject();
   if (checked) state.editingProject.categories.push(slug);
   else state.editingProject.categories = state.editingProject.categories.filter((c) => c !== slug);
