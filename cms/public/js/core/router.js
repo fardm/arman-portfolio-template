@@ -4,6 +4,8 @@ import { renderPages, renderPageEdit } from '../views/pages.js';
 import { renderMenu } from '../views/menu.js';
 import { renderProjects, renderProjectEdit } from '../views/projects.js';
 import { renderCategories } from '../views/categories.js';
+import { renderPosts, renderPostEdit } from '../views/posts.js';
+import { renderPostCategories } from '../views/post-categories.js';
 import { renderResume } from '../views/resume.js';
 import { renderMedia } from '../views/media.js';
 import { renderSettings } from '../views/settings.js';
@@ -30,6 +32,14 @@ export function show(view, updateHash = true) {
     const group = document.getElementById('group-settings');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
+  if (['projects', 'categories'].includes(view)) {
+    const group = document.getElementById('group-projects');
+    if (group && !group.classList.contains('open')) group.classList.add('open');
+  }
+  if (['posts', 'post-categories'].includes(view)) {
+    const group = document.getElementById('group-posts');
+    if (group && !group.classList.contains('open')) group.classList.add('open');
+  }
   render();
 }
 
@@ -47,6 +57,9 @@ export function render() {
   if (state.currentView === 'typography') return renderTypography();
   if (state.currentView === 'publish') return renderPublish();
   if (state.currentView === 'project-edit') return renderProjectEdit();
+  if (state.currentView === 'posts') return renderPosts();
+  if (state.currentView === 'post-categories') return renderPostCategories();
+  if (state.currentView === 'post-edit') return renderPostEdit();
   if (state.currentView === 'hero') return renderHero();
 }
 

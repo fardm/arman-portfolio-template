@@ -4,6 +4,8 @@ import { loadAll, loadFonts, loadMedia } from './core/data.js';
 import { show, render, toggleGroup } from './core/router.js';
 import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal, toggleMediaModalGalleryMode, confirmMediaSelection } from './components/media-modal.js';
 import { newProject, editProject, duplicateProject, deleteProject, toggleCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal, uploadCoverFromModal, selectCover } from './views/projects.js';
+import { openPostCatModal, savePostCat, deletePostCat } from './views/post-categories.js';
+import { newPost, editPost, duplicatePost, deletePost, savePost } from './views/posts.js';
 import { openCatModal, saveCat, deleteCat } from './views/categories.js';
 import { addExp, renderExp, addEdu, renderEdu, addLink, renderLinks, saveResume, cancelResume } from './views/resume.js';
 import { uploadMedia, deleteMedia, openLightbox } from './views/media.js';
@@ -72,6 +74,16 @@ window.onVideoSourceChange = onVideoSourceChange;
 window.openCoverPickerModal = openCoverPickerModal;
 window.uploadCoverFromModal = uploadCoverFromModal;
 window.selectCover = selectCover;
+
+window.openPostCatModal = openPostCatModal;
+window.savePostCat = savePostCat;
+window.deletePostCat = deletePostCat;
+
+window.newPost = newPost;
+window.editPost = editPost;
+window.duplicatePost = duplicatePost;
+window.deletePost = deletePost;
+window.savePost = savePost;
 
 window.openCatModal = openCatModal;
 window.saveCat = saveCat;

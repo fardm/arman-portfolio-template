@@ -14,6 +14,18 @@ export function getProjects(): Project[] {
   return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Project, 'content'>), content: parsed.content } as Project; });
 }
 export function getProject(slug: string) { return getProjects().find((project) => project.slug === slug); }
+
+export type Post = { title: string; slug: string; description: string; cover?: string; images?: string[]; categories?: string[]; content: string };
+export function getPostCategories() {
+  try { return readJson<Category[]>('content/post_categories.json').sort((a, b) => a.sort - b.sort); } catch { return []; }
+}
+export function getPosts(): Post[] {
+  const dir = path.join(root, 'content/blog');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Post, 'content'>), content: parsed.content } as Post; });
+}
+export function getPost(slug: string) { return getPosts().find((post) => post.slug === slug); }
+
 export function categoryName(slug: string, categories: Category[]) { return categories.find((category) => category.slug === slug)?.name ?? slug; }
 
 export type Page = { title: string; slug: string; content: string };

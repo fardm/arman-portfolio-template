@@ -78,6 +78,8 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/site' && method === 'POST') { const d = await readBody(req); writeJson('content/site.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/categories' && method === 'GET') return send(res, 200, readJson('content/categories.json'));
       if (pathname === '/api/categories' && method === 'POST') { const d = await readBody(req); writeJson('content/categories.json', d); return send(res, 200, { ok: true }); }
+      if (pathname === '/api/post_categories' && method === 'GET') return send(res, 200, readJson('content/post_categories.json'));
+      if (pathname === '/api/post_categories' && method === 'POST') { const d = await readBody(req); writeJson('content/post_categories.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/resume' && method === 'GET') return send(res, 200, readJson('content/resume.json'));
       if (pathname === '/api/resume' && method === 'POST') { const d = await readBody(req); writeJson('content/resume.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/projects' && method === 'GET') {
@@ -108,6 +110,33 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { ok: true });
       }
 
+      if (pathname === '/api/posts' && method === 'GET') {
+        const dir = path.join(root, 'content/blog');
+        const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.md')) : [];
+        const posts = files.map((f) => { const parsed = matter(fs.readFileSync(path.join(dir, f), 'utf8')); return { ...parsed.data, content: parsed.content }; });
+        return send(res, 200, posts);
+      }
+      if (pathname === '/api/posts' && method === 'POST') {
+        const d = await readBody(req);
+        if (!d.slug) return send(res, 400, { error: 'slug is required' });
+
+        if (d.originalSlug && d.originalSlug !== d.slug) {
+          const oldFile = path.join(root, 'content/blog', `${d.originalSlug}.md`);
+          if (fs.existsSync(oldFile)) {
+            fs.unlinkSync(oldFile);
+          }
+        }
+
+        const file = path.join(root, 'content/blog', `${d.slug}.md`);
+        fs.writeFileSync(file, projectToMarkdown(d));
+        return send(res, 200, { ok: true });
+      }
+      if (pathname === '/api/posts' && method === 'DELETE') {
+        const d = await readBody(req);
+        const file = path.join(root, 'content/blog', `${d.slug}.md`);
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+        return send(res, 200, { ok: true });
+      }
 
       if (pathname === '/api/menu' && method === 'GET') {
           return send(res, 200, fs.existsSync(path.join(root, 'content/menu.json')) ? readJson('content/menu.json') : []);
