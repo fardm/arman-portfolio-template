@@ -5,7 +5,7 @@ import { show, render, toggleGroup } from './core/router.js';
 import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal, toggleMediaModalGalleryMode, confirmMediaSelection } from './components/media-modal.js';
 import { newProject, editProject, duplicateProject, deleteProject, toggleCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal, uploadCoverFromModal, selectCover } from './views/projects.js';
 import { openCatModal, saveCat, deleteCat } from './views/categories.js';
-import { addExp, renderExp, addEdu, renderEdu, saveResume, cancelResume } from './views/resume.js';
+import { addExp, renderExp, addEdu, renderEdu, addLink, renderLinks, saveResume, cancelResume } from './views/resume.js';
 import { uploadMedia, deleteMedia, openLightbox } from './views/media.js';
 import { saveSettings } from './views/settings.js';
 import { saveTheme, onThemeModeSelect, onAutoBaseColorChange, copyToManualAndSwitch, syncCustomColors } from './views/theme.js';
@@ -81,6 +81,8 @@ window.addExp = addExp;
 window.renderExp = renderExp;
 window.addEdu = addEdu;
 window.renderEdu = renderEdu;
+window.addLink = addLink;
+window.renderLinks = renderLinks;
 window.saveResume = saveResume;
 window.cancelResume = cancelResume;
 

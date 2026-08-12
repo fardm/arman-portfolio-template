@@ -42,10 +42,30 @@
   "birthDate": "1370",
   "phone": "09100998877",
   "email": "user@gmail.com",
-  "telegram": "armin",
-  "linkedin": "armin",
-  "github": "arman",
-  "youtube": "armin",
-  "twitter": "armin",
-  "customLink": "arman"
+  "links": [
+    {
+      "label": "تلگرام",
+      "url": "https://t.me/armin"
+    },
+    {
+      "label": "لینکدین",
+      "url": "https://linkedin.com/in/armin"
+    },
+    {
+      "label": "گیت‌هاب",
+      "url": "https://github.com/arman"
+    },
+    {
+      "label": "یوتیوب",
+      "url": "https://youtube.com/@armin"
+    },
+    {
+      "label": "توییتر (X)",
+      "url": "https://twitter.com/armin"
+    },
+    {
+      "label": "لینک دلخواه",
+      "url": "arman"
+    }
+  ]
 }

@@ -38,16 +38,11 @@ export function renderResume() {
             <div><label style="margin-top:0">ایمیل</label><input id="r-email" value="${state.resume.email || ''}" dir="ltr"></div>
           </div>
           <hr>
-          <h4 style="margin-bottom:12px; color:var(--muted)">لینک‌ها</h4>
-          <div class="grid2">
-            <div><label style="margin-top:0">تلگرام (آیدی)</label><input id="r-telegram" value="${state.resume.telegram || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">لینکدین (آیدی)</label><input id="r-linkedin" value="${state.resume.linkedin || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">گیت‌هاب (آیدی)</label><input id="r-github" value="${state.resume.github || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">یوتیوب (آیدی)</label><input id="r-youtube" value="${state.resume.youtube || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">توییتر (X) (آیدی)</label><input id="r-twitter" value="${state.resume.twitter || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">اینستاگرام (آیدی)</label><input id="r-instagram" value="${state.resume.instagram || ''}" dir="ltr"></div>
-            <div><label style="margin-top:0">لینک دلخواه (URL کامل)</label><input id="r-customLink" value="${state.resume.customLink || ''}" dir="ltr"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h4 style="margin:0; color:var(--muted)">لینک‌ها</h4>
+            <button class="btn sec" style="padding:4px 8px; font-size:0.8rem" onclick="addLink()">+ افزودن لینک</button>
           </div>
+          <div id="r-links" style="display:flex; flex-direction:column; gap:12px"></div>
         </div>
 
         <div class="card" style="padding:24px">
@@ -77,7 +72,22 @@ export function renderResume() {
       </aside>
     </div>
   `;
-  renderExp(); renderEdu();
+  renderExp(); renderEdu(); renderLinks();
+}
+
+export function renderLinks() {
+  document.getElementById('r-links').innerHTML = (state.resume.links || []).length ? (state.resume.links || []).map((l, i) => `
+    <div style="display:flex; gap:8px; align-items:center">
+      <div style="flex:1"><input value="${l.label}" onchange="state.resume.links[${i}].label=this.value" placeholder="عنوان لینک (مثلا وبسایت من)"></div>
+      <div style="flex:2"><input value="${l.url}" onchange="state.resume.links[${i}].url=this.value" placeholder="https://..." dir="ltr"></div>
+      <button class="btn danger" style="padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.links.splice(${i},1);renderLinks()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+    </div>
+  `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ لینکی ثبت نشده است.</p>';
+}
+
+export function addLink() {
+  (state.resume.links ||= []).push({ label: '', url: '' });
+  renderLinks();
 }
 
 export function renderExp() {
@@ -86,7 +96,16 @@ export function renderExp() {
       <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.experience.splice(${i},1);renderExp()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2" style="margin-bottom:12px">
         <div><label style="margin-top:0; font-size:0.8rem">عنوان شغلی</label><input value="${e.title}" onchange="state.resume.experience[${i}].title=this.value" placeholder="مثال: توسعه دهنده ارشد"></div>
-        <div><label style="margin-top:0; font-size:0.8rem">نام شرکت/سازمان</label><input value="${e.company}" onchange="state.resume.experience[${i}].company=this.value" placeholder="مثال: گوگل"></div>
+        <div>
+          <label style="margin-top:0; font-size:0.8rem">نام شرکت/سازمان</label>
+          <div style="display:flex; gap:8px;">
+            <input style="flex:1;" value="${e.company}" onchange="state.resume.experience[${i}].company=this.value" placeholder="مثال: گوگل">
+            <button class="btn sec" style="padding:0 12px; font-size:0.8rem;" onclick="openMediaModal((url) => { state.resume.experience[${i}].logo = url; renderExp(); })" title="انتخاب لوگو">
+              ${e.logo ? `<img src="${e.logo}" style="width:20px; height:20px; object-fit:cover; border-radius:4px; margin-left:4px;"> تغییر لوگو` : '+ لوگو'}
+            </button>
+            ${e.logo ? `<button class="btn danger" style="padding:0 8px; font-size:0.8rem;" onclick="state.resume.experience[${i}].logo = ''; renderExp();" title="حذف لوگو">✕</button>` : ''}
+          </div>
+        </div>
         <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="state.resume.experience[${i}].period=this.value" placeholder="مثال: ۱۴۰۰ - تاکنون"></div>
       </div>
       <div><label style="margin-top:0; font-size:0.8rem">توضیحات تکمیلی</label><textarea onchange="state.resume.experience[${i}].description=this.value" placeholder="شرح وظایف و دستاوردها..." style="min-height:60px">${e.description}</textarea></div>
@@ -102,7 +121,16 @@ export function renderEdu() {
       <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.education.splice(${i},1);renderEdu()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       <div class="grid2">
         <div><label style="margin-top:0; font-size:0.8rem">مقطع و رشته</label><input value="${e.title}" onchange="state.resume.education[${i}].title=this.value" placeholder="مثال: کارشناسی مهندسی کامپیوتر"></div>
-        <div><label style="margin-top:0; font-size:0.8rem">دانشگاه/موسسه</label><input value="${e.school}" onchange="state.resume.education[${i}].school=this.value" placeholder="مثال: دانشگاه تهران"></div>
+        <div>
+          <label style="margin-top:0; font-size:0.8rem">دانشگاه/موسسه</label>
+          <div style="display:flex; gap:8px;">
+            <input style="flex:1;" value="${e.school}" onchange="state.resume.education[${i}].school=this.value" placeholder="مثال: دانشگاه تهران">
+            <button class="btn sec" style="padding:0 12px; font-size:0.8rem;" onclick="openMediaModal((url) => { state.resume.education[${i}].logo = url; renderEdu(); })" title="انتخاب لوگو">
+              ${e.logo ? `<img src="${e.logo}" style="width:20px; height:20px; object-fit:cover; border-radius:4px; margin-left:4px;"> تغییر لوگو` : '+ لوگو'}
+            </button>
+            ${e.logo ? `<button class="btn danger" style="padding:0 8px; font-size:0.8rem;" onclick="state.resume.education[${i}].logo = ''; renderEdu();" title="حذف لوگو">✕</button>` : ''}
+          </div>
+        </div>
         <div><label style="margin-top:0; font-size:0.8rem">مدت زمان</label><input value="${e.period}" onchange="state.resume.education[${i}].period=this.value" placeholder="مثال: ۱۳۹۶ - ۱۴۰۰"></div>
       </div>
     </div>
@@ -127,13 +155,6 @@ export async function saveResume() {
   state.resume.birthDate = val('r-birth');
   state.resume.phone = val('r-phone');
   state.resume.email = val('r-email');
-  state.resume.telegram = val('r-telegram');
-  state.resume.linkedin = val('r-linkedin');
-  state.resume.github = val('r-github');
-  state.resume.youtube = val('r-youtube');
-  state.resume.twitter = val('r-twitter');
-  state.resume.instagram = val('r-instagram');
-  state.resume.customLink = val('r-customLink');
   await api('/api/resume', { method: 'POST', body: JSON.stringify(state.resume), headers: { 'Content-Type': 'application/json' } });
   await loadAll();
 
