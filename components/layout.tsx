@@ -30,7 +30,7 @@ export function Header({ site }: { site: Record<string, unknown> }) {
 }
 
 export function Footer({ site }: { site: Record<string, unknown> }) {
-  const footerText = typeof site.footerText === 'string' && site.footerText.trim() !== ''
+  const footerText = typeof site.footerText === 'string'
     ? site.footerText
     : `© ${new Date().getFullYear()} ${String(site.name)}. همه حقوق محفوظ است.`;
 

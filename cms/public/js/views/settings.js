@@ -5,6 +5,9 @@ import { show } from '../core/router.js';
 import { val } from '../utils/helpers.js';
 
 export function renderSettings() {
+  const defaultFooter = `© ${new Date().getFullYear()} ${state.site.name || ''}. همه حقوق محفوظ است.`;
+  const footerVal = typeof state.site.footerText === 'string' ? state.site.footerText : defaultFooter;
+
   dom.content.innerHTML = `<h2>تنظیمات سایت</h2><p class="sub">اطلاعات اصلی و سئو.</p>
     <div class="card" style="width: 850px;">
       <label>نام</label><input id="s-name" value="${state.site.name || ''}">
@@ -17,7 +20,7 @@ export function renderSettings() {
 
       <label>عنوان سئو</label><input id="s-seoTitle" value="${state.site.seoTitle || ''}">
       <label>توضیح سئو</label><textarea id="s-seoDesc">${state.site.seoDescription || ''}</textarea>
-      <label>متن فوتر</label><textarea id="s-footerText">${state.site.footerText || ''}</textarea>
+      <label>متن فوتر</label><input id="s-footerText" value="${footerVal}">
       <div style="margin-top:16px"></div>
     </div>
     <button class="btn" onclick="saveSettings()">ذخیره</button>

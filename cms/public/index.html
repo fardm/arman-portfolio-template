@@ -4,8 +4,14 @@
 :root { --card: #1e1e1e; }
 body { font-family: Tahoma, Arial, sans-serif; background: var(--background, #161616); color: var(--foreground, #f0f0f0); line-height: 1.8; }
 .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
-.sidebar { background: var(--card); border-left: 1px solid var(--border, #263243); padding: 24px 16px; }
+.sidebar { background: var(--card); border-left: 1px solid var(--border, #263243); padding: 24px 16px; display: flex; flex-direction: column; justify-content: space-between; }
 .sidebar h1 { font-size: 1.1rem; margin-bottom: 24px; color: var(--primary, #b8f542); }
+.theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--foreground); cursor:pointer; transition:filter .2s, color .2s; }
+.theme-toggle:hover { filter:brightness(1.2); color:var(--primary); }
+.theme-toggle svg { width:20px; height:20px; }
+.theme-toggle .icon-sun { display:none; }
+:root[data-theme="light"] .theme-toggle .icon-sun { display:block; }
+:root[data-theme="light"] .theme-toggle .icon-moon { display:none; }
 .nav-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; color: var(--muted, #9ba6b5); cursor: pointer; margin-bottom: 4px; border: none; background: none; width: 100%; text-align: right; font: inherit; }
 .nav-item:hover, .nav-item.active { background: var(--card); filter: brightness(1.2); color: var(--foreground, #f5f7fa); }
 .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
@@ -132,7 +138,9 @@ function applyTheme() {
 document.addEventListener("DOMContentLoaded", applyTheme);
 </script>
 </head><body><div class="app">
-<aside class="sidebar"><h1>پنل مدیریت</h1>
+<aside class="sidebar">
+  <div class="sidebar-nav">
+    <h1>پنل مدیریت</h1>
 <button class="nav-item active" id="nav-pages" onclick="show('pages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> برگه‌ها</button>
 <button class="nav-item" id="nav-menu" onclick="show('menu')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> منوی سایت</button>
 <button class="nav-item" onclick="show('projects')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> پروژه‌ها</button>
@@ -153,7 +161,13 @@ document.addEventListener("DOMContentLoaded", applyTheme);
 <hr>
 <button class="nav-item" onclick="openPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> پیش‌نمایش</button>
 <button class="nav-item" onclick="show('publish')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg> انتشار</button>
-<button class="nav-item" onclick="toggleAdminTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> تغییر قالب</button>
+  </div>
+  <div class="sidebar-bottom" style="display:flex; justify-content:flex-end;">
+    <button class="theme-toggle" onclick="toggleAdminTheme()" title="تغییر قالب">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></svg>
+    </button>
+  </div>
 </aside>
 <main class="main"><div id="content"></div></main>
 </div>
