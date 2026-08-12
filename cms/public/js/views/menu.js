@@ -43,7 +43,7 @@ export function renderMenuList() {
     return `
     <div class="card menu-item-card" draggable="true" data-index="${i}" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center; cursor:grab;" ondragstart="handleDragStartMenu(event, ${i})" ondragover="handleDragOverMenu(event)" ondrop="handleDropMenu(event, ${i})" ondragend="handleDragEndMenu(event)">
       <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
-        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+        ${icon('move')}
       </div>
       <div style="flex:1">
         <label style="margin-top:0">عنوان لینک</label>
@@ -56,10 +56,10 @@ export function renderMenuList() {
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
                 ${isSystemPage ? `
         <button class="btn sec" style="padding:8px" onclick="toggleMenuVisibility(${i})" title="${m.hidden ? 'نمایش' : 'مخفی کردن'}">
-          ${m.hidden ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>' : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'}
+          ${m.hidden ? icon('eye-off') : icon('eye')}
         </button>
         ` : `
-        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف">${icon('trash_simple')}</button>
         `}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { icon } from './icons.js';
 import { state, dom } from './core/state.js';
 import { api } from './core/api.js';
 import { loadAll, loadFonts, loadMedia } from './core/data.js';
@@ -143,6 +144,7 @@ window.state = state; // Useful for debugging
 loadAll();
 window.saveMenu = saveMenu;
 window.saveMenuAuto = saveMenuAuto;
+window.icon = icon;
 window.toggleAdminTheme = window.toggleAdminTheme || function() {};
 
 

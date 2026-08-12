@@ -36,54 +36,49 @@ export default function Home() {
   ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[];
 
   const layout = (site.homeLayout as any[]) || [
-    { id: 'hero' },
     { id: 'projects', display: true, maxItems: 6, grid: 3 },
     { id: 'posts', display: true, maxItems: 6, grid: 3 }
   ];
 
   return (
     <>
-      {layout.map((section, idx) => {
-        if (section.id === 'hero') {
-          return (
-            <section key={idx} className="section">
-              <div className="container">
-                <div className="hero-grid">
-                  <div className="hero-profile">
-                    <div className="hero-avatar-wrap">
-                      <img src={profileImage} alt={`تصویر ${name}`} className="hero-avatar" />
-                    </div>
-                    <h1 className="hero-name">{name}</h1>
-                    <p className="hero-job-title">{jobTitle}</p>
-                    {socialLinks.length > 0 && (
-                      <div className="hero-socials">
-                        {socialLinks.map((s) => (
-                          <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="hero-social-btn">
-                            {s.icon}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="hero-about-box">
-                    <div className="hero-about-title">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" aria-hidden>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                      </svg>
-                      درباره من
-                    </div>
-                    <p className="hero-about-text">{about}</p>
-                    <Link className="button" style={{width: 'fit-content', padding: '8px 20px 8px 10px'}} href="/resume">
-                      رزومه من <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left-icon lucide-chevron-left"> <path d="m15 18-6-6 6-6" /> </svg>
-                    </Link>
-                  </div>
-                </div>
+      <section className="section">
+        <div className="container">
+          <div className="hero-grid">
+            <div className="hero-profile">
+              <div className="hero-avatar-wrap">
+                <img src={profileImage} alt={`تصویر ${name}`} className="hero-avatar" />
               </div>
-            </section>
-          );
-        }
+              <h1 className="hero-name">{name}</h1>
+              <p className="hero-job-title">{jobTitle}</p>
+              {socialLinks.length > 0 && (
+                <div className="hero-socials">
+                  {socialLinks.map((s) => (
+                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="hero-social-btn">
+                      {s.icon}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="hero-about-box">
+              <div className="hero-about-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" aria-hidden>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                درباره من
+              </div>
+              <p className="hero-about-text">{about}</p>
+              <Link className="button" style={{width: 'fit-content', padding: '8px 20px 8px 10px'}} href="/resume">
+                رزومه من <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left-icon lucide-chevron-left"> <path d="m15 18-6-6 6-6" /> </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        if (section.id === 'projects' && section.display !== false) {
+      {layout.map((section, idx) => {
+                if (section.id === 'projects' && section.display !== false) {
           const gridClasses = { 2: 'md:grid-cols-2', 3: 'md:grid-cols-3', 4: 'md:grid-cols-4' };
           const gridClass = gridClasses[section.grid as keyof typeof gridClasses] || 'md:grid-cols-3';
           const max = parseInt(section.maxItems) || 6;
