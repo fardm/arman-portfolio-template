@@ -34,8 +34,27 @@ export function renderProjects() {
 }
 
 export function newProject() { state.editingProject = { title: '', slug: '', description: '', content: '', cover: '', year: '', client: '', categories: [], images: [], template: 'image', videoUrl: '' }; show('project-edit', false); render(); }
-export function editProject(slug) { state.editingProject = state.projects.find((p) => p.slug === slug); state.editingProject.originalSlug = slug; show('project-edit', false); render(); }
-export async function duplicateProject(slug) { const p = state.projects.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
+
+export function editProject(slug) {
+  const p = state.projects.find((p) => p.slug === slug);
+  state.editingProject = JSON.parse(JSON.stringify(p));
+  state.editingProject.originalSlug = slug;
+  show('project-edit', false);
+  render();
+}
+
+
+export async function duplicateProject(slug) {
+  const p = state.projects.find((x) => x.slug === slug);
+  const copy = JSON.parse(JSON.stringify(p));
+  delete copy.originalSlug;
+  copy.slug = copy.slug + '-' + Math.floor(Math.random() * 10000);
+  copy.title = copy.title + ' (کپی)';
+  await api('/api/projects', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+  show('projects');
+}
+
 export async function deleteProject(slug) { if (!confirm('حذف شود؟')) return; await api('/api/projects', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('projects'); }
 
 export function renderProjectEdit() {
@@ -132,7 +151,7 @@ export function renderProjectEdit() {
             <div id="cover-preview" style="margin-bottom:8px">${p.cover ? `<img src="${p.cover}" class="preview" style="width:100%; max-width:100%; height:auto">` : ''}</div>
             <div class="row">
               <input id="f-cover" value="${p.cover || ''}" style="display:none">
-              <button class="btn sec" style="width:100%; justify-content:center" onclick="openCoverPickerModal()">انتخاب تصویر</button>
+              <button class="btn sec" style="width:100%; justify-content:center" onclick="openProjectCoverPickerModal()">انتخاب تصویر</button>
             </div>
           </div>
         </div>
@@ -148,18 +167,16 @@ export function openCoverPickerModal() {
 }
 
 
-export function selectCover(path) {
-  const fCover = document.getElementById('f-cover');
-  if(fCover) {
-    fCover.value = path;
-    state.editingProject.cover = path;
-  }
-  const preview = document.getElementById('cover-preview');
-  if(preview) preview.innerHTML = `<img src="${path}" class="preview">`;
 
-  const modal = document.getElementById('cover-modal');
-  if (modal) modal.remove();
+export function selectCover(path) {
+  if (!state.editingProject) return;
+  const fCover = document.getElementById('f-cover');
+  if(fCover) fCover.value = path;
+  state.editingProject.cover = path;
+  const preview = document.getElementById('cover-preview');
+  if(preview) preview.innerHTML = `<img src="${path}" class="preview" style="width:100%; max-width:100%; height:auto">`;
 }
+
 
 
 
@@ -224,7 +241,7 @@ export async function saveProject() {
   }
 }
 
-window.openProjectImagePicker = function() {
+export function openProjectImagePicker() {
   window.openMediaModal((selected) => {
     if (!state.editingProject.images) state.editingProject.images = [];
     if (Array.isArray(selected)) {
@@ -238,14 +255,14 @@ window.openProjectImagePicker = function() {
   }); // Use default single mode
 };
 
-window.removeProjectImage = function(index) {
+export function removeProjectImage(index) {
   if (state.editingProject.images && state.editingProject.images.length > index) {
     state.editingProject.images.splice(index, 1);
     renderProjectEdit();
   }
 };
 
-window.reorderProjectImage = function(toIndex, fromIndexStr) {
+export function reorderProjectImage(toIndex, fromIndexStr) {
   const fromIndex = parseInt(fromIndexStr, 10);
   if (isNaN(fromIndex) || fromIndex === toIndex || !state.editingProject.images) return;
 

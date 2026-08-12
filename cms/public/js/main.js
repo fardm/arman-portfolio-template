@@ -3,9 +3,9 @@ import { api } from './core/api.js';
 import { loadAll, loadFonts, loadMedia } from './core/data.js';
 import { show, render, toggleGroup } from './core/router.js';
 import { openMediaModal, closeMediaModal, selectMediaFromModal, uploadMediaFromModal, toggleMediaModalGalleryMode, confirmMediaSelection } from './components/media-modal.js';
-import { newProject, editProject, duplicateProject, deleteProject, toggleProjectCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal,  selectCover } from './views/projects.js';
-import { newPost, editPost, duplicatePost, deletePost, savePost, togglePostCat, onPostTemplateChange, onPostVideoSourceChange } from './views/posts.js';
-import { openCatModal, saveCat, deleteCat } from './views/categories.js';
+import { openProjectImagePicker, removeProjectImage, reorderProjectImage, newProject, editProject, duplicateProject, deleteProject, toggleProjectCat, saveProject, onTemplateChange, onVideoSourceChange, openCoverPickerModal as openProjectCoverPickerModal, selectCover as selectProjectCover } from './views/projects.js';
+import { openPostImagePicker, removePostImage, reorderPostImage, newPost, editPost, duplicatePost, deletePost, savePost, togglePostCat, onPostTemplateChange, onPostVideoSourceChange, openCoverPickerModal as openPostCoverPickerModal, selectCover as selectPostCover } from './views/posts.js';
+import { openCatModal, saveCat, deleteCat, switchCatType } from './views/categories.js';
 import { addExp, renderExp, addEdu, renderEdu, addLink, renderLinks, saveResume, cancelResume } from './views/resume.js';
 import { uploadMedia, deleteMedia, openLightbox } from './views/media.js';
 import { saveSettings } from './views/settings.js';
@@ -58,8 +58,6 @@ window.openPreview = async function openPreview() {
 window.openMediaModal = openMediaModal;
 window.toggleMediaModalGalleryMode = toggleMediaModalGalleryMode;
 window.confirmMediaSelection = confirmMediaSelection;
-window.confirmMediaSelection = confirmMediaSelection;
-window.confirmMediaSelection = confirmMediaSelection;
 window.closeMediaModal = closeMediaModal;
 window.selectMediaFromModal = selectMediaFromModal;
 window.uploadMediaFromModal = uploadMediaFromModal;
@@ -72,8 +70,6 @@ window.toggleProjectCat = toggleProjectCat;
 window.saveProject = saveProject;
 window.onTemplateChange = onTemplateChange;
 window.onVideoSourceChange = onVideoSourceChange;
-window.openCoverPickerModal = openCoverPickerModal;
-window.selectCover = selectCover;
 
 
 window.newPost = newPost;
@@ -147,8 +143,15 @@ window.toggleProjectCat = toggleProjectCat;
 window.togglePostCat = togglePostCat;
 window.onPostTemplateChange = onPostTemplateChange;
 window.onPostVideoSourceChange = onPostVideoSourceChange;
-window.openPostImagePicker = window.openPostImagePicker || function() {};
-window.removePostImage = window.removePostImage || function() {};
-window.reorderPostImage = window.reorderPostImage || function() {};
-window.removeProjectImage = window.removeProjectImage || function() {};
-window.reorderProjectImage = window.reorderProjectImage || function() {};
+window.openPostImagePicker = openPostImagePicker;
+window.removePostImage = removePostImage;
+window.reorderPostImage = reorderPostImage;
+window.removeProjectImage = removeProjectImage;
+window.reorderProjectImage = reorderProjectImage;
+
+
+window.openProjectCoverPickerModal = openProjectCoverPickerModal;
+window.openPostCoverPickerModal = openPostCoverPickerModal;
+
+window.openProjectImagePicker = openProjectImagePicker;
+window.switchCatType = switchCatType;

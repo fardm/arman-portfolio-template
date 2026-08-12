@@ -4,11 +4,14 @@ import { loadAll } from '../core/data.js';
 import { val, showMsg } from '../utils/helpers.js';
 
 
-window.switchCatType = function(type) {
+export function switchCatType(type) {
   state.currentCatType = type;
   renderCategories();
-};
+}
+
 export function renderCategories() {
+  state.currentCatType = 'projects';
+
 
 
   let currentCatType = state.currentCatType || 'projects';
@@ -16,10 +19,7 @@ export function renderCategories() {
     <div style="margin-bottom:24px">
         <h2 style="margin-bottom:4px">دسته‌ها</h2>
         <p class="sub" style="margin-bottom:16px">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
-        <div style="display:flex; gap:8px;">
-          <button class="btn ${currentCatType === 'projects' ? '' : 'sec'}" onclick="window.switchCatType('projects')">پروژه‌ها</button>
-          <button class="btn ${currentCatType === 'posts' ? '' : 'sec'}" onclick="window.switchCatType('posts')">پست‌ها</button>
-        </div>
+
     </div>
     <button class="btn" style="margin-bottom:24px" onclick="openCatModal()">+ ایجاد دسته جدید</button>
     <div id="cat-list" style="max-width: 600px;"></div>`;
@@ -115,7 +115,7 @@ export function openCatModal(index = -1) {
   m.className = 'modal-overlay';
 
   let parentOptions = '<option value="">(بدون والد - ریشه)</option>';
-  state.categories.forEach(cat => {
+  state.categories.filter(c => c.type === (state.currentCatType || 'projects')).forEach(cat => {
     if (isEdit && cat.slug === c.slug) return;
     parentOptions += `<option value="${cat.slug}" ${c.parent === cat.slug ? 'selected' : ''}>${cat.name}</option>`;
   });
@@ -215,4 +215,24 @@ export async function deleteCat(i) {
     saveCategories();
   }
 }
-export async function saveCategories() { await api('/api/categories', { method: 'POST', body: JSON.stringify(state.categories), headers: { 'Content-Type': 'application/json' } }); }
+
+export async function saveCategories() {
+  const data = {
+    projects: state.categories.filter(c => c.type === 'projects').map(c => { const o = {...c}; delete o.type; return o; }),
+    posts: state.categories.filter(c => c.type === 'posts').map(c => { const o = {...c}; delete o.type; return o; })
+  };
+  await api('/api/categories', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+}
+
+
+export function renderPostCategories() {
+  state.currentCatType = 'posts';
+  dom.content.innerHTML = `
+    <div style="margin-bottom:24px">
+        <h2 style="margin-bottom:4px">دسته‌های پست‌ها</h2>
+        <p class="sub" style="margin-bottom:16px">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
+    </div>
+    <button class="btn" style="margin-bottom:24px" onclick="openCatModal()">+ ایجاد دسته جدید</button>
+    <div id="cat-list" style="max-width: 600px;"></div>`;
+  renderCatList();
+}

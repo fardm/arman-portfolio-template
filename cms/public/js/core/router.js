@@ -1,3 +1,4 @@
+import { renderPostCategories } from '../views/categories.js';
 import { state } from './state.js';
 import { renderDashboard } from '../views/dashboard.js';
 import { renderPages, renderPageEdit } from '../views/pages.js';
@@ -35,7 +36,7 @@ export function show(view, updateHash = true) {
     const group = document.getElementById('group-projects');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
-  if (['posts'].includes(view)) {
+  if (['posts', 'post-categories'].includes(view)) {
     const group = document.getElementById('group-posts');
     if (group && !group.classList.contains('open')) group.classList.add('open');
   }
@@ -57,6 +58,7 @@ export function render() {
   if (state.currentView === 'publish') return renderPublish();
   if (state.currentView === 'project-edit') return renderProjectEdit();
   if (state.currentView === 'posts') return renderPosts();
+  if (state.currentView === 'post-categories') return renderPostCategories();
     if (state.currentView === 'post-edit') return renderPostEdit();
   if (state.currentView === 'hero') return renderHero();
 }

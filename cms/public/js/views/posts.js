@@ -34,8 +34,27 @@ export function renderPosts() {
 }
 
 export function newPost() { state.editingPost = { title: '', slug: '', description: '', content: '', cover: '', categories: [], images: [], template: 'image', videoUrl: '' }; show('post-edit', false); render(); }
-export function editPost(slug) { state.editingPost = state.posts.find((p) => p.slug === slug); state.editingPost.originalSlug = slug; show('post-edit', false); render(); }
-export async function duplicatePost(slug) { const p = state.posts.find((x) => x.slug === slug); const copy = { ...p, slug: p.slug + '-copy', title: p.title + ' (کپی)' }; await api('/api/posts', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('posts'); }
+
+export function editPost(slug) {
+  const p = state.posts.find((p) => p.slug === slug);
+  state.editingPost = JSON.parse(JSON.stringify(p));
+  state.editingPost.originalSlug = slug;
+  show('post-edit', false);
+  render();
+}
+
+
+export async function duplicatePost(slug) {
+  const p = state.posts.find((x) => x.slug === slug);
+  const copy = JSON.parse(JSON.stringify(p));
+  delete copy.originalSlug;
+  copy.slug = copy.slug + '-' + Math.floor(Math.random() * 10000);
+  copy.title = copy.title + ' (کپی)';
+  await api('/api/posts', { method: 'POST', body: JSON.stringify(copy), headers: { 'Content-Type': 'application/json' } });
+  await loadAll();
+  show('posts');
+}
+
 export async function deletePost(slug) { if (!confirm('حذف شود؟')) return; await api('/api/posts', { method: 'DELETE', body: JSON.stringify({ slug }), headers: { 'Content-Type': 'application/json' } }); await loadAll(); show('posts'); }
 
 export function renderPostEdit() {
@@ -149,7 +168,7 @@ export function renderPostEdit() {
             <div id="cover-preview" style="margin-bottom:8px">${p.cover ? `<img src="${p.cover}" class="preview" style="width:100%; max-width:100%; height:auto">` : ''}</div>
             <div class="row">
               <input id="f-cover" value="${p.cover || ''}" style="display:none">
-              <button class="btn sec" style="width:100%; justify-content:center" onclick="openCoverPickerModal()">انتخاب تصویر</button>
+              <button class="btn sec" style="width:100%; justify-content:center" onclick="openPostCoverPickerModal()">انتخاب تصویر</button>
             </div>
           </div>
         </div>
@@ -165,18 +184,16 @@ export function openCoverPickerModal() {
 }
 
 
-export function selectCover(path) {
-  const fCover = document.getElementById('f-cover');
-  if(fCover) {
-    fCover.value = path;
-    state.editingPost.cover = path;
-  }
-  const preview = document.getElementById('cover-preview');
-  if(preview) preview.innerHTML = `<img src="${path}" class="preview">`;
 
-  const modal = document.getElementById('cover-modal');
-  if (modal) modal.remove();
+export function selectCover(path) {
+  if (!state.editingPost) return;
+  const fCover = document.getElementById('f-cover');
+  if(fCover) fCover.value = path;
+  state.editingPost.cover = path;
+  const preview = document.getElementById('cover-preview');
+  if(preview) preview.innerHTML = `<img src="${path}" class="preview" style="width:100%; max-width:100%; height:auto">`;
 }
+
 
 
 
@@ -243,7 +260,7 @@ export function onPostVideoSourceChange(value) {
   renderPostEdit();
 }
 
-window.openPostImagePicker = function() {
+export function openPostImagePicker() {
   window.openMediaModal((selected) => {
     if (!state.editingPost.images) state.editingPost.images = [];
     if (Array.isArray(selected)) {
@@ -256,14 +273,14 @@ window.openPostImagePicker = function() {
   });
 };
 
-window.removePostImage = function(index) {
+export function removePostImage(index) {
   if (state.editingPost.images && state.editingPost.images.length > index) {
     state.editingPost.images.splice(index, 1);
     renderPostEdit();
   }
 };
 
-window.reorderPostImage = function(toIndex, fromIndexStr) {
+export function reorderPostImage(toIndex, fromIndexStr) {
   const fromIndex = parseInt(fromIndexStr, 10);
   if (isNaN(fromIndex) || fromIndex === toIndex || !state.editingPost.images) return;
   const img = state.editingPost.images.splice(fromIndex, 1)[0];

@@ -16,7 +16,8 @@ function validate() {
   if (site.theme && !['light', 'dark', 'system'].includes(site.theme.mode)) fail('site.json: theme.mode must be light, dark, or system');
 
   // categories.json
-  const categories = readJson('content/categories.json');
+  const categoriesRaw = readJson('content/categories.json');
+  const categories = [...(categoriesRaw.projects || []), ...(categoriesRaw.posts || [])];
   const catSlugs = new Set();
   for (const cat of categories) {
     if (!cat.slug) fail('category missing slug');

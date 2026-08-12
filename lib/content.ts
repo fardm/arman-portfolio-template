@@ -3,11 +3,14 @@ import path from 'node:path';
 import matter from 'gray-matter';
 
 export type Project = { title: string; slug: string; description: string; cover?: string; images?: string[]; year?: string; client?: string; technologies?: string[]; categories?: string[]; template?: 'image' | 'video'; videoSource?: 'youtube' | 'aparat' | 'host' | 'embed'; videoUrl?: string; content: string };
-export type Category = { name: string; slug: string; description?: string; parent: string | null; sort: number; type: 'projects' | 'posts' };
+export type Category = { name: string; slug: string; description?: string; parent: string | null; sort: number };
 const root = process.cwd();
 const readJson = <T,>(file: string): T => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8')) as T;
 export function getSite() { return readJson<Record<string, unknown>>('content/site.json'); }
-export function getCategories() { return readJson<Category[]>('content/categories.json').filter(c => c.type === 'projects').sort((a, b) => a.sort - b.sort); }
+export function getCategories() {
+  const data = readJson<{ projects: Category[], posts: Category[] }>('content/categories.json');
+  return (data.projects || []).sort((a, b) => a.sort - b.sort);
+}
 export function getResume() { return readJson<Record<string, unknown>>('content/resume.json'); }
 export function getProjects(): Project[] {
   const dir = path.join(root, 'content/projects');
@@ -17,7 +20,10 @@ export function getProject(slug: string) { return getProjects().find((project) =
 
 export type Post = { title: string; slug: string; description: string; cover?: string; images?: string[]; categories?: string[]; template?: 'image' | 'video'; videoSource?: 'youtube' | 'aparat' | 'host' | 'embed'; videoUrl?: string; content: string };
 export function getPostCategories() {
-  try { return readJson<Category[]>('content/categories.json').filter(c => c.type === 'posts').sort((a, b) => a.sort - b.sort); } catch { return []; }
+  try {
+    const data = readJson<{ projects: Category[], posts: Category[] }>('content/categories.json');
+    return (data.posts || []).sort((a, b) => a.sort - b.sort);
+  } catch { return []; }
 }
 export function getPosts(): Post[] {
   const dir = path.join(root, 'content/blog');

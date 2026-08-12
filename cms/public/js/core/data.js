@@ -5,7 +5,14 @@ import { show, render } from './router.js';
 export async function loadAll() {
   const [siteData, categoriesData, resumeData, projectsData, pagesData, menuData, postsData] = await Promise.all([
     api('/api/site'),
-    api('/api/categories'),
+    api('/api/categories').then(d => {
+      // transform from { projects: [...], posts: [...] } to array
+      if (Array.isArray(d)) return d; // fallback
+      const cats = [];
+      if (d.projects) cats.push(...d.projects.map(c => ({...c, type: 'projects'})));
+      if (d.posts) cats.push(...d.posts.map(c => ({...c, type: 'posts'})));
+      return cats;
+    }),
     api('/api/resume'),
     api('/api/projects'),
     api('/api/pages').catch(()=>[]),
