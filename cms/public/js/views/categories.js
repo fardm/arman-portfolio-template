@@ -17,7 +17,7 @@ export function renderCategories() {
   let currentCatType = state.currentCatType || 'projects';
   dom.content.innerHTML = `
     <div style="margin-bottom:24px">
-        <h2 style="margin-bottom:4px">دسته‌ها</h2>
+        <h2 style="margin-bottom:4px">دسته‌های پروژه‌ها</h2>
         <p class="sub" style="margin-bottom:16px">مدیریت ساختار درختی دسته‌بندی‌ها.</p>
 
     </div>

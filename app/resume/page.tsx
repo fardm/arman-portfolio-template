@@ -57,7 +57,7 @@ export default function ResumePage() {
   return (
     <section className="section">
       <div className="container max-w-4xl">
-        <h1 className="mt-2 text-5xl font-black">رزومه</h1>
+        <h1 className="mt-2 text-3xl font-black">رزومه</h1>
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[2fr_1fr]">
           <div>
@@ -122,7 +122,7 @@ export default function ResumePage() {
 
             {links.length > 0 && (
               <>
-                <h2 className="mb-2 text-2xl font-bold">لینک‌ها</h2>
+                <h2 className="mb-2 text-xl font-bold">لینک‌ها</h2>
                 <div className="flex flex-col gap-3 mb-12 bg-[var(--card)] rounded-md px-4 py-2">
                   {links.map((link: any) => (
                     <a key={link.label} href={link.link} target="_blank" rel="noopener noreferrer"

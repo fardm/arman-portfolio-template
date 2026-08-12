@@ -87,7 +87,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
   return (
     <article className="section pt-10 md:pt-20">
       <div className="container">
-        <h1 className="mb-10 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-right">{project.title}</h1>
+        <h1 className="mb-10 text-2xl md:text-3xl lg:text-4xl font-black leading-tight text-right">{project.title}</h1>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>

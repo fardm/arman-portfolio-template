@@ -61,6 +61,12 @@
       "slug": "ej",
       "parent": "",
       "sort": 999
+    },
+    {
+      "name": "معرفی سایت",
+      "slug": "site",
+      "parent": "",
+      "sort": 999
     }
   ]
 }
