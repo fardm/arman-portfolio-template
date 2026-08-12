@@ -14,7 +14,7 @@ export function getCategories() {
 export function getResume() { return readJson<Record<string, unknown>>('content/resume.json'); }
 export function getProjects(): Project[] {
   const dir = path.join(root, 'content/projects');
-  return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Project, 'content'>), content: parsed.content } as Project; });
+  return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Project, 'content'>), content: parsed.content } as Project; }).sort((a, b) => new Date((b as any).date || 0).getTime() - new Date((a as any).date || 0).getTime());
 }
 export function getProject(slug: string) { return getProjects().find((project) => project.slug === slug); }
 
@@ -28,7 +28,7 @@ export function getPostCategories() {
 export function getPosts(): Post[] {
   const dir = path.join(root, 'content/blog');
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Post, 'content'>), content: parsed.content } as Post; });
+  return fs.readdirSync(dir).filter((file) => file.endsWith('.md')).map((file) => { const parsed = matter(fs.readFileSync(path.join(dir, file), 'utf8')); return { ...(parsed.data as Omit<Post, 'content'>), content: parsed.content } as Post; }).sort((a, b) => new Date((b as any).date || 0).getTime() - new Date((a as any).date || 0).getTime());
 }
 export function getPost(slug: string) { return getPosts().find((post) => post.slug === slug); }
 

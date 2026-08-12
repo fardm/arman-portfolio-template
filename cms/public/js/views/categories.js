@@ -11,9 +11,6 @@ export function switchCatType(type) {
 
 export function renderCategories() {
   state.currentCatType = 'projects';
-
-
-
   let currentCatType = state.currentCatType || 'projects';
   dom.content.innerHTML = `
     <div style="margin-bottom:24px">
@@ -170,7 +167,7 @@ export async function saveCat(index, modalNode) {
     await loadAll();
     modalNode.remove();
     showMsg('دسته با موفقیت ذخیره شد');
-    renderCategories();
+    if (state.currentCatType === 'posts') renderPostCategories(); else renderCategories();
   } catch(e) {
     showMsg('خطا در ذخیره دسته', true);
   }

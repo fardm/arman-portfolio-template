@@ -6,6 +6,13 @@ import TelegramIcon from './telegram.svg';
 import XIcon from './x.svg';
 import YoutubeIcon from './youtube.svg';
 import LinkIcon from './link.svg';
+import LocationIcon from './location.svg';
+import BirthDateIcon from './birthDate.svg';
+import MaritalStatusIcon from './maritalStatus.svg';
+import MilitaryServiceIcon from './militaryService.svg';
+import PhoneIcon from './phone.svg';
+import EmailIcon from './email.svg';
+
 
 export const icons = {
   github: GithubIcon,
@@ -15,6 +22,13 @@ export const icons = {
   x: XIcon,
   youtube: YoutubeIcon,
   link: LinkIcon,
+  location: LocationIcon,
+  birthDate: BirthDateIcon,
+  maritalStatus: MaritalStatusIcon,
+  militaryService: MilitaryServiceIcon,
+  phone: PhoneIcon,
+  email: EmailIcon,
+
 };
 
 export type IconName = keyof typeof icons;

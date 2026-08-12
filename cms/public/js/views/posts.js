@@ -112,6 +112,8 @@ export function renderPostEdit() {
           <input id="f-slug" value="${p.slug || ''}" style="direction:ltr; text-align:left">
           <label style="margin-top:12px">توضیحات کوتاه</label>
           <textarea id="f-description" style="min-height:80px">${p.description || ''}</textarea>
+          <label style="margin-top:12px">تاریخ (اختیاری)</label>
+          <input id="f-date" type="text" placeholder="YYYY-MM-DD" value="${p.date || ''}" style="direction:ltr; text-align:left">
         </div>
         <div class="card">
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>
@@ -201,6 +203,7 @@ export function syncEditingPost() {
   state.editingPost.title = val('f-title');
   state.editingPost.slug = val('f-slug');
   state.editingPost.description = val('f-description');
+  state.editingPost.date = val('f-date');
   state.editingPost.cover = val('f-cover');
   state.editingPost.content = val('f-content');
   const videoSourceEl = document.getElementById('f-videoSource');
@@ -223,7 +226,7 @@ export function togglePostCat(slug, checked) {
 export async function savePost() {
   const data = {
     ...state.editingPost,
-    title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
+    title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'), date: val('f-date'),
     content: val('f-content'),
     images: state.editingPost.images || [],
     template: val('f-template') || 'image',

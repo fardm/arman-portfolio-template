@@ -98,6 +98,7 @@ export function renderProjectEdit() {
             <div><label>سال</label><input id="f-year" value="${p.year || ''}"></div>
             <div><label>کارفرما</label><input id="f-client" value="${p.client || ''}"></div>
           </div>
+          <div style="margin-top:12px"><label>تاریخ (اختیاری)</label><input id="f-date" type="text" placeholder="YYYY-MM-DD" value="${p.date || ''}" style="direction:ltr; text-align:left"></div>
 
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>
           <textarea id="f-content" style="min-height:300px">${p.content || ''}</textarea>
@@ -187,6 +188,7 @@ export function syncEditingProject() {
   state.editingProject.cover = val('f-cover');
   state.editingProject.year = val('f-year');
   state.editingProject.client = val('f-client');
+  state.editingProject.date = val('f-date');
   state.editingProject.content = val('f-content');
   const videoSourceEl = document.getElementById('f-videoSource');
   if (videoSourceEl) state.editingProject.videoSource = videoSourceEl.value;
@@ -219,7 +221,7 @@ export async function saveProject() {
   const data = {
     ...state.editingProject,
     title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
-    year: val('f-year'), client: val('f-client'),
+    year: val('f-year'), client: val('f-client'), date: val('f-date'),
     template: val('f-template'),
     videoSource: videoSourceEl ? videoSourceEl.value : (state.editingProject.videoSource || 'host'),
     videoUrl: videoUrlEl ? videoUrlEl.value : (state.editingProject.videoUrl || ''),
