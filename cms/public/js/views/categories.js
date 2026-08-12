@@ -207,11 +207,6 @@ export async function deleteCat(i) {
         await api('/api/posts', { method: 'POST', body: JSON.stringify(post), headers: { 'Content-Type': 'application/json' } });
       }
     }
- && project.categories.some(c => toDelete.has(c))) {
-        project.categories = project.categories.filter(c => !toDelete.has(c));
-        await api('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
-      }
-    }
 
     state.categories.length = 0;
     state.categories.push(...newCategories);

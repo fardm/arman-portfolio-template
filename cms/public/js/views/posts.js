@@ -56,7 +56,7 @@ export function renderPostEdit() {
   `).join('') : '';
 
 
-  const imagesHtml = p.images && p.images.length ? p.images.map((img, idx) => `
+  let secondImagesHtml = p.images && p.images.length ? p.images.map((img, idx) => `
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--card); padding:4px 8px; border-radius:4px; border:1px solid var(--border);">
       <div style="display:flex; flex-direction:column; gap:2px; cursor:ns-resize;" ondragover="event.preventDefault()" ondrop="window.reorderPostImage(${idx}, event.dataTransfer.getData('text/plain'))">
         <svg draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${idx}')" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
@@ -130,7 +130,7 @@ export function renderPostEdit() {
             ${p.template === 'image' ? `
               <div style="margin-top:16px;">
                 <label>تصاویر پست</label>
-                <div id="post-images-list" style="margin-bottom:8px;">${imagesHtml}</div>
+                <div id="post-images-list" style="margin-bottom:8px;">${secondImagesHtml}</div>
                 <button class="btn sec" style="width:100%; justify-content:center" onclick="window.openPostImagePicker()">انتخاب تصویر</button>
               </div>
             ` : ''}
