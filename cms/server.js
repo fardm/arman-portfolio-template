@@ -19,7 +19,6 @@ let buildProcess = null;
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif', '.webp':'image/webp', '.woff2':'font/woff2', '.woff':'font/woff', '.ttf':'font/ttf', '.otf':'font/otf', '.ico':'image/x-icon' };
 
-
 function postToMarkdown(data) {
   const fm = {
     title: data.title || '',
@@ -82,6 +81,45 @@ function randomCommitMessage() {
   return `cms-update-${Date.now().toString(36)}-${id}`;
 }
 
+// Helper برای پشتیبانی از تگ‌های با و بدون v
+const SEMVER_REGEX = /^v?(\d+)\.(\d+)\.(\d+)$/;
+
+function parseSemver(version) {
+  const match = version.match(SEMVER_REGEX);
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+  };
+}
+
+function isNewer(latest, current) {
+  const l = parseSemver(latest);
+  const c = parseSemver(current);
+  if (!l || !c) return false;
+
+  if (l.major > c.major) return true;
+  if (l.major === c.major && l.minor > c.minor) return true;
+  if (l.major === c.major && l.minor === c.minor && l.patch > c.patch) return true;
+  return false;
+}
+
+function getLatestVersion(tags) {
+  const validTags = tags.filter(t => SEMVER_REGEX.test(t));
+  if (validTags.length === 0) return null;
+
+  validTags.sort((a, b) => {
+    const pa = parseSemver(a);
+    const pb = parseSemver(b);
+    if (pa.major !== pb.major) return pb.major - pa.major;
+    if (pa.minor !== pb.minor) return pb.minor - pa.minor;
+    return pb.patch - pa.patch;
+  });
+
+  return validTags[0];
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const method = req.method;
@@ -96,8 +134,9 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/site' && method === 'POST') { const d = await readBody(req); writeJson('content/site.json', d); return send(res, 200, { ok: true }); }
       if (pathname === '/api/categories' && method === 'GET') return send(res, 200, readJson('content/categories.json'));
       if (pathname === '/api/categories' && method === 'POST') { const d = await readBody(req); writeJson('content/categories.json', d); return send(res, 200, { ok: true }); }
-                  if (pathname === '/api/resume' && method === 'GET') return send(res, 200, readJson('content/resume.json'));
+      if (pathname === '/api/resume' && method === 'GET') return send(res, 200, readJson('content/resume.json'));
       if (pathname === '/api/resume' && method === 'POST') { const d = await readBody(req); writeJson('content/resume.json', d); return send(res, 200, { ok: true }); }
+
       if (pathname === '/api/projects' && method === 'GET') {
         const dir = path.join(root, 'content/projects');
         const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.md')) : [];
@@ -155,12 +194,12 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/menu' && method === 'GET') {
-          return send(res, 200, fs.existsSync(path.join(root, 'content/menu.json')) ? readJson('content/menu.json') : []);
+        return send(res, 200, fs.existsSync(path.join(root, 'content/menu.json')) ? readJson('content/menu.json') : []);
       }
       if (pathname === '/api/menu' && method === 'POST') {
-          const d = await readBody(req);
-          writeJson('content/menu.json', d);
-          return send(res, 200, { ok: true });
+        const d = await readBody(req);
+        writeJson('content/menu.json', d);
+        return send(res, 200, { ok: true });
       }
 
       if (pathname === '/api/pages' && method === 'GET') {
@@ -264,7 +303,6 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-
       // Test endpoint
       if (pathname === '/api/test' && method === 'POST') {
         const testProc = spawn('npm', ['run', 'test'], { cwd: root, shell: true });
@@ -278,48 +316,25 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // Publish to GitHub
-
+      // ==================== Update Check ====================
       if (pathname === '/api/update/check' && method === 'GET') {
         try {
           const versionFile = path.join(root, 'VERSION');
-          let currentVersion = 'v0.0.0';
+          let currentVersion = '0.0.0';
           if (fs.existsSync(versionFile)) {
             currentVersion = fs.readFileSync(versionFile, 'utf8').trim();
           }
 
           await runGit(['fetch', 'upstream', '--tags']).catch(() => {});
 
-          const tagsRes = await runGit(['tag', '-l', 'v*']);
+          const tagsRes = await runGit(['tag', '-l']);
           let latestVersion = currentVersion;
+
           if (tagsRes.code === 0 && tagsRes.output) {
             const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
-            if (tags.length > 0) {
-              const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
-              const validTags = tags.filter(t => semverRegex.test(t));
-              if (validTags.length > 0) {
-                validTags.sort((a, b) => {
-                  const [, a1, a2, a3] = a.match(semverRegex).map(Number);
-                  const [, b1, b2, b3] = b.match(semverRegex).map(Number);
-                  if (a1 !== b1) return b1 - a1;
-                  if (a2 !== b2) return b2 - a2;
-                  return b3 - a3;
-                });
-                latestVersion = validTags[0];
-              }
-            }
+            const found = getLatestVersion(tags);
+            if (found) latestVersion = found;
           }
-
-          const isNewer = (latest, current) => {
-            const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
-            if (!semverRegex.test(latest) || !semverRegex.test(current)) return false;
-            const [, l1, l2, l3] = latest.match(semverRegex).map(Number);
-            const [, c1, c2, c3] = current.match(semverRegex).map(Number);
-            if (l1 > c1) return true;
-            if (l1 === c1 && l2 > c2) return true;
-            if (l1 === c1 && l2 === c2 && l3 > c3) return true;
-            return false;
-          };
 
           const updateAvailable = isNewer(latestVersion, currentVersion);
 
@@ -329,6 +344,7 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
+      // ==================== Update Start ====================
       if (pathname === '/api/update/start' && method === 'POST') {
         try {
           const statusRes = await runGit(['status', '--porcelain']);
@@ -338,33 +354,23 @@ const server = http.createServer(async (req, res) => {
           }
 
           const versionFile = path.join(root, 'VERSION');
-          let currentVersion = 'v0.0.0';
+          let currentVersion = '0.0.0';
           if (fs.existsSync(versionFile)) {
             currentVersion = fs.readFileSync(versionFile, 'utf8').trim();
           }
 
           await runGit(['fetch', 'upstream', '--tags']).catch(() => {});
-          const tagsRes = await runGit(['tag', '-l', 'v*']);
+          const tagsRes = await runGit(['tag', '-l']);
           let latestVersion = currentVersion;
+
           if (tagsRes.code === 0 && tagsRes.output) {
             const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
-            if (tags.length > 0) {
-              const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
-              const validTags = tags.filter(t => semverRegex.test(t));
-              if (validTags.length > 0) {
-                validTags.sort((a, b) => {
-                  const [, a1, a2, a3] = a.match(semverRegex).map(Number);
-                  const [, b1, b2, b3] = b.match(semverRegex).map(Number);
-                  if (a1 !== b1) return b1 - a1;
-                  if (a2 !== b2) return b2 - a2;
-                  return b3 - a3;
-                });
-                latestVersion = validTags[0];
-              }
-            }
+            const found = getLatestVersion(tags);
+            if (found) latestVersion = found;
           }
 
-          if (latestVersion === currentVersion) {
+          // اگر از نظر عددی یکی بودن (حتی اگر یکی v داشته باشه و یکی نه)
+          if (!isNewer(latestVersion, currentVersion)) {
             return send(res, 400, { error: 'You are already on the latest version.' });
           }
 
@@ -393,12 +399,12 @@ const server = http.createServer(async (req, res) => {
           await runGit(['add', '.']);
           const commitRes = await runGit(['commit', '-m', `Update template to ${latestVersion}`]);
           if (commitRes.code !== 0 && !commitRes.output.includes('nothing to commit')) {
-             throw new Error('Git commit failed: ' + commitRes.output);
+            throw new Error('Git commit failed: ' + commitRes.output);
           }
 
           const pushRes = await runGit(['push', 'origin', 'HEAD']);
           if (pushRes.code !== 0) {
-             throw new Error('Git push failed: ' + pushRes.output);
+            throw new Error('Git push failed: ' + pushRes.output);
           }
 
           fs.rmSync(backupDir, { recursive: true, force: true });
@@ -410,6 +416,7 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
+      // Publish to GitHub
       if (pathname === '/api/publish' && method === 'POST') {
         const status = await runGit(['status', '--porcelain']);
         if (!status.output) {
