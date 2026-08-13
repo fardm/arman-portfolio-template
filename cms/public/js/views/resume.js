@@ -80,7 +80,7 @@ export function renderLinks() {
     <div style="display:flex; gap:8px; align-items:center">
       <div style="flex:1"><input value="${l.label}" onchange="state.resume.links[${i}].label=this.value" placeholder="عنوان لینک (مثلا وبسایت من)"></div>
       <div style="flex:2"><input value="${l.url}" onchange="state.resume.links[${i}].url=this.value" placeholder="https://..." dir="ltr"></div>
-      <button class="btn danger" style="padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.links.splice(${i},1);renderLinks()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      <button class="btn danger" style="padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.links.splice(${i},1);renderLinks()">${icon('trash_small')}</button>
     </div>
   `).join('') : '<p style="color:var(--muted); font-size:0.9rem">هیچ لینکی ثبت نشده است.</p>';
 }
@@ -93,7 +93,7 @@ export function addLink() {
 export function renderExp() {
   document.getElementById('r-exp').innerHTML = (state.resume.experience || []).length ? (state.resume.experience || []).map((e, i) => `
     <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.experience.splice(${i},1);renderExp()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.experience.splice(${i},1);renderExp()">${icon('trash_small')}</button>
       <div class="grid2" style="margin-bottom:12px">
         <div><label style="margin-top:0; font-size:0.8rem">عنوان شغلی</label><input value="${e.title}" onchange="state.resume.experience[${i}].title=this.value" placeholder="مثال: توسعه دهنده ارشد"></div>
         <div>
@@ -118,7 +118,7 @@ export function addExp() { (state.resume.experience ||= []).push({ id: 'e' + Dat
 export function renderEdu() {
   document.getElementById('r-edu').innerHTML = (state.resume.education || []).length ? (state.resume.education || []).map((e, i) => `
     <div style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--background); position:relative">
-      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.education.splice(${i},1);renderEdu()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      <button class="btn danger" style="position:absolute; top:12px; left:12px; padding:6px 12px; font-size:0.8rem; border-radius:6px; display:flex; align-items:center; justify-content:center" title="حذف" onclick="state.resume.education.splice(${i},1);renderEdu()">${icon('trash_small')}</button>
       <div class="grid2">
         <div><label style="margin-top:0; font-size:0.8rem">مقطع و رشته</label><input value="${e.title}" onchange="state.resume.education[${i}].title=this.value" placeholder="مثال: کارشناسی مهندسی کامپیوتر"></div>
         <div>

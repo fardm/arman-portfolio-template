@@ -19,6 +19,23 @@ let buildProcess = null;
 
 const MIME = { '.html':'text/html', '.js':'application/javascript', '.css':'text/css', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif', '.webp':'image/webp', '.woff2':'font/woff2', '.woff':'font/woff', '.ttf':'font/ttf', '.otf':'font/otf', '.ico':'image/x-icon' };
 
+
+function postToMarkdown(data) {
+  const fm = {
+    title: data.title || '',
+    slug: data.slug || '',
+    description: data.description || '',
+    cover: data.cover || '',
+    date: data.date || '',
+    categories: data.categories || [],
+    template: data.template || 'image',
+    videoSource: data.videoSource || 'host',
+    videoUrl: data.videoUrl || '',
+    images: data.images || [],
+  };
+  return matter.stringify(data.content || '', fm);
+}
+
 function projectToMarkdown(data) {
   const fm = {
     title: data.title || '',
@@ -26,6 +43,7 @@ function projectToMarkdown(data) {
     description: data.description || '',
     cover: data.cover || '',
     year: data.year || '',
+    date: data.date || '',
     client: data.client || '',
     technologies: data.technologies || [],
     categories: data.categories || [],
@@ -126,7 +144,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         const file = path.join(root, 'content/blog', `${d.slug}.md`);
-        fs.writeFileSync(file, projectToMarkdown(d));
+        fs.writeFileSync(file, postToMarkdown(d));
         return send(res, 200, { ok: true });
       }
       if (pathname === '/api/posts' && method === 'DELETE') {

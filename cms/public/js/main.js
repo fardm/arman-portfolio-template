@@ -1,3 +1,4 @@
+import { icon } from './icons.js';
 import { state, dom } from './core/state.js';
 import { api } from './core/api.js';
 import { loadAll, loadFonts, loadMedia } from './core/data.js';
@@ -13,8 +14,8 @@ import { saveTheme, onThemeModeSelect, onAutoBaseColorChange, copyToManualAndSwi
 import { openFontModal, toggleFontSourceModal, onFontFileSelected, handleFontDrop, saveFontModal, deleteSiteFont, updateTypoAuto } from './views/typography.js';
 import { startPublish, renderPublish, startLocalTest } from './views/publish.js';
 import { newPage, editPage, deletePage, savePage } from './views/pages.js';
-import { addMenuItem, deleteMenuItem, saveMenu, saveMenuAuto, handleDragStartMenu, handleDragOverMenu, handleDropMenu, handleDragEndMenu } from './views/menu.js';
-import { saveHero, cancelHero } from './views/hero.js';
+import { addMenuItem, deleteMenuItem, saveMenu, saveMenuAuto, handleDragStartMenu, handleDragOverMenu, handleDropMenu, handleDragEndMenu, toggleMenuVisibility } from './views/menu.js';
+import { saveHero, cancelHero, handleDragStartHome, handleDragOverHome, handleDropHome, handleDragEndHome } from './views/hero.js';
 
 // Expose router functions for inline HTML handlers
 window.show = show;
@@ -122,12 +123,19 @@ window.savePage = savePage;
 
 window.addMenuItem = addMenuItem;
 window.deleteMenuItem = deleteMenuItem;
+window.toggleMenuVisibility = toggleMenuVisibility;
 window.handleDragStartMenu = handleDragStartMenu;
 window.handleDragOverMenu = handleDragOverMenu;
 window.handleDropMenu = handleDropMenu;
 window.handleDragEndMenu = handleDragEndMenu;
 
 window.saveHero = saveHero;
+
+window.handleDragStartHome = handleDragStartHome;
+window.handleDragOverHome = handleDragOverHome;
+window.handleDropHome = handleDropHome;
+window.handleDragEndHome = handleDragEndHome;
+
 window.cancelHero = cancelHero;
 
 window.state = state; // Useful for debugging
@@ -136,6 +144,7 @@ window.state = state; // Useful for debugging
 loadAll();
 window.saveMenu = saveMenu;
 window.saveMenuAuto = saveMenuAuto;
+window.icon = icon;
 window.toggleAdminTheme = window.toggleAdminTheme || function() {};
 
 

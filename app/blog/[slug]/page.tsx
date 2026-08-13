@@ -109,6 +109,19 @@ export default function PostPage({ params }: { params: { slug: string } }) {
             {post.template !== 'video' && (!post.images || post.images.length === 0) && post.cover && <img src={post.cover} alt={`تصویر پست ${post.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
             {post.template === 'video' && post.videoUrl && parseVideoUrl(post.videoUrl, post.videoSource || 'host', post.title)}
             <div className="prose mt-10 max-w-none">{renderMarkdown(post.content)}</div>
+
+             {post.categories && post.categories.length > 0 && (
+                <div className="mt-10">
+                  <h3 className="text-lg font-bold mb-3 border-b border-[var(--border)] pb-2">دسته‌ها</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {post.categories.map((slug) => (
+                      <span className="tag text-xs" key={slug}>
+                        {categories.find((cat) => cat.slug === slug)?.name || slug}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+             )}
           </div>
 
           <aside className="sticky top-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
@@ -129,18 +142,7 @@ export default function PostPage({ params }: { params: { slug: string } }) {
                 </div>
              </div>
 
-             {post.categories && post.categories.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-bold mb-3 border-b border-[var(--border)] pb-2">دسته‌ها</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {post.categories.map((slug) => (
-                      <span className="tag text-xs" key={slug}>
-                        {categories.find((cat) => cat.slug === slug)?.name || slug}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-             )}
+
           </aside>
         </div>
         {related.length > 0 && (

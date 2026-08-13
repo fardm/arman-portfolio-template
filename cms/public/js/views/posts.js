@@ -23,8 +23,8 @@ export function renderPosts() {
             <p style="color:#9ba6b5; font-size:0.85rem; margin-bottom:16px; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">${p.description || 'بدون توضیح'}</p>
             <div class="row" style="margin-top:auto">
               <button class="btn sec" style="flex:1; justify-content:center" onclick="editPost('${p.slug}')">ویرایش</button>
-              <button class="btn sec" style="padding:10px" onclick="duplicatePost('${p.slug}')" title="کپی"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
-              <button class="btn danger" style="padding:10px" onclick="deletePost('${p.slug}')" title="حذف"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+              <button class="btn sec" style="padding:10px" onclick="duplicatePost('${p.slug}')" title="کپی">${icon('copy')}</button>
+              <button class="btn danger" style="padding:10px" onclick="deletePost('${p.slug}')" title="حذف">${icon('trash')}</button>
             </div>
           </div>
         </div>
@@ -67,10 +67,10 @@ export function renderPostEdit() {
 
   const imagesHtml = (p.template === 'image' && p.images && p.images.length) ? p.images.map((img, idx) => `
     <div style="display:flex; align-items:center; gap:8px; background:var(--card); padding:8px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', ${idx})" ondragover="event.preventDefault()" ondrop="event.preventDefault(); window.reorderPostImage(${idx}, event.dataTransfer.getData('text/plain'))">
-      <div style="cursor:grab; opacity:0.5"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg></div>
+      <div style="cursor:grab; opacity:0.5">${icon('move_small')}</div>
       <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
       <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
-      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})">${icon('trash')}</button>
     </div>
   `).join('') : '';
 
@@ -82,7 +82,7 @@ export function renderPostEdit() {
       </div>
       <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
       <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
-      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+      <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})">${icon('trash')}</button>
     </div>
   `).join('') : '';
 
@@ -112,6 +112,8 @@ export function renderPostEdit() {
           <input id="f-slug" value="${p.slug || ''}" style="direction:ltr; text-align:left">
           <label style="margin-top:12px">توضیحات کوتاه</label>
           <textarea id="f-description" style="min-height:80px">${p.description || ''}</textarea>
+          <label style="margin-top:12px">تاریخ (اختیاری)</label>
+          <input id="f-date" type="text" placeholder="YYYY-MM-DD" value="${p.date || ''}" style="direction:ltr; text-align:left">
         </div>
         <div class="card">
           <label style="margin-top:12px">محتوای کامل (Markdown)</label>
@@ -201,6 +203,7 @@ export function syncEditingPost() {
   state.editingPost.title = val('f-title');
   state.editingPost.slug = val('f-slug');
   state.editingPost.description = val('f-description');
+  state.editingPost.date = val('f-date');
   state.editingPost.cover = val('f-cover');
   state.editingPost.content = val('f-content');
   const videoSourceEl = document.getElementById('f-videoSource');
@@ -223,7 +226,7 @@ export function togglePostCat(slug, checked) {
 export async function savePost() {
   const data = {
     ...state.editingPost,
-    title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'),
+    title: val('f-title'), slug: val('f-slug'), description: val('f-description'), cover: val('f-cover'), date: val('f-date'),
     content: val('f-content'),
     images: state.editingPost.images || [],
     template: val('f-template') || 'image',

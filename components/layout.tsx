@@ -5,11 +5,12 @@ import { MobileMenu } from './mobile-menu';
 
 export function Header({ site }: { site: Record<string, unknown> }) {
   const menu = getMenu();
-  const menuItems = menu.length > 0 ? menu : [
+  const baseMenu = menu.length > 0 ? menu : [
     { label: 'خانه', href: '/' },
     { label: 'پروژه‌ها', href: '/projects' },
     { label: 'رزومه', href: '/resume' },
   ];
+  const menuItems = baseMenu.filter((item: any) => !item.hidden);
 
   return (
     <header className="border-b border-[var(--border)]">
