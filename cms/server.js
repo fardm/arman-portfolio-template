@@ -81,8 +81,7 @@ function randomCommitMessage() {
   return `cms-update-${Date.now().toString(36)}-${id}`;
 }
 
-// Helper برای پشتیبانی از تگ‌های با و بدون v
-const SEMVER_REGEX = /^v?(\d+)\.(\d+)\.(\d+)$/;
+const SEMVER_REGEX = /^(\d+)\.(\d+)\.(\d+)$/;
 
 function parseSemver(version) {
   const match = version.match(SEMVER_REGEX);
@@ -383,7 +382,7 @@ const server = http.createServer(async (req, res) => {
             fs.mkdirSync(backupDir, { recursive: true });
           }
 
-          const mergeRes = await runGit(['merge', latestVersion, '--no-edit', '--no-commit', '-X', 'theirs']);
+          const mergeRes = await runGit(['merge', latestVersion, '--no-commit', '-X', 'theirs']);
           if (mergeRes.code !== 0) {
             await runGit(['merge', '--abort']).catch(() => {});
             return send(res, 500, { error: 'Git merge failed: ' + mergeRes.output });

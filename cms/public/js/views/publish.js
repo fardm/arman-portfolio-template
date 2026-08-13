@@ -4,6 +4,27 @@ import { api } from '../core/api.js';
 export async function renderPublish(resultHtml = '') {
   dom.content.innerHTML = `<h2>انتشار در گیت‌هاب</h2><p class="sub">وضعیت تغییرات را ببینید و در صورت نیاز منتشر کنید.</p>
     <div id="publish-meta" style="margin-bottom:16px; font-size: 0.9rem; color: #9ba6b5;">در حال بررسی وضعیت...</div>
+
+    <div class="card" style="margin-bottom: 24px">
+      <h3>تنظیمات آدرس سایت</h3>
+      <div class="form-group" style="margin-top: 16px">
+        <label style="display:flex; align-items:center; gap:8px">
+          <input type="radio" name="urlType" value="github" ${state.site.urlType !== 'custom' ? 'checked' : ''} onchange="updateUrlConfig()">
+          گیت‌هاب پیجز (GitHub Pages)
+        </label>
+        <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); padding-right: 24px; direction: ltr; text-align: right;"></div>
+      </div>
+      <div class="form-group" style="margin-top: 12px">
+        <label style="display:flex; align-items:center; gap:8px">
+          <input type="radio" name="urlType" value="custom" ${state.site.urlType === 'custom' ? 'checked' : ''} onchange="updateUrlConfig()">
+          دامنه اختصاصی (Custom Domain)
+        </label>
+        <div id="custom-domain-container" style="margin-top: 8px; padding-right: 24px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
+          <input type="text" id="custom-domain-input" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value; saveUrlConfig()">
+        </div>
+      </div>
+    </div>
+
     <div class="row" style="margin-bottom:16px">
       <button class="btn" id="publish-btn" onclick="startPublish()" disabled>انتشار</button>
       <button class="btn sec" id="local-test-btn" onclick="startLocalTest()">تست محلی</button>
@@ -21,6 +42,21 @@ export async function renderPublish(resultHtml = '') {
 
     metaEl.innerHTML = `<strong>شاخه:</strong> ${status.branch || '—'} &nbsp;|&nbsp; <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}`;
 
+    const githubPreviewEl = document.getElementById('github-url-preview');
+    if (githubPreviewEl && status.remote) {
+      const match = status.remote.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+      if (match) {
+        const [, username, repo] = match;
+        let siteUrl = \`https://\${username}.github.io/\${repo}/\`;
+        if (repo === \`\${username}.github.io\`) {
+          siteUrl = \`https://\${username}.github.io/\`;
+        }
+        githubPreviewEl.innerText = siteUrl;
+      } else {
+        githubPreviewEl.innerText = 'آدرس گیت‌هاب پیجز قابل تشخیص نیست.';
+      }
+    }
+
     let html = '';
     if (status.hasChanges) {
       html += `<div class="card">`;
@@ -36,6 +72,25 @@ export async function renderPublish(resultHtml = '') {
   } catch (_) {
     const metaEl = document.getElementById('publish-meta');
     if (metaEl) metaEl.innerHTML = `<div class="msg err">خطا در دریافت وضعیت گیت</div>`;
+  }
+}
+
+export async function updateUrlConfig() {
+  const type = document.querySelector('input[name="urlType"]:checked').value;
+  state.site.urlType = type;
+  document.getElementById('custom-domain-container').style.display = type === 'custom' ? 'block' : 'none';
+  await saveUrlConfig();
+}
+
+export async function saveUrlConfig() {
+  try {
+    await api('/api/site', {
+      method: 'POST',
+      body: JSON.stringify(state.site),
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    console.error('Failed to save URL config', err);
   }
 }
 
