@@ -68,5 +68,19 @@
     "bodyFont": "Arad-VF",
     "headingFont": "Arad-VF"
   },
-  "footerText": "© 2026 آرمان رضایی. همه حقوق محفوظ است."
+  "footerText": "© 2026 آرمان رضایی. همه حقوق محفوظ است.",
+  "homeLayout": [
+    {
+      "id": "projects",
+      "display": true,
+      "maxItems": 6,
+      "grid": 3
+    },
+    {
+      "id": "posts",
+      "display": false,
+      "maxItems": 4,
+      "grid": 4
+    }
+  ]
 }

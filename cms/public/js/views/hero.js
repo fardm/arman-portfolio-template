@@ -20,14 +20,15 @@ export function renderHero() {
   dom.content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
       <div>
-        <h2 style="margin-bottom:4px">صفحه اصلی (Hero)</h2>
-        <p class="sub" style="margin-bottom:0">اطلاعات نمایش داده‌شده در بخش اول صفحه اصلی.</p>
+        <h2 style="margin-bottom:4px">صفحه اصلی</h2>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr 320px; gap:24px;">
+    <div style="display:grid; grid-template-columns: 3fr 1fr; gap:24px;">
       <div>
+        <div>
         <div class="card" style="padding:24px">
+          <h3 style="margin-top:0;">بخش اول (Hero)</h3>
           <div class="grid2">
             <div><label>اسم</label><input id="h-name" value="${h.name || state.site.name || ''}"></div>
             <div><label>عنوان شغلی</label><input id="h-jobTitle" value="${h.jobTitle || state.site.title || ''}"></div>
@@ -54,11 +55,13 @@ export function renderHero() {
 
       <div>
         <div class="card" style="padding:24px; margin-top:0;">
-          <h3 style="margin-top:0; margin-bottom:16px;">بدنه</h3>
+          <h3 style="margin-top:0;">بدنه</h3>
           <p class="sub" style="margin-bottom:24px">تنظیمات نمایش پروژه‌ها و پست‌ها در صفحه اصلی.</p>
           <div id="h-layout-list" style="display:flex; flex-direction:column; gap:16px;"></div>
         </div>
       </div>
+      </div>
+
 
       <aside>
 

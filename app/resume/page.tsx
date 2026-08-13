@@ -27,7 +27,7 @@ export default function ResumePage() {
   const infos = [
     { label: 'موقعیت', value: resume.location, icon: <Icon name="location" width="24" height="24" /> },
     { label: 'تولد', value: resume.birthDate, icon: <Icon name="birthDate" width="24" height="24" /> },
-    { label: 'وضعیت تاهل', value: resume.maritalStatus, icon: <Icon name="maritalStatus" width="24" height="24" /> },
+    { label: 'وضعیت تاهل', value: resume.maritalStatus, icon: <Icon name="user" width="24" height="24" /> },
     { label: 'وضعیت سربازی', value: resume.militaryService, icon: <Icon name="militaryService" width="24" height="24" /> },
     { label: 'تماس', value: resume.phone, icon: <Icon name="phone" width="24" height="24" /> },
     { label: 'ایمیل', value: resume.email, icon: <Icon name="email" width="24" height="24" /> },

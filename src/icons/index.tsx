@@ -8,10 +8,11 @@ import YoutubeIcon from './youtube.svg';
 import LinkIcon from './link.svg';
 import LocationIcon from './location.svg';
 import BirthDateIcon from './birthDate.svg';
-import MaritalStatusIcon from './maritalStatus.svg';
+import UserIcon from './user.svg';
 import MilitaryServiceIcon from './militaryService.svg';
 import PhoneIcon from './phone.svg';
 import EmailIcon from './email.svg';
+import LeftIcon from './left.svg';
 
 
 export const icons = {
@@ -24,10 +25,11 @@ export const icons = {
   link: LinkIcon,
   location: LocationIcon,
   birthDate: BirthDateIcon,
-  maritalStatus: MaritalStatusIcon,
+  user: UserIcon,
   militaryService: MilitaryServiceIcon,
   phone: PhoneIcon,
   email: EmailIcon,
+  left: LeftIcon,
 
 };
 
