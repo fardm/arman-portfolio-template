@@ -46,7 +46,7 @@ export async function checkUpdate() {
       `;
     } else {
       html += `
-        <p style="color: var(--primary);">شما از آخرین نسخه قالب استفاده می‌کنید.</p>
+        <p style="color: var(--primary);">شما از آخرین نسخه استفاده می‌کنید.</p>
       `;
     }
 
