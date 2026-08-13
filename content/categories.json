@@ -1,94 +1,90 @@
-[
-  {
-    "name": "ویدئو",
-    "slug": "video",
-    "parent": null,
-    "sort": 1,
-    "type": "projects"
-  },
-  {
-    "name": "موشن",
-    "slug": "motion",
-    "parent": null,
-    "sort": 2,
-    "type": "projects"
-  },
-  {
-    "name": "تصویربرداری",
-    "slug": "Photography",
-    "parent": null,
-    "sort": 3,
-    "type": "projects"
-  },
-  {
-    "name": "لوگو موشن",
-    "slug": "Logo-Animation",
-    "parent": "motion",
-    "sort": 4,
-    "type": "projects"
-  },
-  {
-    "name": "تایپوگرافی",
-    "slug": "Typography",
-    "parent": "motion",
-    "sort": 5,
-    "type": "projects"
-  },
-  {
-    "name": "پرتره",
-    "slug": "Portrait",
-    "parent": "Photography",
-    "sort": 6,
-    "type": "projects"
-  },
-  {
-    "name": "محصول",
-    "slug": "Product",
-    "parent": "Photography",
-    "sort": 7,
-    "type": "projects"
-  },
-  {
-    "name": "سوشال مدیا",
-    "slug": "Social-Media",
-    "parent": "video",
-    "sort": 8,
-    "type": "projects"
-  },
-  {
-    "name": "یوتیوب",
-    "slug": "youtube",
-    "parent": "video",
-    "sort": 9,
-    "type": "projects"
-  },
-  {
-    "name": "آموزش تدوین",
-    "slug": "editing",
-    "parent": "",
-    "sort": 999,
-    "type": "posts",
-    "originalSlug": "ej"
-  },
-  {
-    "name": "معرفی سایت",
-    "slug": "site",
-    "parent": "",
-    "sort": 999,
-    "type": "posts"
-  },
-  {
-    "name": "تجربیات",
-    "slug": "experience",
-    "parent": "",
-    "type": "posts",
-    "sort": 999
-  },
-  {
-    "name": "ابزار",
-    "slug": "tools",
-    "parent": "editing",
-    "type": "posts",
-    "sort": 999
-  }
-]
+{
+  "projects": [
+    {
+      "name": "ویدئو",
+      "slug": "video",
+      "parent": null,
+      "sort": 1
+    },
+    {
+      "name": "موشن",
+      "slug": "motion",
+      "parent": null,
+      "sort": 2
+    },
+    {
+      "name": "تصویربرداری",
+      "slug": "Photography",
+      "parent": null,
+      "sort": 3
+    },
+    {
+      "name": "لوگو موشن",
+      "slug": "Logo-Animation",
+      "parent": "motion",
+      "sort": 4
+    },
+    {
+      "name": "تایپوگرافی",
+      "slug": "Typography",
+      "parent": "motion",
+      "sort": 5
+    },
+    {
+      "name": "پرتره",
+      "slug": "Portrait",
+      "parent": "Photography",
+      "sort": 6
+    },
+    {
+      "name": "محصول",
+      "slug": "Product",
+      "parent": "Photography",
+      "sort": 7
+    },
+    {
+      "name": "سوشال مدیا",
+      "slug": "Social-Media",
+      "parent": "video",
+      "sort": 8
+    },
+    {
+      "name": "یوتیوب",
+      "slug": "youtube",
+      "parent": "video",
+      "sort": 9
+    }
+  ],
+  "posts": [
+    {
+      "name": "آموزش تدوین",
+      "slug": "editing",
+      "parent": "",
+      "sort": 999
+    },
+    {
+      "name": "معرفی سایت",
+      "slug": "site",
+      "parent": "",
+      "sort": 999
+    },
+    {
+      "name": "تجربیات",
+      "slug": "experience",
+      "parent": "",
+      "sort": 999
+    },
+    {
+      "name": "ابزار",
+      "slug": "tools",
+      "parent": "editing",
+      "sort": 999
+    },
+    {
+      "name": "الهام‌بخش",
+      "slug": "inspiration",
+      "parent": null,
+      "sort": 999
+    }
+  ]
+}

@@ -5,7 +5,7 @@ description: لورم ایپسوم
 cover: /media/claudio-poggio-xCK8kr0R0JE-unsplash.jpg
 date: '2026-05-01'
 categories:
-  - inspiration
+  - site
   - tools
 template: image
 videoSource: host

@@ -17,24 +17,40 @@ function validate() {
 
   // categories.json
   const categoriesRaw = readJson('content/categories.json');
-  const categories = [...(categoriesRaw.projects || []), ...(categoriesRaw.posts || [])];
-  const catSlugs = new Set();
-  for (const cat of categories) {
-    if (!cat.slug) fail('category missing slug');
-    if (catSlugs.has(cat.slug)) fail(`duplicate category slug: ${cat.slug}`);
-    catSlugs.add(cat.slug);
-    if (cat.parent && !catSlugs.has(cat.parent) && !categories.find((c) => c.slug === cat.parent)) fail(`category "${cat.slug}" has invalid parent "${cat.parent}"`);
+  const projectCats = categoriesRaw.projects || [];
+  const postCats = categoriesRaw.posts || [];
+
+  const projectCatSlugs = new Set();
+  const postCatSlugs = new Set();
+
+  for (const cat of projectCats) {
+    if (!cat.slug) fail('project category missing slug');
+    if (projectCatSlugs.has(cat.slug)) fail(`duplicate project category slug: ${cat.slug}`);
+    projectCatSlugs.add(cat.slug);
+    if (cat.parent && !projectCatSlugs.has(cat.parent) && !projectCats.find((c) => c.slug === cat.parent)) fail(`project category "${cat.slug}" has invalid parent "${cat.parent}"`);
   }
+
+  for (const cat of postCats) {
+    if (!cat.slug) fail('post category missing slug');
+    if (postCatSlugs.has(cat.slug)) fail(`duplicate post category slug: ${cat.slug}`);
+    postCatSlugs.add(cat.slug);
+    if (cat.parent && !postCatSlugs.has(cat.parent) && !postCats.find((c) => c.slug === cat.parent)) fail(`post category "${cat.slug}" has invalid parent "${cat.parent}"`);
+  }
+
   // circular check
-  for (const cat of categories) {
-    let current = cat;
-    const seen = new Set();
-    while (current && current.parent) {
-      if (seen.has(current.slug)) { fail(`circular category reference: ${cat.slug}`); break; }
-      seen.add(current.slug);
-      current = categories.find((c) => c.slug === current.parent);
+  const checkCircular = (cats) => {
+    for (const cat of cats) {
+      let current = cat;
+      const seen = new Set();
+      while (current && current.parent) {
+        if (seen.has(current.slug)) { fail(`circular category reference: ${cat.slug}`); break; }
+        seen.add(current.slug);
+        current = cats.find((c) => c.slug === current.parent);
+      }
     }
-  }
+  };
+  checkCircular(projectCats);
+  checkCircular(postCats);
 
   // projects
   const dir = path.join(root, 'content/projects');
@@ -44,7 +60,21 @@ function validate() {
       const d = parsed.data;
       if (!d.slug) fail(`${file}: slug is required`);
       if (!d.title) fail(`${file}: title is required`);
-      if (d.categories) for (const c of d.categories) if (!catSlugs.has(c)) fail(`${file}: invalid category "${c}"`);
+      if (d.categories) for (const c of d.categories) if (!projectCatSlugs.has(c)) fail(`${file}: invalid category "${c}"`);
+      if (d.videoMode && !['youtube', 'embed', 'none'].includes(d.videoMode)) fail(`${file}: invalid videoMode`);
+      if (d.cover && !fs.existsSync(path.join(root, 'public', d.cover.replace(/^\//, '')))) fail(`${file}: cover image not found: ${d.cover}`);
+    }
+  }
+
+  // blog posts
+  const blogDir = path.join(root, 'content/blog');
+  if (fs.existsSync(blogDir)) {
+    for (const file of fs.readdirSync(blogDir).filter((f) => f.endsWith('.md'))) {
+      const parsed = matter(fs.readFileSync(path.join(blogDir, file), 'utf8'));
+      const d = parsed.data;
+      if (!d.slug) fail(`${file}: slug is required`);
+      if (!d.title) fail(`${file}: title is required`);
+      if (d.categories) for (const c of d.categories) if (!postCatSlugs.has(c)) fail(`${file}: invalid post category "${c}"`);
       if (d.videoMode && !['youtube', 'embed', 'none'].includes(d.videoMode)) fail(`${file}: invalid videoMode`);
       if (d.cover && !fs.existsSync(path.join(root, 'public', d.cover.replace(/^\//, '')))) fail(`${file}: cover image not found: ${d.cover}`);
     }

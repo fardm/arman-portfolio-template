@@ -76,10 +76,8 @@ export function renderPostEdit() {
 
 
   let secondImagesHtml = p.images && p.images.length ? p.images.map((img, idx) => `
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--card); padding:4px 8px; border-radius:4px; border:1px solid var(--border);">
-      <div style="display:flex; flex-direction:column; gap:2px; cursor:ns-resize;" ondragover="event.preventDefault()" ondrop="window.reorderPostImage(${idx}, event.dataTransfer.getData('text/plain'))">
-        <svg draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${idx}')" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-      </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--card); padding:8px; border-radius:8px; border:1px solid var(--border);" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${idx}')" ondragover="event.preventDefault()" ondrop="event.preventDefault(); window.reorderPostImage(${idx}, event.dataTransfer.getData('text/plain'))">
+      <div style="cursor:grab; opacity:0.5">${icon('move_small')}</div>
       <img src="${img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
       <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:left; font-size:0.8rem;">${img}</div>
       <button class="btn sec" style="padding:4px 8px; color:var(--error); border-color:var(--error);" onclick="window.removePostImage(${idx})">${icon('trash')}</button>

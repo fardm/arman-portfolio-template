@@ -163,7 +163,7 @@ export async function saveCat(index, modalNode) {
   }
 
   try {
-    await api('/api/categories', { method: 'POST', body: JSON.stringify(state.categories), headers: { 'Content-Type': 'application/json' } });
+    await saveCategories();
     await loadAll();
     modalNode.remove();
     showMsg('دسته با موفقیت ذخیره شد');
@@ -215,8 +215,8 @@ export async function deleteCat(i) {
 
 export async function saveCategories() {
   const data = {
-    projects: state.categories.filter(c => c.type === 'projects').map(c => { const o = {...c}; delete o.type; return o; }),
-    posts: state.categories.filter(c => c.type === 'posts').map(c => { const o = {...c}; delete o.type; return o; })
+    projects: state.categories.filter(c => c.type === 'projects').map(c => ({ name: c.name, slug: c.slug, parent: c.parent || null, sort: c.sort || 999 })),
+    posts: state.categories.filter(c => c.type === 'posts').map(c => ({ name: c.name, slug: c.slug, parent: c.parent || null, sort: c.sort || 999 }))
   };
   await api('/api/categories', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
 }
