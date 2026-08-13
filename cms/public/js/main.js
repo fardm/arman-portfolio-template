@@ -16,6 +16,7 @@ import { startPublish, renderPublish, startLocalTest } from './views/publish.js'
 import { newPage, editPage, deletePage, savePage } from './views/pages.js';
 import { addMenuItem, deleteMenuItem, saveMenu, saveMenuAuto, handleDragStartMenu, handleDragOverMenu, handleDropMenu, handleDragEndMenu, toggleMenuVisibility } from './views/menu.js';
 import { saveHero, cancelHero, handleDragStartHome, handleDragOverHome, handleDropHome, handleDragEndHome } from './views/hero.js';
+import { renderUpdate, checkUpdate, startUpdate } from './views/update.js';
 
 // Expose router functions for inline HTML handlers
 window.show = show;
@@ -130,6 +131,9 @@ window.handleDropMenu = handleDropMenu;
 window.handleDragEndMenu = handleDragEndMenu;
 
 window.saveHero = saveHero;
+
+window.checkUpdate = checkUpdate;
+window.startUpdate = startUpdate;
 
 window.handleDragStartHome = handleDragStartHome;
 window.handleDragOverHome = handleDragOverHome;

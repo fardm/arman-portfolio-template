@@ -279,6 +279,137 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Publish to GitHub
+
+      if (pathname === '/api/update/check' && method === 'GET') {
+        try {
+          const versionFile = path.join(root, 'VERSION');
+          let currentVersion = 'v0.0.0';
+          if (fs.existsSync(versionFile)) {
+            currentVersion = fs.readFileSync(versionFile, 'utf8').trim();
+          }
+
+          await runGit(['fetch', 'upstream', '--tags']).catch(() => {});
+
+          const tagsRes = await runGit(['tag', '-l', 'v*']);
+          let latestVersion = currentVersion;
+          if (tagsRes.code === 0 && tagsRes.output) {
+            const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
+            if (tags.length > 0) {
+              const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
+              const validTags = tags.filter(t => semverRegex.test(t));
+              if (validTags.length > 0) {
+                validTags.sort((a, b) => {
+                  const [, a1, a2, a3] = a.match(semverRegex).map(Number);
+                  const [, b1, b2, b3] = b.match(semverRegex).map(Number);
+                  if (a1 !== b1) return b1 - a1;
+                  if (a2 !== b2) return b2 - a2;
+                  return b3 - a3;
+                });
+                latestVersion = validTags[0];
+              }
+            }
+          }
+
+          const isNewer = (latest, current) => {
+            const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
+            if (!semverRegex.test(latest) || !semverRegex.test(current)) return false;
+            const [, l1, l2, l3] = latest.match(semverRegex).map(Number);
+            const [, c1, c2, c3] = current.match(semverRegex).map(Number);
+            if (l1 > c1) return true;
+            if (l1 === c1 && l2 > c2) return true;
+            if (l1 === c1 && l2 === c2 && l3 > c3) return true;
+            return false;
+          };
+
+          const updateAvailable = isNewer(latestVersion, currentVersion);
+
+          return send(res, 200, { currentVersion, latestVersion, updateAvailable });
+        } catch (err) {
+          return send(res, 500, { error: err.message || String(err) });
+        }
+      }
+
+      if (pathname === '/api/update/start' && method === 'POST') {
+        try {
+          const statusRes = await runGit(['status', '--porcelain']);
+          if (statusRes.code !== 0) throw new Error('Failed to check git status.');
+          if (statusRes.output.trim() !== '') {
+            return send(res, 400, { error: 'Your git working tree is not clean. Please commit or push your changes first.' });
+          }
+
+          const versionFile = path.join(root, 'VERSION');
+          let currentVersion = 'v0.0.0';
+          if (fs.existsSync(versionFile)) {
+            currentVersion = fs.readFileSync(versionFile, 'utf8').trim();
+          }
+
+          await runGit(['fetch', 'upstream', '--tags']).catch(() => {});
+          const tagsRes = await runGit(['tag', '-l', 'v*']);
+          let latestVersion = currentVersion;
+          if (tagsRes.code === 0 && tagsRes.output) {
+            const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
+            if (tags.length > 0) {
+              const semverRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
+              const validTags = tags.filter(t => semverRegex.test(t));
+              if (validTags.length > 0) {
+                validTags.sort((a, b) => {
+                  const [, a1, a2, a3] = a.match(semverRegex).map(Number);
+                  const [, b1, b2, b3] = b.match(semverRegex).map(Number);
+                  if (a1 !== b1) return b1 - a1;
+                  if (a2 !== b2) return b2 - a2;
+                  return b3 - a3;
+                });
+                latestVersion = validTags[0];
+              }
+            }
+          }
+
+          if (latestVersion === currentVersion) {
+            return send(res, 400, { error: 'You are already on the latest version.' });
+          }
+
+          const contentDir = path.join(root, 'content');
+          const backupDir = path.join(path.dirname(root), `backup-content-${Date.now()}`);
+
+          if (fs.existsSync(contentDir)) {
+            fs.cpSync(contentDir, backupDir, { recursive: true });
+          } else {
+            fs.mkdirSync(backupDir, { recursive: true });
+          }
+
+          const mergeRes = await runGit(['merge', latestVersion, '--no-edit', '--no-commit', '-X', 'theirs']);
+          if (mergeRes.code !== 0) {
+            await runGit(['merge', '--abort']).catch(() => {});
+            return send(res, 500, { error: 'Git merge failed: ' + mergeRes.output });
+          }
+
+          if (fs.existsSync(contentDir)) {
+            fs.rmSync(contentDir, { recursive: true, force: true });
+          }
+          fs.cpSync(backupDir, contentDir, { recursive: true });
+
+          fs.writeFileSync(versionFile, latestVersion + '\n');
+
+          await runGit(['add', '.']);
+          const commitRes = await runGit(['commit', '-m', `Update template to ${latestVersion}`]);
+          if (commitRes.code !== 0 && !commitRes.output.includes('nothing to commit')) {
+             throw new Error('Git commit failed: ' + commitRes.output);
+          }
+
+          const pushRes = await runGit(['push', 'origin', 'HEAD']);
+          if (pushRes.code !== 0) {
+             throw new Error('Git push failed: ' + pushRes.output);
+          }
+
+          fs.rmSync(backupDir, { recursive: true, force: true });
+
+          return send(res, 200, { newVersion: latestVersion });
+        } catch (err) {
+          await runGit(['merge', '--abort']).catch(() => {});
+          return send(res, 500, { error: err.message || String(err) });
+        }
+      }
+
       if (pathname === '/api/publish' && method === 'POST') {
         const status = await runGit(['status', '--porcelain']);
         if (!status.output) {

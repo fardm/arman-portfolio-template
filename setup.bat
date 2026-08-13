@@ -29,6 +29,16 @@ echo   Installing dependencies
 echo ==============================
 echo.
 
+
+echo ==============================
+echo   Git Upstream Setup
+echo ==============================
+echo.
+
+git remote remove upstream 2>nul
+git remote add upstream https://github.com/fardm/arman-portfolio-template.git
+
+echo.
 call npm install
 
 if %errorlevel% neq 0 (

@@ -13,6 +13,7 @@ import { renderTheme } from '../views/theme.js';
 import { renderTypography } from '../views/typography.js';
 import { renderPublish } from '../views/publish.js';
 import { renderHero } from '../views/hero.js';
+import { renderUpdate } from '../views/update.js';
 
 export function toggleGroup(id) {
   const group = document.getElementById('group-' + id);
@@ -61,6 +62,7 @@ export function render() {
   if (state.currentView === 'post-categories') return renderPostCategories();
     if (state.currentView === 'post-edit') return renderPostEdit();
   if (state.currentView === 'hero') return renderHero();
+  if (state.currentView === 'update') return renderUpdate();
 }
 
 window.addEventListener('hashchange', () => {
