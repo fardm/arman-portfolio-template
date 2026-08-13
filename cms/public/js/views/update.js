@@ -3,8 +3,8 @@ import { api } from '../core/api.js';
 
 export function renderUpdate() {
   dom.content.innerHTML = `
-    <h2>بروزرسانی قالب</h2>
-    <p class="sub">در این بخش می‌توانید قالب سایت را به آخرین نسخه بروزرسانی کنید.</p>
+    <h2>بروزرسانی</h2>
+    <p class="sub">در این بخش می‌توانید سایت را به آخرین نسخه بروزرسانی کنید.</p>
 
     <div class="card" id="update-status-card">
       <p>در حال بررسی وضعیت بروزرسانی...</p>
