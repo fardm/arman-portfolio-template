@@ -3,25 +3,21 @@ import { api } from '../core/api.js';
 
 export async function renderPublish(resultHtml = '') {
   dom.content.innerHTML = `<h2>انتشار در گیت‌هاب</h2><p class="sub">وضعیت تغییرات را ببینید و در صورت نیاز منتشر کنید.</p>
-    <div id="publish-meta" style="margin-bottom:16px; font-size: 0.9rem; color: #9ba6b5;">در حال بررسی وضعیت...</div>
-
     <div class="card" style="margin-bottom: 24px">
-      <h3>تنظیمات آدرس سایت</h3>
+      <h3 style="margin-bottom:4px">تنظیمات آدرس سایت</h3>
+      <div id="publish-meta-inner" style="margin-bottom:16px; font-size: 0.85rem; color: var(--muted);">در حال بررسی وضعیت...</div>
+
       <div class="form-group" style="margin-top: 16px">
-        <label style="display:flex; align-items:center; gap:8px">
-          <input type="radio" name="urlType" value="github" ${state.site.urlType !== 'custom' ? 'checked' : ''} onchange="updateUrlConfig()">
-          گیت‌هاب پیجز (GitHub Pages)
-        </label>
-        <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); padding-right: 24px; direction: ltr; text-align: right;"></div>
+        <select class="input" id="urlTypeSelect" style="width:100%" onchange="updateUrlConfig()">
+          <option value="github" ${state.site.urlType !== 'custom' ? 'selected' : ''}>آدرس پیش‌فرض گیت‌هاب</option>
+          <option value="custom" ${state.site.urlType === 'custom' ? 'selected' : ''}>دامنه اختصاصی</option>
+        </select>
       </div>
-      <div class="form-group" style="margin-top: 12px">
-        <label style="display:flex; align-items:center; gap:8px">
-          <input type="radio" name="urlType" value="custom" ${state.site.urlType === 'custom' ? 'checked' : ''} onchange="updateUrlConfig()">
-          دامنه اختصاصی (Custom Domain)
-        </label>
-        <div id="custom-domain-container" style="margin-top: 8px; padding-right: 24px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
-          <input type="text" id="custom-domain-input" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value; saveUrlConfig()">
-        </div>
+
+      <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); direction: ltr; text-align: right; ${state.site.urlType !== 'custom' ? 'display:block' : 'display:none'}"></div>
+
+      <div id="custom-domain-container" style="margin-top: 8px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
+        <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value; saveUrlConfig()">
       </div>
     </div>
 
@@ -35,7 +31,7 @@ export async function renderPublish(resultHtml = '') {
 
   try {
     const status = await api('/api/git/status');
-    const metaEl = document.getElementById('publish-meta');
+    const metaEl = document.getElementById('publish-meta-inner');
     const changesEl = document.getElementById('publish-changes');
     const btn = document.getElementById('publish-btn');
     if (!metaEl || !changesEl || !btn) return;
@@ -47,9 +43,9 @@ export async function renderPublish(resultHtml = '') {
       const match = status.remote.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
       if (match) {
         const [, username, repo] = match;
-        let siteUrl = \`https://\${username}.github.io/\${repo}/\`;
-        if (repo === \`\${username}.github.io\`) {
-          siteUrl = \`https://\${username}.github.io/\`;
+        let siteUrl = 'https://' + username + '.github.io/' + repo + '/';
+        if (repo === username + '.github.io') {
+          siteUrl = 'https://' + username + '.github.io/';
         }
         githubPreviewEl.innerText = siteUrl;
       } else {
@@ -70,15 +66,17 @@ export async function renderPublish(resultHtml = '') {
     }
     changesEl.innerHTML = html;
   } catch (_) {
-    const metaEl = document.getElementById('publish-meta');
+    const metaEl = document.getElementById('publish-meta-inner');
     if (metaEl) metaEl.innerHTML = `<div class="msg err">خطا در دریافت وضعیت گیت</div>`;
   }
 }
 
 export async function updateUrlConfig() {
-  const type = document.querySelector('input[name="urlType"]:checked').value;
+  const type = document.getElementById('urlTypeSelect').value;
   state.site.urlType = type;
   document.getElementById('custom-domain-container').style.display = type === 'custom' ? 'block' : 'none';
+  const githubPreview = document.getElementById('github-url-preview');
+  if (githubPreview) githubPreview.style.display = type !== 'custom' ? 'block' : 'none';
   await saveUrlConfig();
 }
 
