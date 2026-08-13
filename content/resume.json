@@ -6,15 +6,17 @@
       "title": "ادیتور ارشد",
       "company": "استودیو نقطه",
       "period": "۱۴۰۱ — اکنون",
-      "description": "فیلم برداری و ادیت ویدئو برای سوشال مدیا و یوتیوب"
+      "description": "فیلم برداری و ادیت ویدئو برای سوشال مدیا و یوتیوب",
+      "logo": "/media/studio-logo.jpg"
     }
   ],
   "education": [
     {
       "id": "edu-1",
-      "title": "گرافیک",
+      "title": "مهندسی عمران (کارشناسی)",
       "school": "دانشگاه تهران",
-      "period": "۱۳۹۴ — ۱۳۹۸"
+      "period": "۱۳۹۴ — ۱۳۹۸",
+      "logo": "/media/University_of_Tehran_logo.svg"
     }
   ],
   "skills": [
@@ -37,35 +39,27 @@
     "انگلیسی — C1"
   ],
   "location": "ایران",
-  "maritalStatus": "متاهل",
-  "militaryService": "معاف",
+  "maritalStatus": "",
+  "militaryService": "",
   "birthDate": "1370",
   "phone": "09100998877",
   "email": "user@gmail.com",
   "links": [
     {
-      "label": "تلگرام",
+      "label": "armain_edit",
       "url": "https://t.me/armin"
     },
     {
-      "label": "لینکدین",
+      "label": "Arman-ed",
       "url": "https://linkedin.com/in/armin"
     },
     {
-      "label": "گیت‌هاب",
-      "url": "https://github.com/arman"
-    },
-    {
-      "label": "یوتیوب",
+      "label": "armino",
       "url": "https://youtube.com/@armin"
     },
     {
-      "label": "توییتر (X)",
+      "label": "arman1",
       "url": "https://twitter.com/armin"
-    },
-    {
-      "label": "لینک دلخواه",
-      "url": "arman"
     }
   ]
 }

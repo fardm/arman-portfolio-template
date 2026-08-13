@@ -59,19 +59,19 @@
     {
       "name": "آموزش تدوین",
       "slug": "editing",
-      "parent": "",
+      "parent": null,
       "sort": 999
     },
     {
       "name": "معرفی سایت",
       "slug": "site",
-      "parent": "",
+      "parent": null,
       "sort": 999
     },
     {
       "name": "تجربیات",
       "slug": "experience",
-      "parent": "",
+      "parent": null,
       "sort": 999
     },
     {
@@ -83,6 +83,12 @@
     {
       "name": "الهام‌بخش",
       "slug": "inspiration",
+      "parent": null,
+      "sort": 999
+    },
+    {
+      "name": "خلاقیت",
+      "slug": "creative",
       "parent": null,
       "sort": 999
     }

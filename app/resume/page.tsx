@@ -26,7 +26,7 @@ export default function ResumePage() {
 
   const infos = [
     { label: 'موقعیت', value: resume.location, icon: <Icon name="location" width="24" height="24" /> },
-    { label: 'تولد', value: resume.birthDate, icon: <Icon name="birthDate" width="24" height="24" /> },
+    { label: 'متولد', value: resume.birthDate, icon: <Icon name="birthDate" width="24" height="24" /> },
     { label: 'وضعیت تاهل', value: resume.maritalStatus, icon: <Icon name="user" width="24" height="24" /> },
     { label: 'وضعیت سربازی', value: resume.militaryService, icon: <Icon name="militaryService" width="24" height="24" /> },
     { label: 'تماس', value: resume.phone, icon: <Icon name="phone" width="24" height="24" /> },
@@ -69,8 +69,8 @@ export default function ResumePage() {
               <div className="mb-7 border-r-2 border-[var(--primary)] pr-5" key={item.id}>
                 <p className="text-sm text-[var(--primary)]">{item.period}</p>
                 <h3 className="mt-1 text-xl font-bold">{item.title}</h3>
-                <p className="text-[var(--muted)] flex items-center gap-2">
-                  {(item as any).logo && <img src={(item as any).logo} alt={item.company} className="w-5 h-5 object-cover rounded" />}
+                <p className="text-[var(--muted)] flex items-center gap-2 mt-3">
+                  {(item as any).logo && <img src={(item as any).logo} alt={item.company} className="w-7 h-7 object-cover rounded" />}
                   {item.company}
                 </p>
                 <p className="mt-2 text-sm text-[var(--muted)]">{item.description}</p>
@@ -82,8 +82,8 @@ export default function ResumePage() {
               <div className="mb-6 border-r-2 border-[var(--secondary)] pr-5" key={item.id}>
                 <p className="text-sm text-[var(--secondary)]">{item.period}</p>
                 <h3 className="mt-1 font-bold">{item.title}</h3>
-                <p className="text-[var(--muted)] flex items-center gap-2">
-                  {(item as any).logo && <img src={(item as any).logo} alt={item.school} className="w-5 h-5 object-cover rounded" />}
+                <p className="text-[var(--muted)] flex items-center gap-2 mt-3">
+                  {(item as any).logo && <img src={(item as any).logo} alt={item.school} className="w-7 h-7 object-cover rounded" />}
                   {item.school}
                 </p>
               </div>
@@ -104,10 +104,10 @@ export default function ResumePage() {
             {infos.length > 0 && (
               <>
                 <h2 className="mb-2 text-2xl font-bold">اطلاعات</h2>
-                <ul className="space-y-1 text-[var(--muted)] mb-12 bg-[var(--card)] rounded-md px-4 py-2">
+                <ul className="space-y-1 text-[var(--muted)] mb-12 rounded-md">
                   {infos.map((info) => (
                     <li key={info.label} className="flex items-center gap-4 py-2">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)] border border-[var(--border)]">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)]">
                         {info.icon}
                       </div>
                       <div className="flex flex-col">
@@ -123,11 +123,11 @@ export default function ResumePage() {
             {links.length > 0 && (
               <>
                 <h2 className="mb-2 text-xl font-bold">لینک‌ها</h2>
-                <div className="flex flex-col gap-3 mb-12 bg-[var(--card)] rounded-md px-4 py-2">
+                <div className="flex flex-col gap-3 mb-12 rounded-md">
                   {links.map((link: any) => (
                     <a key={link.label} href={link.link} target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-4 py-2 group">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)] text-[var(--primary)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
+                       className="flex items-center gap-4 py-1 group">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] group-hover:text-[var(--primary)] transition-colors">
                         {link.icon}
                       </div>
                       <div className="flex flex-col">
