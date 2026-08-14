@@ -83,6 +83,6 @@
       "grid": 4
     }
   ],
-  "urlType": "github",
-  "customDomain": ""
+  "urlType": "custom",
+  "customDomain": "arman.fardm.ir"
 }
