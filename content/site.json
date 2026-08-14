@@ -82,5 +82,7 @@
       "maxItems": 4,
       "grid": 4
     }
-  ]
+  ],
+  "urlType": "github",
+  "customDomain": ""
 }
