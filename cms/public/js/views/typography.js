@@ -12,7 +12,7 @@ export function getSiteFonts() {
 export function renderFontList() {
     const list = getSiteFonts();
     const container = document.getElementById('font-list');
-    if (!container) return; // For when rendered in a specific view
+    if (!container) return;
     if (!list.length) {
         container.innerHTML = '<div class="card" style="grid-column:1/-1; text-align:center; color:#9ba6b5">هیچ فونتی اضافه نشده است.</div>';
         return;
@@ -67,7 +67,6 @@ export function openFontModal() {
       </div>
 
       <div id="modal-font-custom" style="margin-bottom:24px; display:none">
-        <label style="margin-top:0">فایل فونت</label>
         <div id="font-drop-zone" style="border:2px dashed var(--border); border-radius:10px; padding:32px 16px; text-align:center; cursor:pointer; transition:border-color .15s" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFontDrop(event)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <p style="color:var(--muted); margin:0 0 10px; font-size:.9rem">فایل را اینجا بکشید یا کلیک کنید</p>
@@ -75,7 +74,10 @@ export function openFontModal() {
           <button class="btn sec" type="button" style="padding:7px 16px; font-size:.85rem" onclick="document.getElementById('modal-custom-file').click()">انتخاب فایل</button>
           <p id="font-file-name" style="color:var(--primary); font-size:.85rem; margin:10px 0 0; display:none"></p>
         </div>
-        <p style="color:var(--muted); font-size:.8rem; margin:6px 0 0">فرمت‌های پشتیبانی‌شده: WOFF2، WOFF، TTF، OTF</p>
+        <p style="color:var(--muted); font-size:.78rem; margin:8px 0 0; line-height:1.4">
+          فرمت‌های پشتیبانی‌شده: WOFF2، WOFF، TTF، OTF<br>
+          <span>پیشنهاد: برای نمایش بهتر ضخامت‌ها، از نسخه متغیر (Variable) فونت استفاده کنید.</span>
+        </p>
       </div>
 
       <button class="btn" style="width:100%; justify-content:center; padding:12px" onclick="saveFontModal()">افزودن</button>
@@ -142,13 +144,27 @@ export async function saveFontModal() {
     const buffer = await file.arrayBuffer();
     await fetch('/api/fonts?name=' + encodeURIComponent(file.name), { method: 'POST', body: buffer });
 
-    const isVar = file.name.toLowerCase().includes('variable');
     const name = file.name.replace(/\.[^.]+$/, '');
-    const format = ext.slice(1);
+    
+    // نگاشت استاندارد پسوند به فرمت CSS
+    const formatMap = {
+      '.woff2': 'woff2',
+      '.woff': 'woff',
+      '.ttf': 'truetype',
+      '.otf': 'opentype'
+    };
+    const format = formatMap[ext] || ext.slice(1);
+
+    // ثبت با بازه کامل ضخامت‌ها بدون نیاز به شرط نام فایل
     newFont = {
       source: 'custom',
       name,
-      customFont: { path: `/fonts/${file.name}`, format, isVariable: isVar, weights: isVar ? [100, 900] : [400] }
+      customFont: { 
+        path: `/fonts/${file.name}`, 
+        format, 
+        isVariable: true, 
+        weights: [100, 900] 
+      }
     };
   }
 
