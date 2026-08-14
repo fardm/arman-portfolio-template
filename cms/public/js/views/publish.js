@@ -24,7 +24,7 @@ export async function renderPublish(resultHtml = '') {
     <div class="row" style="margin-bottom:16px">
       <button class="btn" id="publish-btn" onclick="startPublish()" disabled>انتشار</button>
       <button class="btn sec" id="local-test-btn" onclick="startLocalTest()">تست محلی</button>
-      <button class="btn sec" onclick="renderPublish()">بررسی مجدد</button>
+      <button class="btn sec" onclick="renderPublish()">بررسی تغییرات</button>
     </div>
     <div id="publish-changes"></div>
     <div id="publish-report" style="margin-top:24px">${resultHtml}</div>`;
