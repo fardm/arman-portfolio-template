@@ -66,15 +66,27 @@ function runCommand(cmd, args, label, res) {
 }
 
 function runGit(args) {
-  return new Promise((resolve, reject) => {
-    const proc = spawn('git', args, { cwd: root, shell: true });
-    let output = '';
-    proc.stdout.on('data', (d) => (output += d.toString()));
-    proc.stderr.on('data', (d) => (output += d.toString()));
-    proc.on('error', reject);
-    proc.on('close', (code) => resolve({ code, output: output.trim() }));
-  });
-}
+    return new Promise((resolve, reject) => {
+      const proc = spawn('git.exe', args, {
+        cwd: root,
+        shell: false,
+        windowsVerbatimArguments: false,
+      });
+  
+      let output = '';
+  
+      proc.stdout.on('data', (d) => (output += d.toString()));
+      proc.stderr.on('data', (d) => (output += d.toString()));
+  
+      proc.on('error', reject);
+      proc.on('close', (code) => {
+        resolve({
+          code,
+          output: output.trim(),
+        });
+      });
+    });
+  }
 
 function randomCommitMessage() {
   const id = Math.random().toString(36).slice(2, 8);
