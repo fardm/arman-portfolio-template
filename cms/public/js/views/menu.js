@@ -10,9 +10,20 @@ export function renderMenu() {
         <h2 style="margin-bottom:4px">منوی سایت</h2>
         <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
       </div>
+      <button class="btn sec" style="padding:8px" onclick="const h = document.getElementById('menu-help-block'); h.style.display = h.style.display === 'none' ? 'block' : 'none';" title="راهنما">${icon('question')} راهنما</button>
     </div>
 
     <div style="max-width:800px">
+      <div id="menu-help-block" style="display:none; background:var(--background); border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:24px;">
+        <h3 style="margin-top:0">راهنمای آدرس صفحات اختصاصی</h3>
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:12px">برای ایجاد لینک به صفحات پیش‌فرض سایت، می‌توانید از آدرس‌های زیر استفاده کنید:</p>
+        <ul style="direction:ltr; text-align:left; list-style:none; padding:0; margin:0; font-family:monospace; background:rgba(0,0,0,0.1); padding:12px; border-radius:4px;">
+          <li>Home      → /</li>
+          <li>Projects  → /projects</li>
+          <li>Resume    → /resume</li>
+          <li>Blog      → /blog</li>
+        </ul>
+      </div>
       <div style="margin-bottom:24px">
         <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
       </div>
@@ -28,7 +39,8 @@ export function renderMenuList() {
     state.siteMenu = [
       { label: 'خانه', href: '/' },
       { label: 'پروژه‌ها', href: '/projects' },
-      { label: 'رزومه', href: '/resume' }
+      { label: 'رزومه', href: '/resume' },
+      { label: 'بلاگ', href: '/blog' }
     ];
     saveMenuAuto(); // Auto save default menu
     return;
@@ -39,7 +51,6 @@ export function renderMenuList() {
   }
 
   container.innerHTML = state.siteMenu.map((m, i) => {
-    const isSystemPage = m.href === '/' || m.href === '/projects' || m.href === '/resume' || m.href === '/blog';
     return `
     <div class="card menu-item-card" draggable="true" data-index="${i}" style="padding:16px; margin:0; display:flex; gap:16px; align-items:center; cursor:grab;" ondragstart="handleDragStartMenu(event, ${i})" ondragover="handleDragOverMenu(event)" ondrop="handleDropMenu(event, ${i})" ondragend="handleDragEndMenu(event)">
       <div style="color:var(--muted); cursor:grab; padding:8px" title="جابجایی">
@@ -51,16 +62,10 @@ export function renderMenuList() {
       </div>
       <div style="flex:2">
         <label style="margin-top:0">آدرس (URL)</label>
-        <input value="${m.href}" onchange="state.siteMenu[${i}].href=this.value; saveMenuAuto();" dir="ltr" placeholder="مثال: /about" ${isSystemPage ? 'disabled' : ''} style="cursor:text;">
+        <input value="${m.href}" onchange="state.siteMenu[${i}].href=this.value; saveMenuAuto();" dir="ltr" placeholder="مثال: /about" style="cursor:text;">
       </div>
       <div style="display:flex; gap:8px; align-items:flex-end; padding-top:24px">
-                ${isSystemPage ? `
-        <button class="btn sec" style="padding:8px" onclick="toggleMenuVisibility(${i})" title="${m.hidden ? 'نمایش' : 'مخفی کردن'}">
-          ${m.hidden ? icon('eye-off') : icon('eye')}
-        </button>
-        ` : `
         <button class="btn danger" style="padding:8px" onclick="deleteMenuItem(${i})" title="حذف">${icon('trash_simple')}</button>
-        `}
       </div>
     </div>
   `}).join('');
