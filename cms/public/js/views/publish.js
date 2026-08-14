@@ -1,33 +1,83 @@
 import { state, dom } from '../core/state.js';
 import { api } from '../core/api.js';
 
+function parseGitChanges(changesText) {
+  const lines = (changesText || '').split('\n').filter((l) => l.trim());
+  let modified = 0;
+  let added = 0;
+  let deleted = 0;
+
+  for (const line of lines) {
+    if (line.startsWith('??')) {
+      added++;
+      continue;
+    }
+
+    const codes = line.slice(0, 2);
+    if (codes.includes('D')) deleted++;
+    else if (codes.includes('A') || codes.includes('?')) added++;
+    else if (codes.includes('M') || codes.includes('R') || codes.includes('C')) modified++;
+  }
+
+  return { modified, added, deleted, lines };
+}
+
+function renderChangesSummary({ modified, added, deleted }) {
+  const rows = [];
+  if (modified > 0) rows.push(`${modified} فایل تغییر یافته`);
+  if (added > 0) rows.push(`${added} فایل اضافه شده`);
+  if (deleted > 0) rows.push(`${deleted} فایل حذف شده`);
+
+  if (rows.length === 0) {
+    return `<div style="color:#9ba6b5">تغییری ایجاد نشده</div>`;
+  }
+
+  return `
+    <div class="msg ok" style="margin-bottom:12px">
+      ${rows.map((row) => `<div>${row}</div>`).join('')}
+    </div>
+  `;
+}
+
 export async function renderPublish(resultHtml = '') {
-  dom.content.innerHTML = `<h2>انتشار در گیت‌هاب</h2><p class="sub">وضعیت تغییرات را ببینید و در صورت نیاز منتشر کنید.</p>
-    <div class="card" style="margin-bottom: 24px">
-      <h3 style="margin-bottom:4px">تنظیمات آدرس سایت</h3>
-      <div id="publish-meta-inner" style="margin-bottom:16px; font-size: 0.85rem; color: var(--muted);">در حال بررسی وضعیت...</div>
+  dom.content.innerHTML = `
+    <h2>انتشار در گیت‌هاب</h2>
+    <p class="sub">وضعیت تغییرات را ببینید و در صورت نیاز منتشر کنید.</p>
+    <div style="display:grid; grid-template-columns: 1fr 320px; gap: 24px; align-items:start">
+      <div>
+        <div class="card" style="margin-bottom: 24px">
+          <h3 style="margin-bottom:4px">تنظیمات آدرس سایت</h3>
+          <div id="publish-meta-inner" style="margin-bottom:16px; font-size: 0.85rem; color: var(--muted);">در حال بررسی وضعیت...</div>
 
-      <div class="form-group" style="margin-top: 16px">
-        <select class="input" id="urlTypeSelect" style="width:100%" onchange="updateUrlConfig()">
-          <option value="github" ${state.site.urlType !== 'custom' ? 'selected' : ''}>آدرس پیش‌فرض گیت‌هاب</option>
-          <option value="custom" ${state.site.urlType === 'custom' ? 'selected' : ''}>دامنه اختصاصی</option>
-        </select>
+          <div class="form-group" style="margin-top: 16px">
+            <select class="input" id="urlTypeSelect" style="width:100%" onchange="updateUrlConfig()">
+              <option value="github" ${state.site.urlType !== 'custom' ? 'selected' : ''}>آدرس پیش‌فرض گیت‌هاب</option>
+              <option value="custom" ${state.site.urlType === 'custom' ? 'selected' : ''}>دامنه اختصاصی</option>
+            </select>
+          </div>
+
+          <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); direction: ltr; text-align: right; ${state.site.urlType !== 'custom' ? 'display:block' : 'display:none'}"></div>
+
+          <div id="custom-domain-container" style="margin-top: 8px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
+            <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value.replace(/^https?:\/\//i, '').split('/')[0]; saveUrlConfig()">
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom:16px">
+          <button class="btn" id="publish-btn" onclick="startPublish()" disabled>انتشار</button>
+          <button class="btn sec" id="local-test-btn" onclick="startLocalTest()">تست محلی</button>
+        </div>
+        <div id="publish-report" style="margin-top:24px">${resultHtml}</div>
       </div>
 
-      <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); direction: ltr; text-align: right; ${state.site.urlType !== 'custom' ? 'display:block' : 'display:none'}"></div>
-
-      <div id="custom-domain-container" style="margin-top: 8px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
-        <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value.replace(/^https?:\/\//i, '').split('/')[0]; saveUrlConfig()">
-      </div>
-    </div>
-
-    <div class="row" style="margin-bottom:16px">
-      <button class="btn" id="publish-btn" onclick="startPublish()" disabled>انتشار</button>
-      <button class="btn sec" id="local-test-btn" onclick="startLocalTest()">تست محلی</button>
-      <button class="btn sec" onclick="renderPublish()">بررسی تغییرات</button>
-    </div>
-    <div id="publish-changes"></div>
-    <div id="publish-report" style="margin-top:24px">${resultHtml}</div>`;
+      <aside>
+        <div class="card" style="position:sticky; top:24px; display:flex; flex-direction:column;">
+          <h3 style="margin-bottom:16px; font-size:1rem">وضعیت فایل ها</h3>
+          <div id="publish-changes" style="flex:1"></div>
+          <button class="btn sec" style="width:100%; justify-content:center; margin-top:16px" onclick="renderPublish()">بررسی دوباره</button>
+        </div>
+      </aside>
+    </div>`;
 
   try {
     const status = await api('/api/git/status');
@@ -56,15 +106,11 @@ export async function renderPublish(resultHtml = '') {
       }
     }
 
-    let html = '';
+    let html = renderChangesSummary(parseGitChanges(status.changes));
     if (status.hasChanges) {
-      html += `<div class="card">`;
-      html += `<div class="msg ok" style="margin-bottom:12px">تغییرات آماده انتشار هستند.</div>`;
       html += `<pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:220px;font-size:.8rem;margin:0">${status.changes || ''}</pre>`;
-      html += `</div>`;
       btn.disabled = false;
     } else {
-      html += `<div class="card" style="color:#9ba6b5">تغییری ایجاد نشده</div>`;
       btn.disabled = true;
     }
     changesEl.innerHTML = html;
