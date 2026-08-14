@@ -10,20 +10,9 @@ export function renderMenu() {
         <h2 style="margin-bottom:4px">منوی سایت</h2>
         <p class="sub" style="margin-bottom:0">لینک‌های نمایش داده شده در Header سایت را مدیریت کنید.</p>
       </div>
-      <button class="btn sec" style="padding:8px" onclick="const h = document.getElementById('menu-help-block'); h.style.display = h.style.display === 'none' ? 'block' : 'none';" title="راهنما">${icon('question')} راهنما</button>
     </div>
 
     <div style="max-width:800px">
-      <div id="menu-help-block" style="display:none; background:var(--background); border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:24px;">
-        <h3 style="margin-top:0">راهنمای آدرس صفحات اختصاصی</h3>
-        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:12px">برای ایجاد لینک به صفحات پیش‌فرض سایت، می‌توانید از آدرس‌های زیر استفاده کنید:</p>
-        <ul style="direction:ltr; text-align:left; list-style:none; padding:0; margin:0; font-family:monospace; background:rgba(0,0,0,0.1); padding:12px; border-radius:4px;">
-          <li>Home      → /</li>
-          <li>Projects  → /projects</li>
-          <li>Resume    → /resume</li>
-          <li>Blog      → /blog</li>
-        </ul>
-      </div>
       <div style="margin-bottom:24px">
         <button class="btn" onclick="addMenuItem()">+ افزودن لینک جدید</button>
       </div>

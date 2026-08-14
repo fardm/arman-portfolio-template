@@ -117,7 +117,6 @@ export default function PostPage({ params }: { params: { slug: string } }) {
 
              {post.categories && post.categories.length > 0 && (
                 <div className="mt-10">
-                  <h3 className="text-lg font-bold mb-3 border-b border-[var(--border)] pb-2">دسته‌ها</h3>
                   <div className="flex flex-wrap gap-2">
                     {post.categories.map((slug) => (
                       <span className="tag text-xs" key={slug}>
