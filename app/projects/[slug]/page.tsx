@@ -1,3 +1,4 @@
+import { assetUrl } from '@/lib/url';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCategories, getProject, getProjects } from '@/lib/content';
@@ -10,6 +11,13 @@ function renderMarkdown(markdown: string) {
     if (line.startsWith('- ')) return <li key={index}>{line.slice(2)}</li>;
     if (!line.trim()) return <div key={index} className="h-2" />;
     if (line.startsWith('<')) return <div key={index} dangerouslySetInnerHTML={{ __html: line }} />;
+    const imgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      const alt = imgMatch[1];
+      let src = imgMatch[2];
+      src = src.replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+      return <img key={index} src={assetUrl(src)} alt={alt} className="max-w-full rounded-2xl border border-[var(--border)]" />;
+    }
     return <p key={index}>{line}</p>;
   });
 }
@@ -28,8 +36,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
 
   if (source === 'host') {
     return (
-      <video
-        src={url}
+      <video src={assetUrl(url)}
         title={`ویدیوی ${title}`}
         controls
         className="aspect-video w-full rounded-2xl border border-[var(--border)]"
@@ -64,9 +71,7 @@ function parseVideoUrl(url: string, source: string, title: string) {
 
   // Default / aparat
   return (
-    <iframe
-      title={`ویدیوی ${title}`}
-      src={url}
+    <iframe title={`ویدیوی ${title}`} src={assetUrl(url)}
       className="aspect-video w-full rounded-2xl border border-[var(--border)]"
       allowFullScreen
     />
@@ -92,7 +97,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
           <div>
             {project.template !== 'video' && project.images && project.images.length > 0 && <ProjectGallery images={project.images} />}
-            {project.template !== 'video' && (!project.images || project.images.length === 0) && project.cover && <img src={project.cover} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
+            {project.template !== 'video' && (!project.images || project.images.length === 0) && project.cover && <img src={assetUrl(project.cover)} alt={`تصویر پروژه ${project.title}`} className="w-full rounded-2xl border border-[var(--border)] shadow-sm" />}
             {project.template === 'video' && project.videoUrl && parseVideoUrl(project.videoUrl, project.videoSource || 'host', project.title)}
             <div className="prose mt-10 max-w-none">{renderMarkdown(project.content)}</div>
           </div>

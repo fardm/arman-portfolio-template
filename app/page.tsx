@@ -1,3 +1,4 @@
+import { assetUrl } from '@/lib/url';
 import Link from 'next/link';
 import { getCategories, getProjects, getSite, getPosts, getPostCategories } from '@/lib/content';
 import { PostCard } from '@/components/post-card';
@@ -47,7 +48,7 @@ export default function Home() {
           <div className="hero-grid">
             <div className="hero-profile">
               <div className="hero-avatar-wrap">
-                <img src={profileImage} alt={`تصویر ${name}`} className="hero-avatar" />
+                <img src={assetUrl(profileImage)} alt={`تصویر ${name}`} className="hero-avatar" />
               </div>
               <h1 className="hero-name">{name}</h1>
               <p className="hero-job-title">{jobTitle}</p>

@@ -17,7 +17,7 @@ export async function renderPublish(resultHtml = '') {
       <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); direction: ltr; text-align: right; ${state.site.urlType !== 'custom' ? 'display:block' : 'display:none'}"></div>
 
       <div id="custom-domain-container" style="margin-top: 8px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
-        <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value; saveUrlConfig()">
+        <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value.replace(/^https?:\/\//i, '').split('/')[0]; saveUrlConfig()">
       </div>
     </div>
 
@@ -143,9 +143,9 @@ export async function startLocalTest() {
     html += `<div class="msg ${r.ok ? 'ok' : 'err'}" style="margin-bottom:16px">تست ${r.ok ? 'موفق' : 'ناموفق'} بود.</div>`;
 
     // Human readable steps
-    html += `<div style="margin-bottom:8px">✓ Content validation</div>`;
-    html += `<div style="margin-bottom:8px">✓ Build</div>`;
-    html += `<div style="margin-bottom:8px">✓ Output verification</div>`;
+    html += `<div style="margin-bottom:8px">✓ Run tests</div>`;
+    html += ``;
+    html += ``;
 
     if (r.output) {
        html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${r.output}</pre></details>`;

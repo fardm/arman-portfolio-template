@@ -1,3 +1,4 @@
+import { assetUrl } from '@/lib/url';
 import { getResume, getSite } from '@/lib/content';
 import { Icon } from '@/src/icons';
 
@@ -70,7 +71,7 @@ export default function ResumePage() {
                 <p className="text-sm text-[var(--primary)]">{item.period}</p>
                 <h3 className="mt-1 text-xl font-bold">{item.title}</h3>
                 <p className="text-[var(--muted)] flex items-center gap-2 mt-3">
-                  {(item as any).logo && <img src={(item as any).logo} alt={item.company} className="w-7 h-7 object-cover rounded" />}
+                  {(item as any).logo && <img src={assetUrl((item as any).logo)} alt={item.company} className="w-7 h-7 object-cover rounded" />}
                   {item.company}
                 </p>
                 <p className="mt-2 text-sm text-[var(--muted)]">{item.description}</p>
@@ -83,7 +84,7 @@ export default function ResumePage() {
                 <p className="text-sm text-[var(--secondary)]">{item.period}</p>
                 <h3 className="mt-1 font-bold">{item.title}</h3>
                 <p className="text-[var(--muted)] flex items-center gap-2 mt-3">
-                  {(item as any).logo && <img src={(item as any).logo} alt={item.school} className="w-7 h-7 object-cover rounded" />}
+                  {(item as any).logo && <img src={assetUrl((item as any).logo)} alt={item.school} className="w-7 h-7 object-cover rounded" />}
                   {item.school}
                 </p>
               </div>
