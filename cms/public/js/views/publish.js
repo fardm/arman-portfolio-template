@@ -36,7 +36,10 @@ export async function renderPublish(resultHtml = '') {
     const btn = document.getElementById('publish-btn');
     if (!metaEl || !changesEl || !btn) return;
 
-    metaEl.innerHTML = `<strong>شاخه:</strong> ${status.branch || '—'} &nbsp;|&nbsp; <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}`;
+    metaEl.innerHTML = `
+    <strong>شاخه:</strong> ${status.branch || '—'}<br>
+    <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}
+    `;
 
     const githubPreviewEl = document.getElementById('github-url-preview');
     if (githubPreviewEl && status.remote) {
