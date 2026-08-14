@@ -1,3 +1,4 @@
+import { assetUrl, getBaseUrl } from '@/lib/url';
 import type { Metadata } from 'next';
 import './globals.css';
 import { getSite } from '@/lib/content';
@@ -9,9 +10,9 @@ export function generateMetadata(): Metadata {
   return {
     title: String(site.seoTitle),
     description: String(site.seoDescription),
-    metadataBase: new URL('https://example.github.io'),
-    icons: site.favicon ? { icon: String(site.favicon) } : undefined,
-    openGraph: { title: String(site.seoTitle), description: String(site.seoDescription), images: [String(site.ogImage)] },
+    metadataBase: new URL(getBaseUrl()),
+    icons: site.favicon ? { icon: assetUrl(String(site.favicon)) } : undefined,
+    openGraph: { title: String(site.seoTitle), description: String(site.seoDescription), images: [assetUrl(String(site.ogImage))] },
   };
 }
 
@@ -42,7 +43,7 @@ function buildFontStyles(site: Record<string, unknown>): { headTags: React.React
     } else if (config.source === 'custom' && config.customFont) {
       const cf = config.customFont;
       const range = cf.isVariable && cf.weights && cf.weights.length ? `font-weight: ${Math.min(...cf.weights)} ${Math.max(...cf.weights)};` : 'font-weight: 400;';
-      const face = `@font-face{font-family:'${config.name}';src:url('${cf.path}') format('${cf.format}');font-display:swap;${range}}`;
+      const face = `@font-face{font-family:'${config.name}';src:url('${assetUrl(cf.path)}') format('${cf.format}');font-display:swap;${range}}`;
       headTags.push(<style key={config.name} dangerouslySetInnerHTML={{ __html: face }} />);
     }
   };

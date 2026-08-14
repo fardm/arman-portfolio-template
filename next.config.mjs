@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 let basePath;
 try {
   const siteConfigPath = path.join(process.cwd(), 'content', 'site.json');
-  if (fs.existsSync(siteConfigPath)) {
+  if (fs.existsSync(siteConfigPath) && process.env.NODE_ENV !== 'development') {
     const siteConfig = JSON.parse(fs.readFileSync(siteConfigPath, 'utf8'));
     if (siteConfig.urlType === 'github') {
       try {
@@ -32,6 +32,29 @@ const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
   ...(basePath ? { basePath } : {}),
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath || '',
+    NEXT_PUBLIC_BASE_URL: (() => {
+        try {
+            const siteConfigPath = require('path').join(process.cwd(), 'content', 'site.json');
+            if (require('fs').existsSync(siteConfigPath)) {
+                const siteConfig = JSON.parse(require('fs').readFileSync(siteConfigPath, 'utf8'));
+                if (siteConfig.urlType === 'custom' && siteConfig.customDomain) return 'https://' + siteConfig.customDomain;
+                if (siteConfig.urlType === 'github') {
+                    try {
+                        const remoteUrl = require('child_process').execSync('git config --get remote.origin.url').toString().trim();
+                        const match = remoteUrl.match(/github\.com[:\/]([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+                        if (match) {
+                            const [, username, repo] = match;
+                            return repo === `${username}.github.io` ? `https://${username}.github.io` : `https://${username}.github.io/${repo}`;
+                        }
+                    } catch(e) {}
+                }
+            }
+        } catch(e) {}
+        return 'https://example.github.io';
+    })(),
+  },
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')
