@@ -131,6 +131,30 @@ function getLatestVersion(tags) {
   return validTags[0];
 }
 
+const PRESERVED_DIRS = ['content', 'public'];
+
+function backupPreservedDirs(backupRoot) {
+  for (const dirName of PRESERVED_DIRS) {
+    const src = path.join(root, dirName);
+    if (fs.existsSync(src)) {
+      fs.cpSync(src, path.join(backupRoot, dirName), { recursive: true });
+    }
+  }
+}
+
+function restorePreservedDirs(backupRoot) {
+  for (const dirName of PRESERVED_DIRS) {
+    const src = path.join(backupRoot, dirName);
+    const dest = path.join(root, dirName);
+    if (fs.existsSync(src)) {
+      if (fs.existsSync(dest)) {
+        fs.rmSync(dest, { recursive: true, force: true });
+      }
+      fs.cpSync(src, dest, { recursive: true });
+    }
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const method = req.method;
@@ -357,7 +381,7 @@ const server = http.createServer(async (req, res) => {
 
       // ==================== Update Start ====================
       if (pathname === '/api/update/start' && method === 'POST') {
-        const backupDir = path.join(path.dirname(root), `backup-content-${Date.now()}`);
+        const backupDir = path.join(path.dirname(root), `backup-update-${Date.now()}`);
         try {
           const statusRes = await runGit(['status', '--porcelain']);
           if (statusRes.code !== 0) throw new Error('Failed to check git status.');
@@ -386,15 +410,11 @@ const server = http.createServer(async (req, res) => {
             return send(res, 400, { error: 'You are already on the latest version.' });
           }
 
-          const contentDir = path.join(root, 'content');
-
           // Backup step
           try {
-            if (fs.existsSync(contentDir)) {
-              fs.cpSync(contentDir, backupDir, { recursive: true });
-            }
+            backupPreservedDirs(backupDir);
           } catch (e) {
-            throw new Error('Failed to backup content directory: ' + e.message);
+            throw new Error('Failed to backup content/public directories: ' + e.message);
           }
 
           // Full Replacement step
@@ -409,12 +429,9 @@ const server = http.createServer(async (req, res) => {
           const cleanRes = await runGit(['clean', '-fd']);
           if (cleanRes.code !== 0) throw new Error('Git clean failed: ' + cleanRes.output);
 
-          // Restore content
+          // Restore content and public
           if (fs.existsSync(backupDir)) {
-            if (fs.existsSync(contentDir)) {
-              fs.rmSync(contentDir, { recursive: true, force: true });
-            }
-            fs.cpSync(backupDir, contentDir, { recursive: true });
+            restorePreservedDirs(backupDir);
           }
 
           // Update VERSION
@@ -444,12 +461,8 @@ const server = http.createServer(async (req, res) => {
           // On failure, rollback working directory as much as possible
           await runGit(['reset', '--hard', 'HEAD']).catch(() => {});
           await runGit(['clean', '-fd']).catch(() => {});
-          const contentDir = path.join(root, 'content');
           if (fs.existsSync(backupDir)) {
-             if (fs.existsSync(contentDir)) {
-               fs.rmSync(contentDir, { recursive: true, force: true });
-             }
-             fs.cpSync(backupDir, contentDir, { recursive: true });
+            restorePreservedDirs(backupDir);
           }
           return send(res, 500, { error: err.message || String(err) });
         }
