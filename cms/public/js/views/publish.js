@@ -46,10 +46,9 @@ export async function renderPublish(resultHtml = '') {
     <div style="display:grid; grid-template-columns: 1fr 320px; gap: 24px; align-items:start">
       <div>
         <div class="card" style="margin-bottom: 24px">
-          <h3 style="margin-bottom:4px">تنظیمات آدرس سایت</h3>
-          <div id="publish-meta-inner" style="margin-bottom:16px; font-size: 0.85rem; color: var(--muted);">در حال بررسی وضعیت...</div>
+          <h3 style="margin-bottom:12px">تنظیمات آدرس سایت</h3>
 
-          <div class="form-group" style="margin-top: 16px">
+          <div class="form-group">
             <select class="input" id="urlTypeSelect" style="width:100%" onchange="updateUrlConfig()">
               <option value="github" ${state.site.urlType !== 'custom' ? 'selected' : ''}>آدرس پیش‌فرض گیت‌هاب</option>
               <option value="custom" ${state.site.urlType === 'custom' ? 'selected' : ''}>دامنه اختصاصی</option>
@@ -84,12 +83,14 @@ export async function renderPublish(resultHtml = '') {
     const metaEl = document.getElementById('publish-meta-inner');
     const changesEl = document.getElementById('publish-changes');
     const btn = document.getElementById('publish-btn');
-    if (!metaEl || !changesEl || !btn) return;
+    if (!changesEl || !btn) return;
 
-    metaEl.innerHTML = `
-    <strong>شاخه:</strong> ${status.branch || '—'}<br>
-    <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}
-    `;
+    if (metaEl) {
+      metaEl.innerHTML = `
+        <strong>شاخه:</strong> ${status.branch || '—'} &nbsp;|&nbsp; 
+        <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}
+      `;
+    }
 
     const githubPreviewEl = document.getElementById('github-url-preview');
     if (githubPreviewEl && status.remote) {
@@ -156,7 +157,8 @@ export async function startPublish() {
     html = `<div class="card"><div class="msg err">${r.message || 'تغییری ایجاد نشده'}</div></div>`;
   } else {
     html = `<div class="card">`;
-    html += `<h3>نتیجه انتشار</h3>`;
+    html += `<h3 style="margin-bottom:8px">نتیجه انتشار</h3>`;
+    html += `<div id="publish-meta-inner" style="margin-bottom:12px; font-size: 0.85rem; color: var(--muted);"></div>`;
     html += `<div class="msg ${r.ok ? 'ok' : 'err'}" style="margin-bottom:16px">انتشار ${r.ok ? 'موفق' : 'ناموفق'}${r.message ? ` — ${r.message}` : ''}</div>`;
     if (r.steps) {
       html += r.steps.map((s) => `<div style="margin-bottom:8px">✓ ${s.step} — ${s.ok ? 'موفق' : 'ناموفق'}${s.message ? ` (${s.message})` : ''}</div>`).join('');
@@ -190,21 +192,18 @@ export async function startLocalTest() {
 
     // Human readable steps
     html += `<div style="margin-bottom:8px">✓ Run tests</div>`;
-    html += ``;
-    html += ``;
 
     if (r.output) {
        html += `<details style="margin-top:16px"><summary style="cursor:pointer; color:#9ba6b5">مشاهده جزئیات لاگ‌ها</summary><pre style="background:var(--background);padding:12px;border-radius:8px;overflow:auto;max-height:300px;font-size:.8rem;margin-top:8px;direction:ltr;text-align:left">${r.output}</pre></details>`;
     }
     html += `</div>`;
 
-    // Don't re-render entirely to preserve existing git status, just update report and buttons
     if (reportEl) reportEl.innerHTML = html;
-    if (btn) btn.disabled = wasPublishDisabled; // Restore publish button status
+    if (btn) btn.disabled = wasPublishDisabled;
     if (testBtn) testBtn.disabled = false;
   } catch (err) {
     if (reportEl) reportEl.innerHTML = `<div class="card"><div class="msg err">خطا در اجرای تست محلی</div></div>`;
-    if (btn) btn.disabled = wasPublishDisabled; // Restore publish button status
+    if (btn) btn.disabled = wasPublishDisabled;
     if (testBtn) testBtn.disabled = false;
   }
 }
