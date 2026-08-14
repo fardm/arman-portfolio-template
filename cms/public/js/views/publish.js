@@ -1,5 +1,16 @@
 import { state, dom } from '../core/state.js';
 import { api } from '../core/api.js';
+import { icon } from '../icons.js';
+
+// تابع کمکی برای اعمال ابعاد ۱۶ در ۱۶ و تراز مناسب
+function getIcon(name) {
+  const svg = icon(name);
+  if (!svg) return '';
+  return svg.replace(
+    '<svg',
+    '<svg style="width:18px; height:18px; min-width:18px; min-height:18px; vertical-align:middle; display:inline-block;"'
+  );
+}
 
 function parseGitChanges(changesText) {
   const lines = (changesText || '').split('\n').filter((l) => l.trim());
@@ -62,9 +73,13 @@ export async function renderPublish(resultHtml = '') {
           </div>
         </div>
 
-        <div class="row" style="margin-bottom:16px">
-          <button class="btn" id="publish-btn" onclick="startPublish()" disabled>انتشار</button>
-          <button class="btn sec" id="local-test-btn" onclick="startLocalTest()">تست محلی</button>
+        <div class="row" style="margin-bottom:16px; display:flex; gap:8px;">
+          <button class="btn" id="publish-btn" onclick="startPublish()" disabled style="display:inline-flex; align-items:center; gap:6px;">
+            ${getIcon('cloud_upload')} انتشار
+          </button>
+          <button class="btn sec" id="local-test-btn" onclick="startLocalTest()" style="display:inline-flex; align-items:center; gap:6px;">
+            ${getIcon('laptop_check')} تست محلی
+          </button>
         </div>
         <div id="publish-report" style="margin-top:24px">${resultHtml}</div>
       </div>
@@ -73,7 +88,9 @@ export async function renderPublish(resultHtml = '') {
         <div class="card" style="position:sticky; top:24px; display:flex; flex-direction:column;">
           <h3 style="margin-bottom:16px; font-size:1rem">وضعیت فایل ها</h3>
           <div id="publish-changes" style="flex:1"></div>
-          <button class="btn sec" style="width:100%; justify-content:center; margin-top:16px" onclick="renderPublish()">بررسی دوباره</button>
+          <button class="btn sec" style="width:100%; justify-content:center; margin-top:16px; display:flex; align-items:center; gap:6px;" onclick="renderPublish()">
+            ${getIcon('update')} بررسی دوباره
+          </button>
         </div>
       </aside>
     </div>`;
@@ -169,7 +186,6 @@ export async function startPublish() {
     html += `</div>`;
   }
 
-  // Re-render entirely with the new report, fetching git status again
   await renderPublish(html);
 }
 
@@ -189,8 +205,6 @@ export async function startLocalTest() {
     let html = `<div class="card">`;
     html += `<h3>نتیجه تست محلی</h3>`;
     html += `<div class="msg ${r.ok ? 'ok' : 'err'}" style="margin-bottom:16px">تست ${r.ok ? 'موفق' : 'ناموفق'} بود.</div>`;
-
-    // Human readable steps
     html += `<div style="margin-bottom:8px">✓ Run tests</div>`;
 
     if (r.output) {
