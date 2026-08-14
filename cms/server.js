@@ -345,6 +345,7 @@ const server = http.createServer(async (req, res) => {
 
       // ==================== Update Start ====================
       if (pathname === '/api/update/start' && method === 'POST') {
+        const backupDir = path.join(path.dirname(root), `backup-content-${Date.now()}`);
         try {
           const statusRes = await runGit(['status', '--porcelain']);
           if (statusRes.code !== 0) throw new Error('Failed to check git status.');
@@ -358,44 +359,59 @@ const server = http.createServer(async (req, res) => {
             currentVersion = fs.readFileSync(versionFile, 'utf8').trim();
           }
 
-          await runGit(['fetch', 'upstream', '--tags']).catch(() => {});
+          const fetchRes = await runGit(['fetch', 'upstream', '--tags']);
+          if (fetchRes.code !== 0) throw new Error('Failed to fetch tags from upstream.');
+
           const tagsRes = await runGit(['tag', '-l']);
+          if (tagsRes.code !== 0) throw new Error('Failed to list tags.');
+
           let latestVersion = currentVersion;
+          const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
+          const found = getLatestVersion(tags);
+          if (found) latestVersion = found;
 
-          if (tagsRes.code === 0 && tagsRes.output) {
-            const tags = tagsRes.output.split('\n').map(t => t.trim()).filter(Boolean);
-            const found = getLatestVersion(tags);
-            if (found) latestVersion = found;
-          }
-
-          // اگر از نظر عددی یکی بودن (حتی اگر یکی v داشته باشه و یکی نه)
           if (!isNewer(latestVersion, currentVersion)) {
             return send(res, 400, { error: 'You are already on the latest version.' });
           }
 
           const contentDir = path.join(root, 'content');
-          const backupDir = path.join(path.dirname(root), `backup-content-${Date.now()}`);
 
-          if (fs.existsSync(contentDir)) {
-            fs.cpSync(contentDir, backupDir, { recursive: true });
-          } else {
-            fs.mkdirSync(backupDir, { recursive: true });
+          // Backup step
+          try {
+            if (fs.existsSync(contentDir)) {
+              fs.cpSync(contentDir, backupDir, { recursive: true });
+            }
+          } catch (e) {
+            throw new Error('Failed to backup content directory: ' + e.message);
           }
 
-          const mergeRes = await runGit(['merge', latestVersion, '--no-commit', '-X', 'theirs']);
-          if (mergeRes.code !== 0) {
-            await runGit(['merge', '--abort']).catch(() => {});
-            return send(res, 500, { error: 'Git merge failed: ' + mergeRes.output });
+          // Full Replacement step
+          const rmRes = await runGit(['rm', '-rf', '.']);
+          if (rmRes.code !== 0 && !rmRes.output.includes('did not match any files')) {
+            throw new Error('Git rm failed: ' + rmRes.output);
           }
 
-          if (fs.existsSync(contentDir)) {
-            fs.rmSync(contentDir, { recursive: true, force: true });
-          }
-          fs.cpSync(backupDir, contentDir, { recursive: true });
+          const checkoutRes = await runGit(['checkout', latestVersion, '--', '.']);
+          if (checkoutRes.code !== 0) throw new Error('Git checkout failed: ' + checkoutRes.output);
 
+          const cleanRes = await runGit(['clean', '-fd']);
+          if (cleanRes.code !== 0) throw new Error('Git clean failed: ' + cleanRes.output);
+
+          // Restore content
+          if (fs.existsSync(backupDir)) {
+            if (fs.existsSync(contentDir)) {
+              fs.rmSync(contentDir, { recursive: true, force: true });
+            }
+            fs.cpSync(backupDir, contentDir, { recursive: true });
+          }
+
+          // Update VERSION
           fs.writeFileSync(versionFile, latestVersion + '\n');
 
-          await runGit(['add', '.']);
+          // Validate everything and commit
+          const addRes = await runGit(['add', '-A']);
+          if (addRes.code !== 0) throw new Error('Git add failed: ' + addRes.output);
+
           const commitRes = await runGit(['commit', '-m', `Update template to ${latestVersion}`]);
           if (commitRes.code !== 0 && !commitRes.output.includes('nothing to commit')) {
             throw new Error('Git commit failed: ' + commitRes.output);
@@ -406,11 +422,23 @@ const server = http.createServer(async (req, res) => {
             throw new Error('Git push failed: ' + pushRes.output);
           }
 
-          fs.rmSync(backupDir, { recursive: true, force: true });
+          // If everything succeeds, remove the backup
+          if (fs.existsSync(backupDir)) {
+            fs.rmSync(backupDir, { recursive: true, force: true });
+          }
 
           return send(res, 200, { newVersion: latestVersion });
         } catch (err) {
-          await runGit(['merge', '--abort']).catch(() => {});
+          // On failure, rollback working directory as much as possible
+          await runGit(['reset', '--hard', 'HEAD']).catch(() => {});
+          await runGit(['clean', '-fd']).catch(() => {});
+          const contentDir = path.join(root, 'content');
+          if (fs.existsSync(backupDir)) {
+             if (fs.existsSync(contentDir)) {
+               fs.rmSync(contentDir, { recursive: true, force: true });
+             }
+             fs.cpSync(backupDir, contentDir, { recursive: true });
+          }
           return send(res, 500, { error: err.message || String(err) });
         }
       }
