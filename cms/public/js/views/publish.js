@@ -57,14 +57,13 @@ export async function renderPublish(resultHtml = '') {
     <div style="display:grid; grid-template-columns: 1fr 320px; gap: 24px; align-items:start">
       <div>
         <div class="card" style="margin-bottom: 24px">
-          <h3 style="margin-bottom:12px">تنظیمات آدرس سایت</h3>
+          <h3 style="margin-bottom:12px">آدرس سایت</h3>
 
           <div class="form-group">
-            <label>آدرس سایت (URL)</label>
-            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="https://example.com یا https://user.github.io/repo/" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value; saveUrlConfig()">
             <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); line-height: 1.5;">
               آدرس کامل سایت خود را وارد کنید. برای گیت‌هاب پیجز در پوشه، آدرس باید شامل نام پوشه باشد.
             </div>
+            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="https://example.com یا https://user.github.io/repo/" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value; saveUrlConfig()">
           </div>
         </div>
 

@@ -141,7 +141,7 @@ export default function ResumePage() {
             )}
 
             <h2 className="mb-5 text-2xl font-bold">زبان‌ها</h2>
-            <ul className="space-y-2 text-[var(--muted)] bg-[var(--card)] rounded-md px-4 py-2">
+            <ul className="space-y-2 text-[var(--muted)]">
               {resume.languages.map((item) => <li key={item} className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[var(--primary)]"></span>{item}</li>)}
             </ul>
           </div>
