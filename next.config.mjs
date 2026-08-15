@@ -1,6 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 
+function normalizeUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  let url = rawUrl.trim();
+  if (url === '') return '';
+  url = url.replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+  return url;
+}
+
+
 let basePath = '';
 let baseUrl = 'https://example.github.io';
 
@@ -10,12 +22,13 @@ try {
     const siteConfig = JSON.parse(fs.readFileSync(siteConfigPath, 'utf8'));
     if (siteConfig.siteUrl) {
       try {
-        const urlObj = new URL(siteConfig.siteUrl);
-        baseUrl = siteConfig.siteUrl.replace(/\/$/, ''); // Remove trailing slash if any
+        const normalized = normalizeUrl(siteConfig.siteUrl);
+        const urlObj = new URL(normalized);
+        baseUrl = normalized;
         if (process.env.NODE_ENV !== 'development') {
           let pathname = urlObj.pathname;
           if (pathname !== '/') {
-            basePath = pathname.replace(/\/$/, ''); // Remove trailing slash
+            basePath = pathname.replace(/\/+$/, ''); // Remove trailing slash
           }
         }
       } catch (e) {

@@ -61,9 +61,9 @@ export async function renderPublish(resultHtml = '') {
 
           <div class="form-group">
             <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); line-height: 1.5;">
-              آدرس کامل سایت خود را وارد کنید. برای گیت‌هاب پیجز در پوشه، آدرس باید شامل نام پوشه باشد.
+              آدرس کامل سایت خود را وارد کنید. می‌توانید به سادگی فقط نام دامنه (مثل example.com) یا مسیر گیت‌هاب (مثل username.github.io/repo) را بدون پیشوند یا اسلش اضافی وارد کنید.
             </div>
-            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="https://example.com یا https://user.github.io/repo/" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value; saveUrlConfig()">
+            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="example.com یا user.github.io/repo" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value.trim().replace(/\/+$/, ''); saveUrlConfig()">
           </div>
         </div>
 
