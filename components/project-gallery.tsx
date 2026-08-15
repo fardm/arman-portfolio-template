@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { assetUrl } from '@/lib/url';
 
 export function ProjectGallery({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -10,13 +11,13 @@ export function ProjectGallery({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
       <>
-        <img src={images[0]} alt="تصویر پروژه" className="w-full rounded-2xl border border-[var(--border)] shadow-sm cursor-pointer object-cover" onClick={() => setLightboxOpen(true)} />
+        <img src={assetUrl(images[0])} alt="تصویر پروژه" className="w-full rounded-2xl border border-[var(--border)] shadow-sm cursor-pointer object-cover" onClick={() => setLightboxOpen(true)} />
         {lightboxOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm" onClick={() => setLightboxOpen(false)}>
             <button className="absolute right-6 top-6 text-white hover:text-gray-300" onClick={() => setLightboxOpen(false)}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <img src={images[0]} alt="تصویر بزرگ پروژه" className="max-h-[90vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+            <img src={assetUrl(images[0])} alt="تصویر بزرگ پروژه" className="max-h-[90vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
           </div>
         )}
       </>
@@ -30,7 +31,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
     <div className="space-y-4">
       <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm bg-[var(--card)]">
         <img
-          src={images[currentIndex]}
+          src={assetUrl(images[currentIndex])}
           alt="تصویر پروژه"
           className="h-full w-full object-cover cursor-pointer" onClick={() => setLightboxOpen(true)}
         />
@@ -59,7 +60,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
             onClick={() => setCurrentIndex(index)}
             className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${currentIndex === index ? 'border-[var(--primary)] opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
           >
-            <img src={img} alt="" className="h-full w-full object-cover" />
+            <img src={assetUrl(img)} alt="" className="h-full w-full object-cover" />
           </button>
         ))}
       </div>
@@ -71,7 +72,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
           </button>
 
           <img
-            src={images[currentIndex]}
+            src={assetUrl(images[currentIndex])}
             alt="تصویر بزرگ پروژه"
             className="max-h-[90vh] max-w-full object-contain"
             onClick={(e) => e.stopPropagation()}
