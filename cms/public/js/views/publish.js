@@ -50,6 +50,54 @@ function renderChangesSummary({ modified, added, deleted }) {
   `;
 }
 
+export function onSiteUrlInput(input) {
+  const saveBtn = document.getElementById('save-url-btn');
+  const msgEl = document.getElementById('save-url-msg');
+  if (!saveBtn) return;
+
+  const currentVal = input.value.trim().replace(/\/+$/, '');
+  const initialVal = (state.site?.siteUrl || '').trim().replace(/\/+$/, '');
+
+  saveBtn.disabled = currentVal === initialVal;
+  if (msgEl) msgEl.innerText = '';
+}
+
+export async function handleSaveSiteUrl() {
+  const input = document.getElementById('site-url-input');
+  const saveBtn = document.getElementById('save-url-btn');
+  const msgEl = document.getElementById('save-url-msg');
+  if (!input || !saveBtn) return;
+
+  const newUrl = input.value.trim().replace(/\/+$/, '');
+  input.value = newUrl;
+
+  if (!state.site) state.site = {};
+  state.site.siteUrl = newUrl;
+
+  saveBtn.disabled = true;
+  const originalText = saveBtn.innerText;
+  saveBtn.innerText = '...';
+
+  try {
+    await saveUrlConfig();
+    saveBtn.innerText = originalText;
+    if (msgEl) {
+      msgEl.innerText = 'ذخیره شد';
+      msgEl.style.color = 'var(--accent, #10b981)';
+      setTimeout(() => {
+        if (msgEl) msgEl.innerText = '';
+      }, 3000);
+    }
+  } catch (err) {
+    saveBtn.innerText = originalText;
+    saveBtn.disabled = false;
+    if (msgEl) {
+      msgEl.innerText = 'خطا در ذخیره';
+      msgEl.style.color = '#ef4444';
+    }
+  }
+}
+
 export async function renderPublish(resultHtml = '') {
   dom.content.innerHTML = `
     <h2>انتشار در گیت‌هاب</h2>
@@ -57,13 +105,37 @@ export async function renderPublish(resultHtml = '') {
     <div style="display:grid; grid-template-columns: 1fr 320px; gap: 24px; align-items:start">
       <div>
         <div class="card" style="margin-bottom: 24px">
-          <h3 style="margin-bottom:12px">آدرس سایت</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;">آدرس سایت</h3>
+            <span id="save-url-msg" style="font-size:0.8rem; font-weight:500; transition:all 0.2s;"></span>
+          </div>
 
           <div class="form-group">
-            <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); line-height: 1.5;">
-              آدرس کامل سایت خود را وارد کنید. می‌توانید به سادگی فقط نام دامنه (مثل example.com) یا مسیر گیت‌هاب (مثل username.github.io/repo) را بدون پیشوند یا اسلش اضافی وارد کنید.
+            <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin-bottom: 8px;">
+              آدرس کامل سایت خود را وارد کنید. می‌توانید به سادگی فقط نام دامنه (مثل example.com) یا آدرس پیشفرض گیت‌هاب (مثل username.github.io/repo) را بدون پیشوند یا اسلش اضافی وارد کنید.
             </div>
-            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="example.com یا user.github.io/repo" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value.trim().replace(/\/+$/, ''); saveUrlConfig()">
+            <div style="position: relative; display: flex; align-items: center; width: 100%;">
+              <input 
+                type="text" 
+                id="site-url-input" 
+                class="input" 
+                style="width:100%; padding-right:75px; box-sizing:border-box;" 
+                placeholder="example.com یا user.github.io/repo" 
+                value="${state.site?.siteUrl || ''}" 
+                dir="ltr" 
+                oninput="onSiteUrlInput(this)"
+              >
+              <button 
+                type="button"
+                id="save-url-btn" 
+                class="btn" 
+                disabled 
+                onclick="handleSaveSiteUrl()" 
+                style="position: absolute; right: 6px; padding: 4px 12px; font-size: 0.75rem; height: 28px; line-height: 1; border-radius: 6px; cursor: pointer;"
+              >
+                ذخیره
+              </button>
+            </div>
           </div>
         </div>
 
@@ -89,6 +161,10 @@ export async function renderPublish(resultHtml = '') {
       </aside>
     </div>`;
 
+  // برای دسترسی توابع رویدادهای inline به scope سراسری window
+  window.onSiteUrlInput = onSiteUrlInput;
+  window.handleSaveSiteUrl = handleSaveSiteUrl;
+
   try {
     const status = await api('/api/git/status');
     const metaEl = document.getElementById('publish-meta-inner');
@@ -102,8 +178,6 @@ export async function renderPublish(resultHtml = '') {
         <strong>ریموت:</strong> ${status.remote || 'تنظیم نشده'}
       `;
     }
-
-
 
     let html = renderChangesSummary(parseGitChanges(status.changes));
     if (status.hasChanges) {
@@ -132,6 +206,7 @@ export async function saveUrlConfig() {
     });
   } catch (err) {
     console.error('Failed to save URL config', err);
+    throw err;
   }
 }
 
