@@ -1,25 +1,25 @@
-
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 
-let basePath;
+let basePath = '';
+let baseUrl = 'https://example.github.io';
+
 try {
   const siteConfigPath = path.join(process.cwd(), 'content', 'site.json');
-  if (fs.existsSync(siteConfigPath) && process.env.NODE_ENV !== 'development') {
+  if (fs.existsSync(siteConfigPath)) {
     const siteConfig = JSON.parse(fs.readFileSync(siteConfigPath, 'utf8'));
-    if (siteConfig.urlType === 'github') {
+    if (siteConfig.siteUrl) {
       try {
-        const remoteUrl = execSync('git config --get remote.origin.url').toString().trim();
-        const match = remoteUrl.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
-        if (match) {
-          const [, username, repo] = match;
-          if (repo !== `${username}.github.io`) {
-            basePath = `/${repo}`;
+        const urlObj = new URL(siteConfig.siteUrl);
+        baseUrl = siteConfig.siteUrl.replace(/\/$/, ''); // Remove trailing slash if any
+        if (process.env.NODE_ENV !== 'development') {
+          let pathname = urlObj.pathname;
+          if (pathname !== '/') {
+            basePath = pathname.replace(/\/$/, ''); // Remove trailing slash
           }
         }
       } catch (e) {
-        console.warn('Failed to get remote origin url for base path generation');
+        console.warn('Failed to parse siteUrl from site.json');
       }
     }
   }
@@ -34,26 +34,7 @@ const nextConfig = {
   ...(basePath ? { basePath } : {}),
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath || '',
-    NEXT_PUBLIC_BASE_URL: (() => {
-        try {
-            const siteConfigPath = require('path').join(process.cwd(), 'content', 'site.json');
-            if (require('fs').existsSync(siteConfigPath)) {
-                const siteConfig = JSON.parse(require('fs').readFileSync(siteConfigPath, 'utf8'));
-                if (siteConfig.urlType === 'custom' && siteConfig.customDomain) return 'https://' + siteConfig.customDomain;
-                if (siteConfig.urlType === 'github') {
-                    try {
-                        const remoteUrl = require('child_process').execSync('git config --get remote.origin.url').toString().trim();
-                        const match = remoteUrl.match(/github\.com[:\/]([^\/]+)\/([^\/]+?)(?:\.git)?$/);
-                        if (match) {
-                            const [, username, repo] = match;
-                            return repo === `${username}.github.io` ? `https://${username}.github.io` : `https://${username}.github.io/${repo}`;
-                        }
-                    } catch(e) {}
-                }
-            }
-        } catch(e) {}
-        return 'https://example.github.io';
-    })(),
+    NEXT_PUBLIC_BASE_URL: baseUrl,
   },
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>

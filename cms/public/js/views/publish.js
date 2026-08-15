@@ -60,16 +60,11 @@ export async function renderPublish(resultHtml = '') {
           <h3 style="margin-bottom:12px">تنظیمات آدرس سایت</h3>
 
           <div class="form-group">
-            <select class="input" id="urlTypeSelect" style="width:100%" onchange="updateUrlConfig()">
-              <option value="github" ${state.site.urlType !== 'custom' ? 'selected' : ''}>آدرس پیش‌فرض گیت‌هاب</option>
-              <option value="custom" ${state.site.urlType === 'custom' ? 'selected' : ''}>دامنه اختصاصی</option>
-            </select>
-          </div>
-
-          <div id="github-url-preview" style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); direction: ltr; text-align: right; ${state.site.urlType !== 'custom' ? 'display:block' : 'display:none'}"></div>
-
-          <div id="custom-domain-container" style="margin-top: 8px; ${state.site.urlType === 'custom' ? 'display:block' : 'display:none'}">
-            <input type="text" id="custom-domain-input" class="input" style="width:100%" placeholder="https://example.com" value="${state.site.customDomain || ''}" dir="ltr" onchange="state.site.customDomain = this.value.replace(/^https?:\/\//i, '').split('/')[0]; saveUrlConfig()">
+            <label>آدرس سایت (URL)</label>
+            <input type="text" id="site-url-input" class="input" style="width:100%; margin-top:8px;" placeholder="https://example.com یا https://user.github.io/repo/" value="${state.site.siteUrl || ''}" dir="ltr" onchange="state.site.siteUrl = this.value; saveUrlConfig()">
+            <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted); line-height: 1.5;">
+              آدرس کامل سایت خود را وارد کنید. برای گیت‌هاب پیجز در پوشه، آدرس باید شامل نام پوشه باشد.
+            </div>
           </div>
         </div>
 
@@ -109,20 +104,7 @@ export async function renderPublish(resultHtml = '') {
       `;
     }
 
-    const githubPreviewEl = document.getElementById('github-url-preview');
-    if (githubPreviewEl && status.remote) {
-      const match = status.remote.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/);
-      if (match) {
-        const [, username, repo] = match;
-        let siteUrl = 'https://' + username + '.github.io/' + repo + '/';
-        if (repo === username + '.github.io') {
-          siteUrl = 'https://' + username + '.github.io/';
-        }
-        githubPreviewEl.innerText = siteUrl;
-      } else {
-        githubPreviewEl.innerText = 'آدرس گیت‌هاب پیجز قابل تشخیص نیست.';
-      }
-    }
+
 
     let html = renderChangesSummary(parseGitChanges(status.changes));
     if (status.hasChanges) {
@@ -139,11 +121,6 @@ export async function renderPublish(resultHtml = '') {
 }
 
 export async function updateUrlConfig() {
-  const type = document.getElementById('urlTypeSelect').value;
-  state.site.urlType = type;
-  document.getElementById('custom-domain-container').style.display = type === 'custom' ? 'block' : 'none';
-  const githubPreview = document.getElementById('github-url-preview');
-  if (githubPreview) githubPreview.style.display = type !== 'custom' ? 'block' : 'none';
   await saveUrlConfig();
 }
 

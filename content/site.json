@@ -105,6 +105,5 @@
       "grid": 4
     }
   ],
-  "urlType": "github",
-  "customDomain": ""
+  "siteUrl": "https://example.github.io/reponame/"
 }
