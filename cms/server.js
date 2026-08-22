@@ -8,6 +8,7 @@ const root = process.cwd();
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const writeJson = (file, data) => fs.writeFileSync(path.join(root, file), JSON.stringify(data, null, 2) + '\n');
 const send = (res, status, body, type = 'application/json') => {
+  if (res.writableEnded || res.destroyed) return;
   res.writeHead(status, { 'Content-Type': type, 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' });
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 };
@@ -673,7 +674,7 @@ const server = http.createServer(async (req, res) => {
             }
             sse('step', { step: 'deps_install', status: 'done' });
           } else {
-            sse('step', { step: 'deps_install', status: 'skipped', reason: 'dependencies unchanged' });
+            sse('step', { step: 'deps_install', status: 'skipped', reason: 'بدون تغییر' });
           }
 
           // --- Step: running tests ---
@@ -739,6 +740,7 @@ const server = http.createServer(async (req, res) => {
             res.end();
           }
         }
+        return; // response already streamed via SSE — never fall through to send()
       }
 
       // Publish to GitHub

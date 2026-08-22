@@ -20,7 +20,7 @@ function checkHTML() {
 }
 
 function skipHTML(reason) {
-  return `<span class="update-skip" style="color: var(--muted); font-size: 0.9rem;" title="${reason || ''}">⊘</span>`;
+  return `<span class="update-skip" style="color: var(--muted); font-size: 0.9rem;" title="${reason || ''}">—</span>`;
 }
 
 function errorHTML() {
@@ -81,6 +81,15 @@ function updateStepUI(stepKey, status, extra) {
   else iconHtml = `<span class="update-pending-dot" style="color: var(--muted); opacity: 0.4;">○</span>`;
 
   if (iconDiv) iconDiv.innerHTML = iconHtml;
+
+  // For skipped steps, update the label to show the reason
+  if (status === 'skipped' && extra) {
+    const labelEl = stepDiv.querySelector('.update-step-label');
+    if (labelEl) {
+      const baseLabel = STEP_LABELS[stepKey] || '';
+      labelEl.textContent = `${baseLabel} — ${extra}`;
+    }
+  }
 
   // For error, add subtle highlight
   if (status === 'error') {
