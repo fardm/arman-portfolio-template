@@ -515,10 +515,55 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { ok: true });
       }
 
-      // Dev server
+      // ==================== Preview server ====================
+      // Health-check the local Next.js dev server
+      const isPreviewRunning = async () => {
+        try {
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 2000);
+          const resp = await fetch('http://localhost:3000', { signal: controller.signal, cache: 'no-store' });
+          clearTimeout(t);
+          return resp.ok || resp.status === 404 || resp.status === 200;
+        } catch (_) {
+          return false;
+        }
+      };
+
+      if (pathname === '/api/preview/status' && method === 'GET') {
+        const running = await isPreviewRunning();
+        return send(res, 200, { running, url: 'http://localhost:3000' });
+      }
+
+      if (pathname === '/api/preview/start' && method === 'POST') {
+        // Already responding — do not start another process
+        if (await isPreviewRunning()) {
+          return send(res, 200, { ok: true, alreadyRunning: true, url: 'http://localhost:3000' });
+        }
+        // Our own process exists but isn't answering yet (still booting) — don't double-spawn
+        if (devProcess && !devProcess.killed) {
+          return send(res, 200, { ok: true, starting: true, url: 'http://localhost:3000' });
+        }
+        devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore' });
+        devProcess.on('exit', () => { devProcess = null; });
+        return send(res, 200, { ok: true, started: true, url: 'http://localhost:3000' });
+      }
+
+      if (pathname === '/api/preview/stop' && method === 'POST') {
+        // Only terminate a process this server started — never a pre-existing one
+        if (devProcess && !devProcess.killed) {
+          devProcess.kill();
+          devProcess = null;
+          return send(res, 200, { ok: true, stopped: true });
+        }
+        return send(res, 200, { ok: true, stopped: false });
+      }
+
+      // Legacy alias kept for compatibility
       if (pathname === '/api/dev' && method === 'POST') {
+        if (await isPreviewRunning()) return send(res, 200, { ok: true, message: 'already running' });
         if (devProcess && !devProcess.killed) return send(res, 200, { ok: true, message: 'already running' });
         devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore' });
+        devProcess.on('exit', () => { devProcess = null; });
         return send(res, 200, { ok: true, message: 'started' });
       }
 
