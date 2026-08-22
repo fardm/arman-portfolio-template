@@ -250,7 +250,6 @@ function renderReadyState() {
 function renderSuccessSection() {
   return `
     <div style="display:flex; align-items:flex-start; gap:14px;">
-      <span style="color: var(--primary); font-size: 1.6rem; line-height:1.4;">✓</span>
       <div style="flex:1;">
         <h3 style="margin-bottom:6px; color: var(--primary);">پیش‌نمایش آماده است</h3>
         <a href="${PREVIEW_URL}" target="_blank" rel="noopener" style="display:inline-block; direction:ltr; color: var(--primary); font-size:1.05rem; text-decoration:underline; text-underline-offset:4px; word-break:break-all;">${PREVIEW_URL}</a>

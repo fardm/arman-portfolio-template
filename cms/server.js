@@ -521,12 +521,50 @@ const server = http.createServer(async (req, res) => {
         try {
           const controller = new AbortController();
           const t = setTimeout(() => controller.abort(), 2000);
-          const resp = await fetch('http://localhost:3000', { signal: controller.signal, cache: 'no-store' });
-          clearTimeout(t);
-          return resp.ok || resp.status === 404 || resp.status === 200;
+          try {
+            const resp = await fetch('http://localhost:3000', { signal: controller.signal, cache: 'no-store' });
+            return resp.ok || resp.status === 404 || resp.status === 200;
+          } finally {
+            clearTimeout(t);
+          }
         } catch (_) {
           return false;
         }
+      };
+
+      // Terminate the whole process tree spawned by this server (cmd/npm wrapper + Next.js child).
+      // On Windows, .kill() only kills the cmd.exe wrapper, so use taskkill /T /F for the full tree.
+      const killPreviewTree = async () => {
+        const proc = devProcess;
+        if (!proc || !proc.pid) return false;
+        const pid = proc.pid;
+        try {
+          if (process.platform === 'win32') {
+            await new Promise((resolve) => {
+              const killer = spawn('taskkill', ['/pid', String(pid), '/T', '/F'], { stdio: 'ignore' });
+              killer.on('close', resolve);
+              killer.on('error', resolve);
+            });
+          } else {
+            // detached:true gives the spawned shell its own process group; kill the whole group
+            try { process.kill(-pid, 'SIGTERM'); } catch (_) { try { process.kill(pid, 'SIGTERM'); } catch (__) {} }
+            // Grace period, then escalate to SIGKILL in case children ignore SIGTERM
+            await new Promise((r) => setTimeout(r, 2000));
+            try { process.kill(-pid, 'SIGKILL'); } catch (_) { try { process.kill(pid, 'SIGKILL'); } catch (__) {} }
+          }
+        } catch (_) {
+          try { proc.kill(); } catch (__) {}
+        }
+        return true;
+      };
+
+      const waitForPortFree = async (timeoutMs = 10000) => {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+          if (!(await isPreviewRunning())) return true;
+          await new Promise((r) => setTimeout(r, 300));
+        }
+        return !(await isPreviewRunning());
       };
 
       if (pathname === '/api/preview/status' && method === 'GET') {
@@ -543,26 +581,32 @@ const server = http.createServer(async (req, res) => {
         if (devProcess && !devProcess.killed) {
           return send(res, 200, { ok: true, starting: true, url: 'http://localhost:3000' });
         }
-        devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore' });
+        // detached:true so the tree can be killed as a group on POSIX; on Windows taskkill /T walks the tree
+        devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore', detached: true });
         devProcess.on('exit', () => { devProcess = null; });
         return send(res, 200, { ok: true, started: true, url: 'http://localhost:3000' });
       }
 
       if (pathname === '/api/preview/stop' && method === 'POST') {
-        // Only terminate a process this server started — never a pre-existing one
-        if (devProcess && !devProcess.killed) {
-          devProcess.kill();
-          devProcess = null;
-          return send(res, 200, { ok: true, stopped: true });
+        // Only terminate a process this server started (devProcess is only ever set when we spawn).
+        // A pre-existing server is never touched — devProcess stays null for it.
+        let stopped = false;
+        if (devProcess) {
+          stopped = await killPreviewTree();
+          devProcess = null; // clear stored state immediately — refresh must not see the old preview
+          // Do not report success until the port is actually released
+          const portFree = await waitForPortFree();
+          return send(res, 200, { ok: true, stopped, portFree });
         }
-        return send(res, 200, { ok: true, stopped: false });
+        // Nothing of ours to stop — never wait on or touch an unrelated process
+        return send(res, 200, { ok: true, stopped: false, portFree: !(await isPreviewRunning()) });
       }
 
       // Legacy alias kept for compatibility
       if (pathname === '/api/dev' && method === 'POST') {
         if (await isPreviewRunning()) return send(res, 200, { ok: true, message: 'already running' });
         if (devProcess && !devProcess.killed) return send(res, 200, { ok: true, message: 'already running' });
-        devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore' });
+        devProcess = spawn('npm', ['run', 'dev'], { cwd: root, shell: true, stdio: 'ignore', detached: true });
         devProcess.on('exit', () => { devProcess = null; });
         return send(res, 200, { ok: true, message: 'started' });
       }
