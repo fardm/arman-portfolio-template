@@ -8,7 +8,6 @@ const POLL_INTERVAL_MS = 800;
 const STEP_LABELS = {
   starting: 'شروع سرور پیش‌نمایش',
   waiting: 'در انتظار آماده شدن سرور',
-  ready: 'پیش‌نمایش آماده',
 };
 
 // Session state for the preview flow
@@ -18,6 +17,7 @@ const flow = {
   polling: false,
   cancelRequested: false,
   pollTimer: null,
+  generation: 0, // bumped on every render/cancel to invalidate stale async continuations
 };
 
 function spinnerHTML() {
@@ -72,14 +72,19 @@ function stopPolling() {
 
 export function renderPreview() {
   // A fresh visit should never carry a stale cancel intent
+  flow.generation++;
   flow.running = false;
   flow.cancelRequested = false;
   stopPolling();
+  renderInitialState();
 
+  // If a preview is already running, show it right away
+  checkAlreadyRunning();
+}
+
+function renderInitialState() {
   dom.content.innerHTML = `
     <h2>پیش‌نمایش</h2>
-    <p class="sub">برای دیدن سایت، سرور توسعه محلی Next.js را اجرا کنید.</p>
-
     <div class="card" id="preview-card" style="max-width:640px;">
       <p style="margin-bottom:16px; color: var(--muted);">
         با کلیک روی «ساخت پیش‌نمایش»، سرور توسعه محلی راه‌اندازی می‌شود و می‌توانید سایت را به‌صورت زنده ببینید. این عملیات چند ثانیه طول می‌کشد.
@@ -92,14 +97,13 @@ export function renderPreview() {
 
   const startBtn = document.getElementById('preview-start-btn');
   if (startBtn) startBtn.addEventListener('click', startPreview);
-
-  // If a preview is already running, show it right away
-  checkAlreadyRunning();
 }
 
 async function checkAlreadyRunning() {
+  const gen = flow.generation;
   try {
     const res = await api('/api/preview/status');
+    if (gen !== flow.generation) return; // page was reset/cancelled meanwhile
     if (res && res.running) {
       renderReadyState();
     }
@@ -110,6 +114,7 @@ async function checkAlreadyRunning() {
 
 export async function startPreview() {
   if (flow.running) return;
+  const gen = flow.generation;
   flow.running = true;
   flow.cancelRequested = false;
 
@@ -121,7 +126,6 @@ export async function startPreview() {
     <div id="preview-steps">
       ${renderStep('starting', 'running')}
       ${renderStep('waiting', 'pending')}
-      ${renderStep('ready', 'pending')}
     </div>
     <div id="preview-actions" style="margin-top:16px; display:flex; gap:12px; align-items:center;">
       <button class="btn sec" id="preview-cancel-btn">لغو</button>
@@ -134,6 +138,7 @@ export async function startPreview() {
 
   try {
     const res = await api('/api/preview/start', { method: 'POST' });
+    if (gen !== flow.generation) return; // cancelled while awaiting
 
     if (res && res.error) {
       throw new Error(res.error);
@@ -145,7 +150,6 @@ export async function startPreview() {
       // Server was already up — mark everything done
       renderStepUI('starting', 'done');
       renderStepUI('waiting', 'done');
-      renderStepUI('ready', 'done');
       renderReadyState();
       return;
     }
@@ -155,33 +159,30 @@ export async function startPreview() {
     renderStepUI('waiting', 'running');
     setMsg('در انتظار آماده شدن سرور پیش‌نمایش...');
 
-    await waitForServer();
+    await waitForServer(gen);
   } catch (err) {
-    if (flow.cancelRequested) {
-      resetToInitial();
-      return;
-    }
+    if (gen !== flow.generation || flow.cancelRequested) return; // cancelled — UI already reset
     renderStepUI('starting', 'error', '');
     renderStepUI('waiting', 'error', '');
     renderErrorState(err.message || String(err));
   }
 }
 
-function waitForServer() {
+function waitForServer(gen) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
     flow.polling = true;
 
     const poll = async () => {
-      if (flow.cancelRequested || !flow.polling) {
+      if (gen !== flow.generation || flow.cancelRequested || !flow.polling) {
         return reject(new Error('cancelled'));
       }
       try {
         const res = await api('/api/preview/status');
+        if (gen !== flow.generation) return reject(new Error('cancelled'));
         if (res && res.running) {
           stopPolling();
           renderStepUI('waiting', 'done');
-          renderStepUI('ready', 'done');
           renderReadyState();
           return resolve();
         }
@@ -202,10 +203,12 @@ function waitForServer() {
 }
 
 export async function cancelPreview() {
+  // Invalidate any in-flight start/wait continuation
+  flow.generation++;
   flow.cancelRequested = true;
   stopPolling();
 
-  // Only terminate a process we started ourselves
+  // Only terminate a process we started ourselves — never a pre-existing server
   if (flow.startedByUs) {
     try {
       await api('/api/preview/stop', { method: 'POST' });
@@ -216,7 +219,10 @@ export async function cancelPreview() {
 
   flow.startedByUs = false;
   flow.running = false;
-  resetToInitial();
+  flow.cancelRequested = false;
+
+  // Full reset to the initial state — clears URL, status, and progress
+  renderInitialState();
 }
 
 function setMsg(text) {
@@ -229,7 +235,20 @@ function renderReadyState() {
   const card = document.getElementById('preview-card');
   if (!card) return;
 
+  // Keep both steps visible (marked done) and show the success message separately below
   card.innerHTML = `
+    <div id="preview-steps">
+      ${renderStep('starting', 'done')}
+      ${renderStep('waiting', 'done')}
+    </div>
+    <div id="preview-result" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border, #263243);">
+      ${renderSuccessSection()}
+    </div>
+  `;
+}
+
+function renderSuccessSection() {
+  return `
     <div style="display:flex; align-items:flex-start; gap:14px;">
       <span style="color: var(--primary); font-size: 1.6rem; line-height:1.4;">✓</span>
       <div style="flex:1;">
@@ -237,7 +256,7 @@ function renderReadyState() {
         <a href="${PREVIEW_URL}" target="_blank" rel="noopener" style="display:inline-block; direction:ltr; color: var(--primary); font-size:1.05rem; text-decoration:underline; text-underline-offset:4px; word-break:break-all;">${PREVIEW_URL}</a>
         <div style="margin-top:16px; display:flex; gap:12px;">
           <button class="btn" onclick="openPreviewTab()">باز کردن پیش‌نمایش</button>
-          <button class="btn sec" onclick="show('preview')">تازه‌سازی</button>
+          <button class="btn sec" onclick="cancelPreview()">لغو</button>
         </div>
       </div>
     </div>
@@ -264,11 +283,6 @@ function renderErrorState(message) {
 
   const retryBtn = document.getElementById('preview-retry-btn');
   if (retryBtn) retryBtn.addEventListener('click', startPreview);
-}
-
-function resetToInitial() {
-  flow.running = false;
-  renderPreview();
 }
 
 export function openPreviewTab() {
